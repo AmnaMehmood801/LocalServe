@@ -9,6 +9,7 @@ import { BookingDetailPage } from "../pages/BookingDetailPage";
 import { CustomerBookingsPage } from "../pages/CustomerBookingsPage";
 import { ListingDetailPage } from "../pages/ListingDetailPage";
 import { LoginPage } from "../pages/LoginPage";
+import { ForgotPasswordPage } from "../pages/ForgotPasswordPage";
 import { NotFoundPage } from "../pages/NotFoundPage";
 import { PrivacyPage } from "../pages/PrivacyPage";
 import { ProviderListingFormPage } from "../pages/ProviderListingFormPage";
@@ -17,6 +18,7 @@ import { ProviderRequestsPage } from "../pages/ProviderRequestsPage";
 import { PublicProviderPage } from "../pages/PublicProviderPage";
 import { RegisterPage } from "../pages/RegisterPage";
 import { RequestBookingPage } from "../pages/RequestBookingPage";
+import { ResetPasswordPage } from "../pages/ResetPasswordPage";
 import { SearchPage } from "../pages/SearchPage";
 import { TermsPage } from "../pages/TermsPage";
 
@@ -91,8 +93,10 @@ const router = createBrowserRouter([
         children: [
           { path: "/login", element: <LoginPage /> },
           { path: "/register", element: <RegisterPage /> },
+          { path: "/forgot-password", element: <ForgotPasswordPage /> },
         ],
       },
+      { path: "/reset-password", element: <ResetPasswordPage /> },
       {
         element: <ProtectedRoute />,
         children: [
@@ -142,7 +146,10 @@ const router = createBrowserRouter([
         element: (
           <Suspense
             fallback={
-              <div className="min-h-screen bg-cream-50 px-6 py-16 text-center text-sm text-slate-600" role="status">
+              <div
+                className="min-h-screen bg-cream-50 px-6 py-16 text-center text-sm text-slate-600"
+                role="status"
+              >
                 Loading admin workspace…
               </div>
             }
