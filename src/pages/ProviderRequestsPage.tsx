@@ -1,0 +1,439 @@
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { format, startOfMonth } from "date-fns";
+import { Link } from "react-router-dom";
+import { toast } from "../lib/toast";
+
+import { useAuth } from "../app/AuthContext";
+import { BookingStatusBadge } from "../components/booking/BookingStatusBadge";
+import {
+  formatBookingPrice,
+  getBookingErrorMessage,
+  type BookingStatus,
+} from "../lib/booking";
+import type { Database } from "../lib/database.types";
+import { supabase } from "../lib/supabase";
+
+type InboxFilter = "new" | "upcoming" | "done" | "closed";
+
+type ProviderBooking = {
+  id: string;
+  customer_id: string;
+  status: BookingStatus;
+  scheduled_start: string;
+  scheduled_end: string | null;
+  completed_at: string | null;
+  address_text: string;
+  notes: string | null;
+  snapshot_title: string;
+  snapshot_price_amount: number;
+  snapshot_currency: string;
+  decline_reason: string | null;
+  cancel_reason: string | null;
+  customer_name: string;
+};
+
+const filterOptions: { key: InboxFilter; label: string }[] = [
+  { key: "new", label: "New" },
+  { key: "upcoming", label: "Upcoming" },
+  { key: "done", label: "Done" },
+  { key: "closed", label: "Declined / cancelled" },
+];
+
+function matchesFilter(status: BookingStatus, filter: InboxFilter) {
+  if (filter === "new") return status === "requested";
+  if (filter === "upcoming")
+    return status === "accepted" || status === "in_progress";
+  if (filter === "done") return status === "completed";
+  return (
+    status === "declined" ||
+    status === "cancelled_by_customer" ||
+    status === "cancelled_by_provider"
+  );
+}
+
+function ProviderBookingCard({ booking }: { booking: ProviderBooking }) {
+  const queryClient = useQueryClient();
+  const [reasonOpen, setReasonOpen] = useState(false);
+  const [reason, setReason] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+
+  async function runAction(
+    action: "accept" | "decline" | "complete" | "cancel",
+  ) {
+    setActionError(null);
+    setBusy(true);
+    let error: { code?: string; message?: string } | null = null;
+    if (action === "accept") {
+      ({ error } = await supabase.rpc("accept_booking", {
+        p_booking_id: booking.id,
+      }));
+    } else if (action === "decline") {
+      ({ error } = await supabase.rpc("decline_booking", {
+        p_booking_id: booking.id,
+        p_reason: reason.trim(),
+      }));
+    } else if (action === "complete") {
+      ({ error } = await supabase.rpc("complete_booking", {
+        p_booking_id: booking.id,
+      }));
+    } else {
+      ({ error } = await supabase.rpc("cancel_booking", {
+        p_booking_id: booking.id,
+        p_reason: reason.trim(),
+      }));
+    }
+    setBusy(false);
+
+    if (error) {
+      setActionError(
+        getBookingErrorMessage(error, "Could not update this booking."),
+      );
+      return;
+    }
+
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["provider", "bookings"] }),
+      queryClient.invalidateQueries({ queryKey: ["bookings"] }),
+      queryClient.invalidateQueries({ queryKey: ["booking", booking.id] }),
+    ]);
+    toast.success(
+      action === "accept"
+        ? "Booking confirmed."
+        : action === "decline"
+          ? "Request declined."
+          : action === "complete"
+            ? "Booking marked complete."
+            : "Booking cancelled.",
+    );
+    setReasonOpen(false);
+    setReason("");
+  }
+
+  const isRequested = booking.status === "requested";
+  const isConfirmed =
+    booking.status === "accepted" || booking.status === "in_progress";
+
+  return (
+    <article className="rounded-xl border border-cream-100 bg-white p-5 shadow-sm">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="font-semibold">{booking.snapshot_title}</h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Customer: {booking.customer_name}
+          </p>
+          <p className="mt-1 text-sm text-slate-600">
+            {format(new Date(booking.scheduled_start), "PPP 'at' p")}
+          </p>
+        </div>
+        <BookingStatusBadge status={booking.status} viewer="provider" />
+      </div>
+
+      <dl className="mt-4 grid gap-4 border-t border-cream-100 pt-4 sm:grid-cols-2">
+        <div>
+          <dt className="text-xs font-medium uppercase text-slate-600">
+            Service address
+          </dt>
+          <dd className="mt-1 whitespace-pre-line text-sm">
+            {booking.address_text}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-xs font-medium uppercase text-slate-600">
+            Price snapshot
+          </dt>
+          <dd className="mt-1 text-sm font-semibold">
+            {formatBookingPrice(
+              booking.snapshot_price_amount,
+              booking.snapshot_currency,
+            )}
+          </dd>
+        </div>
+        {booking.notes && (
+          <div className="sm:col-span-2">
+            <dt className="text-xs font-medium uppercase text-slate-600">
+              Customer notes
+            </dt>
+            <dd className="mt-1 whitespace-pre-line text-sm">
+              {booking.notes}
+            </dd>
+          </div>
+        )}
+        {booking.decline_reason && (
+          <div className="sm:col-span-2">
+            <dt className="text-xs font-medium uppercase text-slate-600">
+              Decline reason
+            </dt>
+            <dd className="mt-1 whitespace-pre-line text-sm">
+              {booking.decline_reason}
+            </dd>
+          </div>
+        )}
+        {booking.cancel_reason && (
+          <div className="sm:col-span-2">
+            <dt className="text-xs font-medium uppercase text-slate-600">
+              Cancellation reason
+            </dt>
+            <dd className="mt-1 whitespace-pre-line text-sm">
+              {booking.cancel_reason}
+            </dd>
+          </div>
+        )}
+      </dl>
+
+      <div className="mt-4 flex flex-wrap gap-2 border-t border-cream-100 pt-4">
+        <Link
+          to={`/bookings/${booking.id}`}
+          className="inline-flex min-h-11 items-center rounded-lg border border-ink/20 px-4 text-sm font-medium hover:bg-cream-50"
+        >
+          View details
+        </Link>
+        {isRequested && (
+          <>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => void runAction("accept")}
+              className="min-h-11 rounded-lg bg-teal-600 px-4 text-sm font-medium text-white hover:bg-teal-700 disabled:opacity-50"
+            >
+              {busy ? "Saving..." : "Accept"}
+            </button>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => setReasonOpen(true)}
+              className="min-h-11 rounded-lg border border-rose-600/40 px-4 text-sm font-medium text-rose-700 hover:bg-rose-600/5"
+            >
+              Decline
+            </button>
+          </>
+        )}
+        {isConfirmed && (
+          <>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => void runAction("complete")}
+              className="min-h-11 rounded-lg bg-teal-600 px-4 text-sm font-medium text-white hover:bg-teal-700 disabled:opacity-50"
+            >
+              {busy ? "Saving..." : "Mark complete"}
+            </button>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => setReasonOpen(true)}
+              className="min-h-11 rounded-lg border border-rose-600/40 px-4 text-sm font-medium text-rose-700 hover:bg-rose-600/5"
+            >
+              Cancel job
+            </button>
+          </>
+        )}
+      </div>
+
+      {reasonOpen && (isRequested || isConfirmed) && (
+        <form
+          className="mt-4 space-y-3 rounded-lg bg-cream-50 p-4"
+          onSubmit={(event) => {
+            event.preventDefault();
+            void runAction(isRequested ? "decline" : "cancel");
+          }}
+        >
+          <label
+            htmlFor={`reason-${booking.id}`}
+            className="block text-sm font-medium"
+          >
+            {isRequested ? "Reason for declining" : "Reason for cancelling"}
+          </label>
+          <textarea
+            id={`reason-${booking.id}`}
+            value={reason}
+            onChange={(event) => setReason(event.target.value)}
+            maxLength={1000}
+            rows={3}
+            required
+            className="w-full rounded-lg border border-slate-400/50 bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-teal-600"
+          />
+          {actionError && (
+            <p className="text-sm text-rose-600" role="alert">
+              {actionError}
+            </p>
+          )}
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="submit"
+              disabled={busy || !reason.trim()}
+              className="min-h-11 rounded-lg bg-rose-600 px-4 text-sm font-medium text-white disabled:opacity-50"
+            >
+              {busy
+                ? "Saving..."
+                : isRequested
+                  ? "Confirm decline"
+                  : "Confirm cancellation"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setReasonOpen(false)}
+              className="min-h-11 rounded-lg border border-ink/20 px-4 text-sm font-medium"
+            >
+              Keep request
+            </button>
+          </div>
+        </form>
+      )}
+      {actionError && !reasonOpen && (
+        <p className="mt-3 text-sm text-rose-600" role="alert">
+          {actionError}
+        </p>
+      )}
+    </article>
+  );
+}
+
+export function ProviderRequestsPage() {
+  const { user } = useAuth();
+  const [filter, setFilter] = useState<InboxFilter>("new");
+  const bookingsQuery = useQuery({
+    queryKey: ["provider", "bookings", user?.id],
+    enabled: Boolean(user),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("bookings")
+        .select(
+          "id, customer_id, status, scheduled_start, scheduled_end, completed_at, address_text, notes, snapshot_title, snapshot_price_amount, snapshot_currency, decline_reason, cancel_reason",
+        )
+        .eq("provider_id", user!.id)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      const rows = (data ?? []) as Omit<ProviderBooking, "customer_name">[];
+      if (rows.length === 0) return [];
+
+      const { data: bookingNames, error: bookingNamesError } =
+        await supabase.rpc("get_booking_customer_names", {
+          p_booking_ids: rows.map((row) => row.id),
+        });
+      if (bookingNamesError) throw bookingNamesError;
+      const customerNames = (bookingNames ??
+        []) as Database["public"]["Functions"]["get_booking_customer_names"]["Returns"];
+      const names = new Map(
+        customerNames.map((booking) => [
+          booking.booking_id,
+          booking.customer_display_name,
+        ]),
+      );
+      return rows.map((row) => ({
+        ...row,
+        customer_name: names.get(row.id) ?? "LocalServe member",
+      })) as ProviderBooking[];
+    },
+  });
+
+  const bookings = bookingsQuery.data ?? [];
+  const visibleBookings = bookings.filter((booking) =>
+    matchesFilter(booking.status, filter),
+  );
+  const monthStart = startOfMonth(new Date());
+  const newCount = bookings.filter(
+    (booking) => booking.status === "requested",
+  ).length;
+  const upcomingCount = bookings.filter(
+    (booking) =>
+      booking.status === "accepted" || booking.status === "in_progress",
+  ).length;
+  const completedCount = bookings.filter(
+    (booking) =>
+      booking.status === "completed" &&
+      booking.completed_at !== null &&
+      new Date(booking.completed_at).getTime() >= monthStart.getTime(),
+  ).length;
+
+  return (
+    <section className="shell-container py-8 md:py-10">
+      <header className="border-b border-cream-100 pb-5">
+        <p className="text-xs font-semibold uppercase text-slate-600">
+          Provider
+        </p>
+        <h1 className="mt-1 text-3xl font-semibold">Booking requests</h1>
+      </header>
+
+      <dl className="mt-5 grid grid-cols-3 gap-3">
+        <div className="rounded-xl border border-cream-100 bg-white p-4">
+          <dt className="text-xs text-slate-600">New</dt>
+          <dd className="mt-1 text-2xl font-semibold">
+            {bookingsQuery.isPending ? "—" : newCount}
+          </dd>
+        </div>
+        <div className="rounded-xl border border-cream-100 bg-white p-4">
+          <dt className="text-xs text-slate-600">Upcoming</dt>
+          <dd className="mt-1 text-2xl font-semibold">
+            {bookingsQuery.isPending ? "—" : upcomingCount}
+          </dd>
+        </div>
+        <div className="rounded-xl border border-cream-100 bg-white p-4">
+          <dt className="text-xs text-slate-600">Completed this month</dt>
+          <dd className="mt-1 text-2xl font-semibold">
+            {bookingsQuery.isPending ? "—" : completedCount}
+          </dd>
+        </div>
+      </dl>
+
+      <div
+        className="mt-5 flex flex-wrap gap-2"
+        aria-label="Filter provider requests"
+      >
+        {filterOptions.map((option) => (
+          <button
+            key={option.key}
+            type="button"
+            aria-pressed={filter === option.key}
+            onClick={() => setFilter(option.key)}
+            className={`min-h-10 rounded-full border px-4 text-sm font-medium ${filter === option.key ? "border-teal-600 bg-teal-600 text-white" : "border-ink/15 bg-white hover:bg-cream-100"}`}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+
+      {bookingsQuery.isPending ? (
+        <div
+          className="mt-6 space-y-3"
+          role="status"
+          aria-label="Loading requests"
+        >
+          {[0, 1, 2].map((item) => (
+            <div
+              key={item}
+              className="h-48 animate-pulse rounded-xl bg-white"
+            />
+          ))}
+        </div>
+      ) : bookingsQuery.isError ? (
+        <div
+          className="mt-6 rounded-xl border border-rose-600/20 bg-white p-5"
+          role="alert"
+        >
+          <p className="font-medium">Requests couldn’t be loaded.</p>
+          <button
+            type="button"
+            onClick={() => void bookingsQuery.refetch()}
+            className="mt-3 min-h-11 rounded-lg border border-ink/20 px-4 text-sm font-medium"
+          >
+            Try again
+          </button>
+        </div>
+      ) : visibleBookings.length === 0 ? (
+        <p className="mt-6 rounded-xl border border-cream-100 bg-white p-6 text-sm text-slate-600">
+          {bookings.length === 0
+            ? "No booking requests yet."
+            : "No requests in this group."}
+        </p>
+      ) : (
+        <div className="mt-6 space-y-3">
+          {visibleBookings.map((booking) => (
+            <ProviderBookingCard key={booking.id} booking={booking} />
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
