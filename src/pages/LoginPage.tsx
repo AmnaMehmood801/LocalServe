@@ -99,6 +99,15 @@ export function LoginPage() {
               aria-invalid={Boolean(errors.password)}
               className="min-h-11 w-full rounded-lg border border-slate-400/50 bg-white px-3 outline-none focus:ring-2 focus:ring-teal-600"
             />
+            <div className="mt-2 flex justify-end">
+              <Link
+                className="text-sm font-medium underline"
+                style={{ color: "#168A55" }}
+                to="/forgot-password"
+              >
+                Forgot password?
+              </Link>
+            </div>
             {errors.password && (
               <p className="mt-1 text-sm text-rose-600">
                 {errors.password.message}
