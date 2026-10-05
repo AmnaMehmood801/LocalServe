@@ -86,6 +86,22 @@
   }
 }
 
+a {
+  text-decoration: none;
+}
+
+:is(p, span, li, td, h1, h2, h3, h4, h5, h6) a:hover {
+  text-decoration: underline;
+}
+
+a.btn:hover,
+a[role="button"]:hover,
+nav a:hover,
+header a:hover,
+footer a:hover {
+  text-decoration: none;
+}
+
 @layer utilities {
   .shell-container {
     @apply mx-auto w-full max-w-6xl px-4 md:px-6;

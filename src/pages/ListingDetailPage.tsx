@@ -223,9 +223,6 @@ export function ListingDetailPage() {
                 <span className="rounded-full bg-[#E3F7EC] px-3 py-1 text-xs font-medium text-[#168A55]">
                   {listing.categoryName}
                 </span>
-                <span className="rounded-full bg-[#E3F7EC] px-3 py-1 text-xs font-medium text-[#168A55]">
-                  {listing.areaName}
-                </span>
               </div>
               <h1 className="mt-3 text-3xl font-semibold">{listing.title}</h1>
             </div>
@@ -257,7 +254,7 @@ export function ListingDetailPage() {
             <span aria-hidden="true">·</span>
             <Link
               to={`/providers/${listing.provider_id}`}
-              className="inline-flex min-h-8 items-center gap-2 rounded-sm font-medium text-teal-700 underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600"
+              className="inline-flex min-h-8 items-center gap-2 rounded-sm font-medium text-teal-700 no-underline hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600"
             >
               <span className="grid size-7 shrink-0 place-items-center rounded-full bg-[#E3F7EC] text-xs font-semibold text-[#168A55]">
                 {listing.providerName.trim().charAt(0).toUpperCase()}
@@ -301,7 +298,7 @@ export function ListingDetailPage() {
               <div>
                 <Link
                   to={`/providers/${listing.provider_id}`}
-                  className="inline-flex min-h-9 items-center rounded-sm font-medium text-teal-700 underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600"
+                  className="inline-flex min-h-9 items-center rounded-sm font-medium text-teal-700 no-underline hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600"
                 >
                   {listing.providerName}
                 </Link>
