@@ -6,7 +6,6 @@ import {
   BriefcaseBusiness,
   MapPin,
   MessageSquareText,
-  ShieldCheck,
   Star,
   Wrench,
 } from "lucide-react";
@@ -304,87 +303,84 @@ export function PublicProviderPage() {
   return (
     <div className="shell-container py-7 md:py-12">
       <BackButton fallback="/search" label="Back" className="mb-4" />
-      <section className="overflow-hidden rounded-3xl border border-cream-100 bg-white shadow-sm">
-        <div className="h-24 bg-gradient-to-r from-navy-950 via-navy-900 to-teal-700 sm:h-32" />
-        <div className="grid gap-6 px-5 pb-6 sm:px-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end lg:px-10">
-          <div className="-mt-10 flex min-w-0 flex-col gap-4 sm:-mt-12 sm:flex-row sm:items-end sm:gap-5">
-            <div
-              role="img"
-              aria-label={`${provider.displayName} profile`}
-              className="grid size-20 shrink-0 place-items-center rounded-2xl border-4 border-white bg-teal-50 text-2xl font-semibold text-teal-700 shadow-sm sm:size-24"
-            >
-              {getInitials(provider.displayName) || (
-                <Wrench size={27} aria-hidden="true" />
+      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+        <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
+          <div
+            role="img"
+            aria-label={`${provider.displayName} profile`}
+            className="grid size-20 shrink-0 place-items-center rounded-2xl bg-[#E3F7EC] text-2xl font-semibold text-[#168A55]"
+          >
+            {getInitials(provider.displayName) || (
+              <Wrench size={27} aria-hidden="true" />
+            )}
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              <h1 className="min-w-0 break-words text-2xl font-semibold text-[#1D1F23]">
+                {provider.displayName}
+              </h1>
+              {provider.isVerified && (
+                <span className="inline-flex min-h-7 items-center gap-1.5 rounded-full bg-[#E3F7EC] px-2.5 text-xs font-semibold text-[#168A55]">
+                  <BadgeCheck size={15} aria-hidden="true" />
+                  Verified
+                </span>
               )}
             </div>
-            <div className="min-w-0 pb-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-                  {provider.displayName}
-                </h1>
-                {provider.isVerified && (
-                  <span className="inline-flex min-h-7 items-center gap-1.5 rounded-full bg-teal-50 px-2.5 text-xs font-semibold text-teal-700">
-                    <BadgeCheck size={15} aria-hidden="true" />
-                    Verified
-                  </span>
-                )}
-              </div>
-              {provider.bio && (
-                <p className="mt-1 max-w-2xl whitespace-pre-line text-sm leading-6 text-slate-600">
-                  {provider.bio}
-                </p>
+            {provider.bio && (
+              <p className="mt-1 line-clamp-3 max-w-2xl text-sm text-slate-600">
+                {provider.bio}
+              </p>
+            )}
+            <div className="mt-3 flex min-w-0 flex-col items-start gap-2 text-sm text-slate-600">
+              {reviewsQuery.isPending ? (
+                <span role="status">Loading review summary…</span>
+              ) : reviewsQuery.isError ? (
+                <span>Review summary unavailable</span>
+              ) : reviewData && reviewData.count > 0 ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveTab("Reviews");
+                    tabRefs.current[2]?.focus();
+                  }}
+                  className="inline-flex min-h-8 max-w-full items-center gap-1.5 rounded-sm text-ink transition hover:text-teal-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600"
+                >
+                  <Star
+                    size={16}
+                    className="fill-amber-500 text-amber-500"
+                    aria-hidden="true"
+                  />
+                  {ratingLabel && <strong>{ratingLabel}</strong>}
+                  <span>({reviewData.count} reviews)</span>
+                </button>
+              ) : (
+                <span className="inline-flex items-center gap-1.5">
+                  <MessageSquareText size={15} aria-hidden="true" />
+                  No reviews yet
+                </span>
               )}
-              <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-slate-600">
-                {reviewsQuery.isPending ? (
-                  <span role="status">Loading review summary…</span>
-                ) : reviewsQuery.isError ? (
-                  <span>Review summary unavailable</span>
-                ) : reviewData && reviewData.count > 0 ? (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveTab("Reviews");
-                      tabRefs.current[2]?.focus();
-                    }}
-                    className="inline-flex min-h-8 items-center gap-1.5 rounded-sm text-ink transition hover:text-teal-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600"
-                  >
-                    <Star
-                      size={16}
-                      className="fill-amber-500 text-amber-500"
-                      aria-hidden="true"
-                    />
-                    {ratingLabel && <strong>{ratingLabel}</strong>}
-                    <span>({reviewData.count} reviews)</span>
-                  </button>
-                ) : (
-                  <span className="inline-flex items-center gap-1.5">
-                    <MessageSquareText size={15} aria-hidden="true" />
-                    No reviews yet
-                  </span>
-                )}
-                {provider.areas.length > 0 && (
-                  <span className="inline-flex items-center gap-1.5">
-                    <MapPin size={15} aria-hidden="true" />
+              {provider.areas.length > 0 && (
+                <span className="inline-flex min-w-0 max-w-full items-start gap-1.5">
+                  <MapPin size={15} className="shrink-0" aria-hidden="true" />
+                  <span className="min-w-0 break-words">
                     {provider.areas.join(", ")}, Samundri
                   </span>
-                )}
-              </div>
+                </span>
+              )}
             </div>
-          </div>
-          <div className="flex flex-wrap items-center gap-2 lg:pb-1">
-            <span className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-cream-100 bg-cream-50 px-3 text-sm font-medium text-slate-600">
-              <BriefcaseBusiness size={16} aria-hidden="true" />
-              {provider.listings.length}{" "}
-              {provider.listings.length === 1
-                ? "active service"
-                : "active services"}
-            </span>
-            {provider.isVerified && (
-              <span className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-teal-600/10 bg-teal-50 px-3 text-sm font-medium text-teal-700">
-                <ShieldCheck size={16} aria-hidden="true" />
-                LocalServe verified
+            <div className="mt-3">
+              <span className="inline-flex min-h-10 max-w-full items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-600">
+                <BriefcaseBusiness
+                  size={16}
+                  className="shrink-0 text-[#168A55]"
+                  aria-hidden="true"
+                />
+                {provider.listings.length}{" "}
+                {provider.listings.length === 1
+                  ? "active service"
+                  : "active services"}
               </span>
-            )}
+            </div>
           </div>
         </div>
       </section>
@@ -577,7 +573,7 @@ export function PublicProviderPage() {
                     key={review.id}
                     className="rounded-2xl border border-cream-100 bg-white p-5 sm:p-6"
                   >
-                    <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <div className="flex min-w-0 items-center gap-3">
                         <span
                           aria-label={`${review.authorName} reviewer`}
@@ -597,17 +593,24 @@ export function PublicProviderPage() {
                           </time>
                         </div>
                       </div>
-                      <p
-                        className="inline-flex items-center gap-1 text-sm font-semibold text-ink"
+                      <span
+                        className="inline-flex items-center gap-0.5 self-start sm:self-auto"
+                        role="img"
                         aria-label={`${review.rating} out of 5 stars`}
                       >
-                        <Star
-                          size={15}
-                          className="fill-amber-500 text-amber-500"
-                          aria-hidden="true"
-                        />
-                        {review.rating}
-                      </p>
+                        {Array.from({ length: 5 }, (_, index) => (
+                          <Star
+                            key={index}
+                            size={16}
+                            className={
+                              index < review.rating
+                                ? "fill-amber-400 text-amber-400"
+                                : "text-slate-300"
+                            }
+                            aria-hidden="true"
+                          />
+                        ))}
+                      </span>
                     </div>
                     {review.comment && (
                       <p className="mt-4 whitespace-pre-line text-sm leading-6 text-slate-600">

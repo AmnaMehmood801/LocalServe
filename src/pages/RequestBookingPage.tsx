@@ -172,7 +172,7 @@ export function RequestBookingPage() {
   const isOwner = listing.provider_id === user?.id;
 
   return (
-    <section className="shell-container max-w-3xl py-8 md:py-10">
+    <section className="mx-auto w-full max-w-3xl px-4 py-8 md:px-6 md:py-10">
       <BackButton
         fallback={`/listings/${id}`}
         label="Back to listing"
@@ -211,14 +211,20 @@ export function RequestBookingPage() {
                 htmlFor="scheduled-start"
                 className="mb-1 block text-sm font-medium"
               >
-                Preferred start
+                Preferred start{" "}
+                <span className="text-red-500" aria-hidden="true">
+                  *
+                </span>
               </label>
               <input
                 id="scheduled-start"
                 type="datetime-local"
                 {...register("scheduled_start")}
-                className="min-h-11 w-full rounded-lg border border-slate-400/50 px-3 outline-none focus:ring-2 focus:ring-teal-600"
+                className="h-10 w-full rounded-lg border border-slate-400/50 px-3 text-sm outline-none focus:ring-2 focus:ring-teal-600"
               />
+              <p className="mt-1 text-xs text-slate-500">
+                Date and time you want the provider to arrive
+              </p>
               {errors.scheduled_start && (
                 <p className="mt-1 text-sm text-rose-600">
                   {errors.scheduled_start.message}
@@ -236,7 +242,7 @@ export function RequestBookingPage() {
                 id="scheduled-end"
                 type="datetime-local"
                 {...register("scheduled_end")}
-                className="min-h-11 w-full rounded-lg border border-slate-400/50 px-3 outline-none focus:ring-2 focus:ring-teal-600"
+                className="h-10 w-full rounded-lg border border-slate-400/50 px-3 text-sm outline-none focus:ring-2 focus:ring-teal-600"
               />
               {errors.scheduled_end && (
                 <p className="mt-1 text-sm text-rose-600">
@@ -251,14 +257,20 @@ export function RequestBookingPage() {
               htmlFor="booking-address"
               className="mb-1 block text-sm font-medium"
             >
-              Service address
+              Service address{" "}
+              <span className="text-red-500" aria-hidden="true">
+                *
+              </span>
             </label>
             <textarea
               id="booking-address"
               rows={3}
               {...register("address_text")}
-              className="w-full rounded-lg border border-slate-400/50 px-3 py-2 outline-none focus:ring-2 focus:ring-teal-600"
+              className="w-full rounded-lg border border-slate-400/50 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-600"
             />
+            <p className="mt-1 text-xs text-slate-500">
+              House number, street and area so the provider can find you
+            </p>
             {errors.address_text && (
               <p className="mt-1 text-sm text-rose-600">
                 {errors.address_text.message}
@@ -277,8 +289,11 @@ export function RequestBookingPage() {
               id="booking-notes"
               rows={3}
               {...register("notes")}
-              className="w-full rounded-lg border border-slate-400/50 px-3 py-2 outline-none focus:ring-2 focus:ring-teal-600"
+              className="w-full rounded-lg border border-slate-400/50 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-600"
             />
+            <p className="mt-1 text-xs text-slate-500">
+              Anything the provider should know, e.g. what needs fixing
+            </p>
             {errors.notes && (
               <p className="mt-1 text-sm text-rose-600">
                 {errors.notes.message}

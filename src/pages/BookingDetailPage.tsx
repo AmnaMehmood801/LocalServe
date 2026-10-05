@@ -10,6 +10,7 @@ import { z } from "zod";
 
 import { useAuth } from "../app/AuthContext";
 import { BookingStatusBadge } from "../components/booking/BookingStatusBadge";
+import { BackButton } from "../components/ui/BackButton";
 import {
   formatBookingPrice,
   getBookingErrorMessage,
@@ -233,12 +234,11 @@ export function BookingDetailPage() {
         <p className="mt-2 text-sm text-slate-600">
           This booking could not be found or you don’t have access to it.
         </p>
-        <Link
-          to="/bookings"
-          className="mt-5 inline-flex min-h-11 items-center rounded-2xl border border-slate-200 bg-white px-5 text-sm font-medium"
-        >
-          Back to bookings
-        </Link>
+        <BackButton
+          fallback="/bookings"
+          label="Back to bookings"
+          className="mt-5"
+        />
       </section>
     );
   }
@@ -262,14 +262,12 @@ export function BookingDetailPage() {
   }
 
   return (
-    <section className="shell-container max-w-3xl py-8 md:py-10">
-      <Link
-        to={backPath}
-        className="inline-flex min-h-11 items-center rounded-2xl border border-slate-200 bg-white px-4 text-sm font-medium text-[#168A55] underline"
-      >
-        Back to {isProvider ? "requests" : "bookings"}
-      </Link>
-      <header className="mt-5 flex flex-wrap items-start justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-5 md:p-6">
+    <section className="shell-container max-w-3xl py-6 md:py-8">
+      <BackButton
+        fallback={backPath}
+        label={`Back to ${isProvider ? "requests" : "bookings"}`}
+      />
+      <header className="mt-3 flex flex-wrap items-start justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-5 md:p-6">
         <div>
           <p className="text-xs font-semibold uppercase text-slate-600">
             Booking details
@@ -279,13 +277,28 @@ export function BookingDetailPage() {
           </h1>
           <p className="mt-2 text-sm text-slate-600">
             {isCustomer ? "Provider" : "Customer"}:{" "}
-            {booking.counterpart_name ?? "LocalServe member"}
+            {isCustomer && booking.provider_id ? (
+              <Link
+                to={`/providers/${booking.provider_id}`}
+                className="inline-flex items-center gap-1.5 text-[#168A55] no-underline hover:underline"
+              >
+                <span className="grid size-6 shrink-0 place-items-center rounded-md bg-[#E3F7EC] text-xs font-semibold text-[#168A55]">
+                  {(booking.counterpart_name ?? "LocalServe member")
+                    .trim()
+                    .charAt(0)
+                    .toUpperCase()}
+                </span>
+                {booking.counterpart_name ?? "LocalServe member"}
+              </Link>
+            ) : (
+              (booking.counterpart_name ?? "LocalServe member")
+            )}
           </p>
         </div>
         <BookingStatusBadge status={booking.status} viewer={viewer} />
       </header>
 
-      <dl className="mt-6 grid gap-x-8 gap-y-5 rounded-2xl border border-slate-200 bg-white p-5 sm:grid-cols-2 md:p-6">
+      <dl className="mt-4 grid gap-x-8 gap-y-5 rounded-2xl border border-slate-200 bg-white p-5 sm:grid-cols-2 md:p-6">
         <div>
           <dt className="text-xs font-medium uppercase text-slate-600">
             Preferred time
