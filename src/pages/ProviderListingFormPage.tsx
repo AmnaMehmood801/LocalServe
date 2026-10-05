@@ -347,13 +347,19 @@ export function ProviderListingFormPage() {
             htmlFor="listing-title"
             className="mb-1 block text-sm font-medium"
           >
-            Title
+            Title{" "}
+            <span className="text-red-500" aria-hidden="true">
+              *
+            </span>
           </label>
           <input
             id="listing-title"
             {...register("title")}
-            className="min-h-11 w-full rounded-lg border border-slate-400/50 px-3 outline-none focus:ring-2 focus:ring-teal-600"
+            className="h-10 w-full rounded-lg border border-slate-400/50 px-3 text-sm outline-none focus:ring-2 focus:ring-teal-600"
           />
+          <p className="mt-1 text-xs text-slate-500">
+            Short and clear, e.g. Home Wiring &amp; Switch Repair
+          </p>
           {errors.title && (
             <p className="mt-1 text-sm text-rose-600">{errors.title.message}</p>
           )}
@@ -364,14 +370,21 @@ export function ProviderListingFormPage() {
             htmlFor="listing-description"
             className="mb-1 block text-sm font-medium"
           >
-            Description
+            Description{" "}
+            <span className="text-red-500" aria-hidden="true">
+              *
+            </span>
           </label>
           <textarea
             id="listing-description"
-            rows={5}
+            rows={4}
             {...register("description")}
-            className="w-full rounded-lg border border-slate-400/50 px-3 py-2 outline-none focus:ring-2 focus:ring-teal-600"
+            className="w-full rounded-lg border border-slate-400/50 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-600"
           />
+          <p className="mt-1 text-xs text-slate-500">
+            What you do, tools or materials, and what the customer should
+            prepare
+          </p>
           {errors.description && (
             <p className="mt-1 text-sm text-rose-600">
               {errors.description.message}
@@ -385,13 +398,17 @@ export function ProviderListingFormPage() {
               htmlFor="listing-category"
               className="mb-1 block text-sm font-medium"
             >
-              Category
+              Category{" "}
+              <span className="text-red-500" aria-hidden="true">
+                *
+              </span>
             </label>
             <Controller
               name="category_id"
               control={control}
               render={({ field }) => (
                 <SelectMenu
+                  id="listing-category"
                   value={field.value ?? ""}
                   onChange={field.onChange}
                   options={(categoriesQuery.data ?? []).map((category) => ({
@@ -400,6 +417,7 @@ export function ProviderListingFormPage() {
                   }))}
                   ariaLabel="Category"
                   placeholder="Select a category"
+                  size="sm"
                 />
               )}
             />
@@ -414,13 +432,17 @@ export function ProviderListingFormPage() {
               htmlFor="listing-area"
               className="mb-1 block text-sm font-medium"
             >
-              Service area
+              Service area{" "}
+              <span className="text-red-500" aria-hidden="true">
+                *
+              </span>
             </label>
             <Controller
               name="area_id"
               control={control}
               render={({ field }) => (
                 <SelectMenu
+                  id="listing-area"
                   value={field.value ?? ""}
                   onChange={field.onChange}
                   options={areas.map((area) => ({
@@ -429,6 +451,7 @@ export function ProviderListingFormPage() {
                   }))}
                   ariaLabel="Service area"
                   placeholder="Select an area"
+                  size="sm"
                 />
               )}
             />
@@ -446,13 +469,17 @@ export function ProviderListingFormPage() {
               htmlFor="listing-pricing"
               className="mb-1 block text-sm font-medium"
             >
-              Pricing
+              Pricing{" "}
+              <span className="text-red-500" aria-hidden="true">
+                *
+              </span>
             </label>
             <Controller
               name="pricing_type"
               control={control}
               render={({ field }) => (
                 <SelectMenu
+                  id="listing-pricing"
                   value={field.value ?? ""}
                   onChange={field.onChange}
                   options={[
@@ -460,6 +487,7 @@ export function ProviderListingFormPage() {
                     { value: "hourly", label: "Per hour" },
                   ]}
                   ariaLabel="Pricing"
+                  size="sm"
                 />
               )}
             />
@@ -469,7 +497,10 @@ export function ProviderListingFormPage() {
               htmlFor="listing-price"
               className="mb-1 block text-sm font-medium"
             >
-              Price (Rs.)
+              Price (Rs.){" "}
+              <span className="text-red-500" aria-hidden="true">
+                *
+              </span>
             </label>
             <input
               id="listing-price"
@@ -480,7 +511,7 @@ export function ProviderListingFormPage() {
               {...register("price_amount")}
               value={priceAmount === 0 ? "" : priceAmount}
               placeholder="e.g. 1500"
-              className="min-h-11 w-full rounded-lg border border-slate-400/50 px-3 outline-none focus:ring-2 focus:ring-teal-600"
+              className="h-10 w-full rounded-lg border border-slate-400/50 px-3 text-sm outline-none focus:ring-2 focus:ring-teal-600"
             />
             {errors.price_amount && (
               <p className="mt-1 text-sm text-rose-600">
@@ -502,7 +533,7 @@ export function ProviderListingFormPage() {
               step="1"
               inputMode="numeric"
               {...register("duration_minutes")}
-              className="min-h-11 w-full rounded-lg border border-slate-400/50 px-3 outline-none focus:ring-2 focus:ring-teal-600"
+              className="h-10 w-full rounded-lg border border-slate-400/50 px-3 text-sm outline-none focus:ring-2 focus:ring-teal-600"
             />
             {errors.duration_minutes && (
               <p className="mt-1 text-sm text-rose-600">
@@ -522,8 +553,11 @@ export function ProviderListingFormPage() {
           <input
             id="listing-availability"
             {...register("availability_note")}
-            className="min-h-11 w-full rounded-lg border border-slate-400/50 px-3 outline-none focus:ring-2 focus:ring-teal-600"
+            className="h-10 w-full rounded-lg border border-slate-400/50 px-3 text-sm outline-none focus:ring-2 focus:ring-teal-600"
           />
+          <p className="mt-1 text-xs text-slate-500">
+            e.g. Mon to Sat, 4pm to 8pm
+          </p>
         </div>
 
         <div>
@@ -539,8 +573,11 @@ export function ProviderListingFormPage() {
             type="file"
             accept="image/jpeg,image/png,image/webp"
             onChange={onCoverChange}
-            className="block min-h-11 w-full text-sm file:mr-3 file:min-h-11 file:rounded-lg file:border-0 file:bg-cream-100 file:px-4 file:font-medium"
+            className="block min-h-11 w-full text-sm text-slate-600 file:mr-3 file:h-10 file:cursor-pointer file:rounded-lg file:border-0 file:bg-[#E3F7EC] file:px-4 file:text-sm file:font-medium file:text-[#168A55] hover:file:bg-[#D3F0E1]"
           />
+          <p className="mt-1 text-xs text-slate-500">
+            Clear photo of your work or tools. 16:9 works best.
+          </p>
           {existingCover && !coverFile && (
             <label className="mt-3 flex items-center gap-2 text-sm text-slate-600">
               <input

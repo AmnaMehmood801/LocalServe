@@ -21,6 +21,7 @@ type SelectMenuProps = {
   className?: string;
   buttonClassName?: string;
   size?: "md" | "sm";
+  id?: string;
 };
 
 export function SelectMenu({
@@ -32,6 +33,7 @@ export function SelectMenu({
   className = "",
   buttonClassName = "",
   size = "md",
+  id,
 }: SelectMenuProps) {
   const [open, setOpen] = useState(false);
   const [highlightIndex, setHighlightIndex] = useState(-1);
@@ -115,6 +117,7 @@ export function SelectMenu({
     <div ref={wrapperRef} className={`relative ${className}`}>
       <button
         type="button"
+        id={id}
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={ariaLabel}
