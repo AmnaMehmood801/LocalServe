@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
+import { CalendarClock, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import { useAuth } from "../app/AuthContext";
@@ -82,7 +83,7 @@ export function CustomerBookingsPage() {
             type="button"
             aria-pressed={filter === item.key}
             onClick={() => setFilter(item.key)}
-            className={`min-h-10 rounded-full border px-4 text-sm font-medium ${
+            className={`h-9 rounded-full border px-3.5 text-sm font-medium ${
               filter === item.key
                 ? "border-teal-600 bg-teal-600 text-white"
                 : "border-ink/15 bg-white text-ink hover:bg-cream-100"
@@ -143,11 +144,11 @@ export function CustomerBookingsPage() {
             <Link
               key={booking.id}
               to={`/bookings/${booking.id}`}
-              className="grid gap-3 p-4 transition hover:bg-cream-50 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center md:px-5"
+              className="grid min-w-0 gap-3 rounded-lg border border-transparent p-4 transition-[background-color,border-color,box-shadow] duration-150 hover:border-[#1DBF73]/40 hover:bg-white hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1DBF73] sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center md:px-5"
             >
               <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="truncate font-semibold">
+                <div className="flex min-w-0 flex-col items-start gap-1 sm:flex-row sm:flex-wrap sm:items-center sm:gap-2">
+                  <h2 className="max-w-full break-words font-semibold">
                     {booking.snapshot_title}
                   </h2>
                   <BookingStatusBadge
@@ -155,16 +156,28 @@ export function CustomerBookingsPage() {
                     viewer="customer"
                   />
                 </div>
-                <p className="mt-1 text-sm text-slate-600">
+                <p className="mt-1 flex min-w-0 items-start gap-1.5 text-sm text-slate-600">
+                  <CalendarClock
+                    size={14}
+                    className="mt-0.5 shrink-0 text-slate-400"
+                    aria-hidden="true"
+                  />
                   {format(new Date(booking.scheduled_start), "PPP 'at' p")}
                 </p>
               </div>
-              <p className="font-semibold">
-                {formatBookingPrice(
-                  booking.snapshot_price_amount,
-                  booking.snapshot_currency,
-                )}
-              </p>
+              <div className="flex w-full min-w-0 items-center justify-between gap-3 sm:w-auto sm:justify-end">
+                <p className="min-w-0 break-words font-semibold">
+                  {formatBookingPrice(
+                    booking.snapshot_price_amount,
+                    booking.snapshot_currency,
+                  )}
+                </p>
+                <ChevronRight
+                  size={18}
+                  className="shrink-0 text-slate-400"
+                  aria-hidden="true"
+                />
+              </div>
             </Link>
           ))}
         </div>

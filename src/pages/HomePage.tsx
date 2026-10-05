@@ -432,6 +432,7 @@ export function HomePage() {
                   Service
                 </label>
                 <SelectMenu
+                  id="home-category"
                   value={categoryId}
                   onChange={setCategoryId}
                   options={[
@@ -476,6 +477,7 @@ export function HomePage() {
                   Samundri area
                 </label>
                 <SelectMenu
+                  id="home-area"
                   value={selectedAreaId}
                   onChange={setSelectedAreaId}
                   options={areas.map((area) => ({

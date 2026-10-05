@@ -380,6 +380,7 @@ export function SearchPage() {
               Samundri area
             </label>
             <SelectMenu
+              id="search-area"
               value={areaId}
               onChange={(value) => {
                 setSelectedAreaId(value);
@@ -402,6 +403,7 @@ export function SearchPage() {
               Category
             </label>
             <SelectMenu
+              id="search-category"
               value={categoryId}
               onChange={(value) => updateParams({ categoryId: value })}
               options={[
@@ -438,6 +440,7 @@ export function SearchPage() {
               Minimum rating
             </label>
             <SelectMenu
+              id="search-rating"
               value={draftMinRating}
               onChange={setDraftMinRating}
               options={[

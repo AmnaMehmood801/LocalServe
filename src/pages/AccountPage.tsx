@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { Check } from "lucide-react";
+import { Controller, useForm } from "react-hook-form";
 import { toast } from "../lib/toast";
 import { z } from "zod";
 
 import { useAuth } from "../app/AuthContext";
 import { useAreas } from "../app/AreaContext";
+import { SelectMenu } from "../components/ui/SelectMenu";
 import { supabase } from "../lib/supabase";
 
 const accountSchema = z.object({
@@ -62,6 +64,7 @@ export function AccountPage() {
   const [addingProvider, setAddingProvider] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const {
+    control,
     register,
     handleSubmit,
     reset,
@@ -208,14 +211,17 @@ export function AccountPage() {
             htmlFor="account-display-name"
             className="mb-1 block text-sm font-medium"
           >
-            Display name
+            Display name{" "}
+            <span className="text-red-500" aria-hidden="true">
+              *
+            </span>
           </label>
           <input
             id="account-display-name"
             autoComplete="name"
             {...register("display_name")}
             aria-invalid={Boolean(errors.display_name)}
-            className="min-h-11 w-full rounded-lg border border-slate-400/50 px-3 outline-none focus:ring-2 focus:ring-teal-600"
+            className="h-10 w-full rounded-lg border border-slate-400/50 px-3 text-sm outline-none focus:ring-2 focus:ring-teal-600"
           />
           {errors.display_name && (
             <p className="mt-1 text-sm text-rose-600">
@@ -237,8 +243,11 @@ export function AccountPage() {
             autoComplete="tel"
             {...register("phone")}
             aria-invalid={Boolean(errors.phone)}
-            className="min-h-11 w-full rounded-lg border border-slate-400/50 px-3 outline-none focus:ring-2 focus:ring-teal-600"
+            className="h-10 w-full rounded-lg border border-slate-400/50 px-3 text-sm outline-none focus:ring-2 focus:ring-teal-600"
           />
+          <p className="mt-1 text-xs text-slate-500">
+            Shared with the other party only after a booking is accepted
+          </p>
           {errors.phone && (
             <p className="mt-1 text-sm text-rose-600">{errors.phone.message}</p>
           )}
@@ -255,8 +264,11 @@ export function AccountPage() {
             id="account-city"
             value="Samundri"
             readOnly
-            className="min-h-11 w-full rounded-lg border border-slate-400/50 bg-cream-50 px-3 text-slate-600"
+            className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-500"
           />
+          <p className="mt-1 text-xs text-slate-500">
+            Only Samundri is available right now
+          </p>
         </div>
 
         <div>
@@ -264,22 +276,35 @@ export function AccountPage() {
             htmlFor="account-area"
             className="mb-1 block text-sm font-medium"
           >
-            Samundri locality
+            Samundri locality{" "}
+            <span className="text-red-500" aria-hidden="true">
+              *
+            </span>
           </label>
-          <select
-            id="account-area"
-            {...register("area_id")}
+          <fieldset
             disabled={areasLoading || areas.length === 0 || inactive}
-            aria-invalid={Boolean(errors.area_id)}
-            className="min-h-11 w-full rounded-lg border border-slate-400/50 bg-white px-3 outline-none focus:ring-2 focus:ring-teal-600 disabled:opacity-60"
+            className="m-0 min-w-0 border-0 p-0"
           >
-            <option value="">Choose a locality</option>
-            {areas.map((area) => (
-              <option key={area.id} value={area.id}>
-                {area.name}
-              </option>
-            ))}
-          </select>
+            <Controller
+              name="area_id"
+              control={control}
+              render={({ field }) => (
+                <SelectMenu
+                  id="account-area"
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
+                  options={areas.map((area) => ({
+                    value: area.id,
+                    label: area.name,
+                  }))}
+                  ariaLabel="Samundri locality"
+                  placeholder="Choose a locality"
+                  size="sm"
+                  buttonClassName="disabled:opacity-60"
+                />
+              )}
+            />
+          </fieldset>
           {errors.area_id && (
             <p className="mt-1 text-sm text-rose-600">
               {errors.area_id.message}
@@ -300,8 +325,11 @@ export function AccountPage() {
             maxLength={2000}
             {...register("bio")}
             aria-invalid={Boolean(errors.bio)}
-            className="w-full rounded-lg border border-slate-400/50 px-3 py-2 outline-none focus:ring-2 focus:ring-teal-600"
+            className="w-full rounded-lg border border-slate-400/50 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-600"
           />
+          <p className="mt-1 text-xs text-slate-500">
+            Shown on your public profile. Keep it short and clear.
+          </p>
           {errors.bio && (
             <p className="mt-1 text-sm text-rose-600">{errors.bio.message}</p>
           )}
@@ -312,16 +340,33 @@ export function AccountPage() {
             <dt className="text-xs font-medium uppercase text-slate-600">
               Account status
             </dt>
-            <dd className="mt-1 text-sm">
-              {profile.is_active ? "Active" : "Inactive"}
+            <dd className="mt-1">
+              <span
+                className={`inline-flex min-h-7 items-center rounded-full px-2.5 text-xs font-medium ${
+                  profile.is_active
+                    ? "bg-[#E3F7EC] text-[#168A55]"
+                    : "bg-slate-100 text-slate-600"
+                }`}
+              >
+                {profile.is_active ? "Active" : "Inactive"}
+              </span>
             </dd>
           </div>
           <div>
             <dt className="text-xs font-medium uppercase text-slate-600">
               Verification
             </dt>
-            <dd className="mt-1 text-sm">
-              {profile.is_verified ? "Verified" : "Not verified"}
+            <dd className="mt-1">
+              <span
+                className={`inline-flex min-h-7 items-center gap-1 rounded-full px-2.5 text-xs font-medium ${
+                  profile.is_verified
+                    ? "bg-[#E3F7EC] text-[#168A55]"
+                    : "bg-slate-100 text-slate-600"
+                }`}
+              >
+                {profile.is_verified && <Check size={14} aria-hidden="true" />}
+                {profile.is_verified ? "Verified" : "Not verified"}
+              </span>
             </dd>
           </div>
         </dl>
