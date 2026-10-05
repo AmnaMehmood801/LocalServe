@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { SlidersHorizontal } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 
 import { useAreas } from "../app/AreaContext";
@@ -204,6 +205,25 @@ export function SearchPage() {
   const minPrice = searchParams.get("priceMin") ?? "";
   const maxPrice = searchParams.get("priceMax") ?? "";
   const sort = searchParams.get("sort") ?? "rating";
+  const hasActiveFilters = Boolean(
+    categoryId ||
+    query ||
+    minRating ||
+    minPrice ||
+    maxPrice ||
+    draftQuery.trim() ||
+    draftMinRating ||
+    draftMinPrice ||
+    draftMaxPrice,
+  );
+  const activeFilterCount = [
+    categoryId,
+    query || draftQuery.trim(),
+    minRating || draftMinRating,
+    minPrice || draftMinPrice,
+    maxPrice || draftMaxPrice,
+  ].filter(Boolean).length;
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const pageValue = Number(searchParams.get("page") ?? 1);
   const page = Number.isInteger(pageValue) && pageValue > 0 ? pageValue : 1;
 
@@ -294,6 +314,22 @@ export function SearchPage() {
       priceMin: draftMinPrice,
       priceMax: draftMaxPrice,
     });
+    setFiltersOpen(false);
+  }
+
+  function clearFilters() {
+    setDraftQuery("");
+    setDraftMinRating("");
+    setDraftMinPrice("");
+    setDraftMaxPrice("");
+    updateParams({
+      categoryId: "",
+      q: "",
+      minRating: "",
+      priceMin: "",
+      priceMax: "",
+    });
+    setFiltersOpen(false);
   }
 
   const totalPages = Math.max(
@@ -312,17 +348,31 @@ export function SearchPage() {
         </h1>
         <p className="mt-2 text-sm text-slate-600">
           {resultsQuery.data
-            ? `${resultsQuery.data.count} services found`
+            ? resultsQuery.data.count === 1
+              ? "1 service found"
+              : `${resultsQuery.data.count} services found`
             : "Find and compare local providers."}
         </p>
       </header>
 
-      <div className="grid gap-8 md:grid-cols-[240px_minmax(0,1fr)]">
+      <button
+        type="button"
+        aria-expanded={filtersOpen}
+        aria-controls="search-filters"
+        onClick={() => setFiltersOpen((open) => !open)}
+        className="mb-4 flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white text-sm font-medium text-ink hover:bg-cream-50 lg:hidden"
+      >
+        <SlidersHorizontal size={16} aria-hidden="true" />
+        Filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}
+      </button>
+
+      <div className="grid gap-8 lg:grid-cols-[240px_minmax(0,1fr)]">
         <form
+          id="search-filters"
           onSubmit={submitFilters}
-          className="h-fit rounded-xl border border-cream-100 bg-white p-4 shadow-sm"
+          className={`${filtersOpen ? "block" : "hidden"} h-fit rounded-xl border border-cream-100 bg-white p-4 shadow-sm lg:block`}
         >
-          <div className="mb-5">
+          <div className="mb-4">
             <label
               htmlFor="search-area"
               className="mb-1 block text-sm font-medium"
@@ -340,10 +390,11 @@ export function SearchPage() {
                 label: area.name,
               }))}
               ariaLabel="Samundri area"
+              size="sm"
               className="w-full"
             />
           </div>
-          <div className="mb-5">
+          <div className="mb-4">
             <label
               htmlFor="search-category"
               className="mb-1 block text-sm font-medium"
@@ -361,10 +412,11 @@ export function SearchPage() {
                 })),
               ]}
               ariaLabel="Category"
+              size="sm"
               className="w-full"
             />
           </div>
-          <div className="mb-5">
+          <div className="mb-4">
             <label
               htmlFor="search-query"
               className="mb-1 block text-sm font-medium"
@@ -375,10 +427,10 @@ export function SearchPage() {
               id="search-query"
               value={draftQuery}
               onChange={(event) => setDraftQuery(event.target.value)}
-              className="min-h-11 w-full rounded-lg border border-slate-400/50 px-3 text-sm outline-none focus:ring-2 focus:ring-teal-600"
+              className="h-10 w-full rounded-lg border border-slate-400/50 px-3 text-sm outline-none focus:ring-2 focus:ring-teal-600"
             />
           </div>
-          <div className="mb-5">
+          <div className="mb-4">
             <label
               htmlFor="search-rating"
               className="mb-1 block text-sm font-medium"
@@ -395,10 +447,11 @@ export function SearchPage() {
                 { value: "4.5", label: "4.5+ stars" },
               ]}
               ariaLabel="Minimum rating"
+              size="sm"
               className="w-full"
             />
           </div>
-          <fieldset className="mb-5">
+          <fieldset className="mb-4">
             <legend className="mb-1 text-sm font-medium">
               Price range (Rs.)
             </legend>
@@ -414,7 +467,7 @@ export function SearchPage() {
                 placeholder="Min"
                 value={draftMinPrice}
                 onChange={(event) => setDraftMinPrice(event.target.value)}
-                className="min-h-11 min-w-0 rounded-lg border border-slate-400/50 px-2 text-sm outline-none focus:ring-2 focus:ring-teal-600"
+                className="h-10 min-w-0 rounded-lg border border-slate-400/50 px-2 text-sm outline-none focus:ring-2 focus:ring-teal-600"
               />
               <label className="sr-only" htmlFor="price-max">
                 Maximum price
@@ -427,7 +480,7 @@ export function SearchPage() {
                 placeholder="Max"
                 value={draftMaxPrice}
                 onChange={(event) => setDraftMaxPrice(event.target.value)}
-                className="min-h-11 min-w-0 rounded-lg border border-slate-400/50 px-2 text-sm outline-none focus:ring-2 focus:ring-teal-600"
+                className="h-10 min-w-0 rounded-lg border border-slate-400/50 px-2 text-sm outline-none focus:ring-2 focus:ring-teal-600"
               />
             </div>
           </fieldset>
@@ -437,16 +490,27 @@ export function SearchPage() {
           >
             Apply filters
           </button>
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="mt-2 h-10 w-full border-0 bg-transparent text-center text-sm font-medium text-slate-600 hover:text-[#168A55]"
+            >
+              Clear filters
+            </button>
+          )}
         </form>
 
         <section aria-label="Search results">
           <div className="mb-4 flex items-center justify-between gap-3">
             <p className="text-sm text-slate-600">
               {resultsQuery.data
-                ? `${resultsQuery.data.count} results`
+                ? resultsQuery.data.count === 1
+                  ? "1 result"
+                  : `${resultsQuery.data.count} results`
                 : "Results"}
             </p>
-            <label className="flex items-center gap-2 text-sm">
+            <label className="flex items-center gap-2 text-sm font-medium">
               <span className="text-slate-600">Sort</span>
               <SelectMenu
                 value={sort}
@@ -458,6 +522,7 @@ export function SearchPage() {
                   { value: "newest", label: "Newest" },
                 ]}
                 ariaLabel="Sort order"
+                size="sm"
                 className="w-auto min-w-[11rem]"
               />
             </label>

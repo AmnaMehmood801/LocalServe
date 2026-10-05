@@ -20,6 +20,7 @@ type SelectMenuProps = {
   placeholder?: string;
   className?: string;
   buttonClassName?: string;
+  size?: "md" | "sm";
 };
 
 export function SelectMenu({
@@ -30,6 +31,7 @@ export function SelectMenu({
   placeholder = "Select an option",
   className = "",
   buttonClassName = "",
+  size = "md",
 }: SelectMenuProps) {
   const [open, setOpen] = useState(false);
   const [highlightIndex, setHighlightIndex] = useState(-1);
@@ -118,11 +120,11 @@ export function SelectMenu({
         aria-label={ariaLabel}
         onClick={() => setOpen((current) => !current)}
         onKeyDown={handleButtonKeyDown}
-        className={`flex min-h-12 w-full items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 pr-10 text-left text-base outline-none transition-colors hover:border-[#1DBF73] focus:border-[#1DBF73] focus:outline-none focus:!ring-2 focus:!ring-[#1DBF73]/30 aria-expanded:border-[#1DBF73] aria-expanded:!ring-2 aria-expanded:!ring-[#1DBF73]/30 ${buttonClassName}`}
+        className={`flex ${size === "sm" ? "h-10 px-3 text-sm" : "min-h-12 px-3 py-1.5 pr-10 text-base"} w-full items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white text-left outline-none transition-colors hover:border-[#1DBF73] focus:border-[#1DBF73] focus:outline-none focus:!ring-2 focus:!ring-[#1DBF73]/30 aria-expanded:border-[#1DBF73] aria-expanded:!ring-2 aria-expanded:!ring-[#1DBF73]/30 ${buttonClassName}`}
       >
         <span className="truncate">{selectedOption?.label ?? placeholder}</span>
         <ChevronDown
-          size={18}
+          size={size === "sm" ? 16 : 18}
           aria-hidden="true"
           className="shrink-0 text-slate-600"
         />
@@ -148,7 +150,7 @@ export function SelectMenu({
                 role="option"
                 aria-selected={isSelected}
                 onClick={() => handleSelect(option.value)}
-                className={`flex min-h-[44px] w-full cursor-pointer items-center justify-between gap-3 px-4 text-left text-base transition-colors duration-150 ${
+                className={`flex ${size === "sm" ? "px-3 py-2 text-sm" : "min-h-[44px] px-4 text-base"} w-full cursor-pointer items-center justify-between gap-3 text-left transition-colors duration-150 ${
                   isSelected
                     ? "bg-[#E3F7EC] font-medium text-[#168A55] hover:bg-[#D3F0DF]"
                     : isHighlighted
