@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -7,6 +8,7 @@ import { toast } from "../lib/toast";
 
 import { useAreas } from "../app/AreaContext";
 import { supabase } from "../lib/supabase";
+import { AuthShell } from "../components/auth/AuthShell";
 
 const registerSchema = z.object({
   display_name: z
@@ -51,6 +53,7 @@ export function RegisterPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [signupError, setSignupError] = useState<string | null>(null);
   const [confirmationEmail, setConfirmationEmail] = useState("");
   const {
@@ -108,178 +111,209 @@ export function RegisterPage() {
   }
 
   return (
-    <section className="shell-container flex min-h-[70vh] items-center justify-center py-12">
-      <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-sm sm:p-8">
-        <p className="text-sm font-semibold text-teal-700">
-          LocalServe · Samundri
-        </p>
-        <h1 className="mt-2 text-2xl font-semibold">Create your account</h1>
-        <p className="mt-2 text-sm text-slate-600">
-          Choose your area and how you’ll use LocalServe.
-        </p>
-        {confirmationEmail ? (
-          <div
-            className="mt-7 rounded-xl border border-teal-600/20 bg-teal-50 p-4"
-            role="status"
-          >
-            <h2 className="font-semibold">Check your email</h2>
-            <p className="mt-1 text-sm text-slate-600">
-              Follow the confirmation link sent to {confirmationEmail} to finish
-              creating your account.
+    <AuthShell
+      title="Create your account"
+      subtitle="Join LocalServe in a minute"
+    >
+      {confirmationEmail ? (
+        <div
+          className="mt-7 rounded-xl border border-teal-600/20 bg-teal-50 p-4"
+          role="status"
+        >
+          <h2 className="font-semibold">Check your email</h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Follow the confirmation link sent to {confirmationEmail} to finish
+            creating your account.
+          </p>
+        </div>
+      ) : (
+        <form
+          className="mt-7 space-y-4"
+          onSubmit={handleSubmit(onSubmit)}
+          noValidate
+        >
+          {signupError && (
+            <p
+              className="rounded-lg bg-rose-600/5 p-3 text-sm text-rose-600"
+              role="alert"
+            >
+              {signupError}
             </p>
-          </div>
-        ) : (
-          <form
-            className="mt-7 space-y-5"
-            onSubmit={handleSubmit(onSubmit)}
-            noValidate
-          >
-            {signupError && (
-              <p
-                className="rounded-lg bg-rose-600/5 p-3 text-sm text-rose-600"
-                role="alert"
-              >
-                {signupError}
+          )}
+          <div>
+            <label
+              className="mb-1 block text-sm font-medium"
+              htmlFor="register-name"
+            >
+              Display name
+            </label>
+            <input
+              id="register-name"
+              autoComplete="name"
+              placeholder="e.g. Ayesha Khan"
+              {...register("display_name")}
+              aria-invalid={Boolean(errors.display_name)}
+              className="min-h-11 w-full rounded-lg border border-slate-400/50 bg-white px-3 outline-none focus:ring-2 focus:ring-[#1DBF73]"
+            />
+            {errors.display_name && (
+              <p className="mt-1 text-sm text-rose-600">
+                {errors.display_name.message}
               </p>
             )}
-            <div>
-              <label
-                className="mb-1 block text-sm font-medium"
-                htmlFor="register-name"
-              >
-                Display name
-              </label>
-              <input
-                id="register-name"
-                autoComplete="name"
-                {...register("display_name")}
-                aria-invalid={Boolean(errors.display_name)}
-                className="min-h-11 w-full rounded-lg border border-slate-400/50 bg-white px-3 outline-none focus:ring-2 focus:ring-teal-600"
-              />
-              {errors.display_name && (
-                <p className="mt-1 text-sm text-rose-600">
-                  {errors.display_name.message}
-                </p>
-              )}
-            </div>
-            <div>
-              <label
-                className="mb-1 block text-sm font-medium"
-                htmlFor="register-email"
-              >
-                Email
-              </label>
-              <input
-                id="register-email"
-                type="email"
-                autoComplete="email"
-                {...register("email")}
-                aria-invalid={Boolean(errors.email)}
-                className="min-h-11 w-full rounded-lg border border-slate-400/50 bg-white px-3 outline-none focus:ring-2 focus:ring-teal-600"
-              />
-              {errors.email && (
-                <p className="mt-1 text-sm text-rose-600">
-                  {errors.email.message}
-                </p>
-              )}
-            </div>
-            <div>
-              <label
-                className="mb-1 block text-sm font-medium"
-                htmlFor="register-password"
-              >
-                Password
-              </label>
+          </div>
+          <div>
+            <label
+              className="mb-1 block text-sm font-medium"
+              htmlFor="register-email"
+            >
+              Email
+            </label>
+            <input
+              id="register-email"
+              type="email"
+              autoComplete="email"
+              placeholder="you@example.com"
+              {...register("email")}
+              aria-invalid={Boolean(errors.email)}
+              className="min-h-11 w-full rounded-lg border border-slate-400/50 bg-white px-3 outline-none focus:ring-2 focus:ring-[#1DBF73]"
+            />
+            {errors.email && (
+              <p className="mt-1 text-sm text-rose-600">
+                {errors.email.message}
+              </p>
+            )}
+          </div>
+          <div>
+            <label
+              className="mb-1 block text-sm font-medium"
+              htmlFor="register-password"
+            >
+              Password
+            </label>
+            <div className="relative">
               <input
                 id="register-password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 autoComplete="new-password"
+                placeholder="Create a password"
                 {...register("password")}
                 aria-invalid={Boolean(errors.password)}
-                className="min-h-11 w-full rounded-lg border border-slate-400/50 bg-white px-3 outline-none focus:ring-2 focus:ring-teal-600"
+                className="min-h-11 w-full rounded-lg border border-slate-400/50 bg-white px-3 pr-12 outline-none focus:ring-2 focus:ring-[#1DBF73]"
               />
-              {errors.password && (
-                <p className="mt-1 text-sm text-rose-600">
-                  {errors.password.message}
-                </p>
-              )}
-            </div>
-            <div>
-              <label
-                className="mb-1 block text-sm font-medium"
-                htmlFor="register-area"
+              <button
+                type="button"
+                onClick={() => setShowPassword((visible) => !visible)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                className="absolute inset-y-0 right-0 flex min-h-11 min-w-10 items-center justify-center rounded-r-lg text-slate-600 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#1DBF73]"
               >
-                Samundri area
-              </label>
-              <select
-                id="register-area"
-                {...register("area_id")}
-                disabled={areasLoading || areas.length === 0}
-                aria-invalid={Boolean(errors.area_id)}
-                className="min-h-11 w-full rounded-lg border border-slate-400/50 bg-white px-3 outline-none focus:ring-2 focus:ring-teal-600 disabled:opacity-60"
-              >
-                <option value="">Select an area</option>
-                {areas.map((area) => (
-                  <option key={area.id} value={area.id}>
-                    {area.name}
-                  </option>
-                ))}
-              </select>
-              {areasLoading && (
-                <p className="mt-1 text-sm text-slate-600" role="status">
-                  Loading Samundri areas...
-                </p>
-              )}
-              {areasError && (
-                <p className="mt-1 text-sm text-rose-600" role="alert">
-                  {areasError}
-                </p>
-              )}
-              {!areasLoading && !areasError && areas.length === 0 && (
-                <p className="mt-1 text-sm text-slate-600" role="status">
-                  No active Samundri areas are available yet.
-                </p>
-              )}
-              {errors.area_id && (
-                <p className="mt-1 text-sm text-rose-600">
-                  {errors.area_id.message}
-                </p>
-              )}
+                {showPassword ? (
+                  <EyeOff aria-hidden="true" size={18} />
+                ) : (
+                  <Eye aria-hidden="true" size={18} />
+                )}
+              </button>
             </div>
-            <fieldset>
-              <legend className="mb-2 text-sm font-medium">I want to</legend>
-              <div className="grid grid-cols-2 gap-3">
-                <label className="flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-slate-400/50 px-3 text-sm has-[:checked]:border-teal-600 has-[:checked]:bg-teal-50">
-                  <input type="radio" value="customer" {...register("role")} />{" "}
-                  Find a service
-                </label>
-                <label className="flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-slate-400/50 px-3 text-sm has-[:checked]:border-teal-600 has-[:checked]:bg-teal-50">
-                  <input type="radio" value="provider" {...register("role")} />{" "}
-                  Offer services
-                </label>
-              </div>
-              {errors.role && (
-                <p className="mt-1 text-sm text-rose-600">
-                  {errors.role.message}
-                </p>
-              )}
-            </fieldset>
-            <button
-              type="submit"
-              disabled={submitting || areasLoading || areas.length === 0}
-              className="min-h-11 w-full rounded-xl bg-teal-600 px-5 font-medium text-white hover:bg-teal-700 disabled:cursor-wait disabled:opacity-60"
+            {errors.password && (
+              <p className="mt-1 text-sm text-rose-600">
+                {errors.password.message}
+              </p>
+            )}
+          </div>
+          <div>
+            <label
+              className="mb-1 block text-sm font-medium"
+              htmlFor="register-area"
             >
-              {submitting ? "Creating account..." : "Sign up"}
-            </button>
-          </form>
-        )}
-        <p className="mt-6 text-center text-sm text-slate-600">
-          Already have an account?{" "}
-          <Link className="font-medium text-teal-700 underline" to="/login">
-            Log in
-          </Link>
-        </p>
-      </div>
-    </section>
+              Samundri area
+            </label>
+            <select
+              id="register-area"
+              {...register("area_id")}
+              disabled={areasLoading || areas.length === 0}
+              aria-invalid={Boolean(errors.area_id)}
+              className="min-h-11 w-full rounded-lg border border-slate-400/50 bg-white px-3 outline-none focus:ring-2 focus:ring-[#1DBF73] disabled:opacity-60"
+            >
+              <option value="">Select an area</option>
+              {areas.map((area) => (
+                <option key={area.id} value={area.id}>
+                  {area.name}
+                </option>
+              ))}
+            </select>
+            {areasLoading && (
+              <p className="mt-1 text-sm text-slate-600" role="status">
+                Loading Samundri areas...
+              </p>
+            )}
+            {areasError && (
+              <p className="mt-1 text-sm text-rose-600" role="alert">
+                {areasError}
+              </p>
+            )}
+            {!areasLoading && !areasError && areas.length === 0 && (
+              <p className="mt-1 text-sm text-slate-600" role="status">
+                No active Samundri areas are available yet.
+              </p>
+            )}
+            {errors.area_id && (
+              <p className="mt-1 text-sm text-rose-600">
+                {errors.area_id.message}
+              </p>
+            )}
+          </div>
+          <fieldset>
+            <legend className="mb-2 text-sm font-medium">I want to</legend>
+            <div className="grid grid-cols-2 gap-3">
+              <label className="flex min-h-11 cursor-pointer items-start gap-2 rounded-lg border border-slate-400/50 px-3 py-2 text-sm has-[:checked]:border-teal-600 has-[:checked]:bg-teal-50">
+                <input
+                  type="radio"
+                  value="customer"
+                  {...register("role")}
+                  className="mt-0.5 accent-[#1DBF73]"
+                />
+                <span>
+                  Find a service
+                  <span className="mt-0.5 block text-xs text-slate-500">
+                    Book trusted local help
+                  </span>
+                </span>
+              </label>
+              <label className="flex min-h-11 cursor-pointer items-start gap-2 rounded-lg border border-slate-400/50 px-3 py-2 text-sm has-[:checked]:border-teal-600 has-[:checked]:bg-teal-50">
+                <input
+                  type="radio"
+                  value="provider"
+                  {...register("role")}
+                  className="mt-0.5 accent-[#1DBF73]"
+                />
+                <span>
+                  Offer services
+                  <span className="mt-0.5 block text-xs text-slate-500">
+                    List your services and get requests
+                  </span>
+                </span>
+              </label>
+            </div>
+            {errors.role && (
+              <p className="mt-1 text-sm text-rose-600">
+                {errors.role.message}
+              </p>
+            )}
+          </fieldset>
+          <button
+            type="submit"
+            disabled={submitting || areasLoading || areas.length === 0}
+            className="min-h-11 w-full rounded-xl bg-[#1DBF73] px-5 font-medium text-white hover:bg-[#19A463] disabled:cursor-wait disabled:opacity-60"
+          >
+            {submitting ? "Creating account..." : "Sign up"}
+          </button>
+        </form>
+      )}
+      <p className="mt-6 text-center text-sm text-slate-600">
+        Already have an account?{" "}
+        <Link className="font-medium text-teal-700 underline" to="/login">
+          Log in
+        </Link>
+      </p>
+    </AuthShell>
   );
 }

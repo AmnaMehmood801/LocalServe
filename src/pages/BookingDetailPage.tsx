@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
+import { Info } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "../lib/toast";
@@ -234,7 +235,7 @@ export function BookingDetailPage() {
         </p>
         <Link
           to="/bookings"
-          className="mt-5 inline-flex min-h-11 items-center rounded-xl border border-ink/20 bg-white px-5 text-sm font-medium"
+          className="mt-5 inline-flex min-h-11 items-center rounded-2xl border border-slate-200 bg-white px-5 text-sm font-medium"
         >
           Back to bookings
         </Link>
@@ -262,10 +263,13 @@ export function BookingDetailPage() {
 
   return (
     <section className="shell-container max-w-3xl py-8 md:py-10">
-      <Link to={backPath} className="text-sm text-teal-700 underline">
+      <Link
+        to={backPath}
+        className="inline-flex min-h-11 items-center rounded-2xl border border-slate-200 bg-white px-4 text-sm font-medium text-[#168A55] underline"
+      >
         Back to {isProvider ? "requests" : "bookings"}
       </Link>
-      <header className="mt-5 flex flex-wrap items-start justify-between gap-3 border-b border-cream-100 pb-5">
+      <header className="mt-5 flex flex-wrap items-start justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-5 md:p-6">
         <div>
           <p className="text-xs font-semibold uppercase text-slate-600">
             Booking details
@@ -281,7 +285,7 @@ export function BookingDetailPage() {
         <BookingStatusBadge status={booking.status} viewer={viewer} />
       </header>
 
-      <dl className="mt-6 grid gap-x-8 gap-y-5 rounded-xl border border-cream-100 bg-white p-5 sm:grid-cols-2 md:p-6">
+      <dl className="mt-6 grid gap-x-8 gap-y-5 rounded-2xl border border-slate-200 bg-white p-5 sm:grid-cols-2 md:p-6">
         <div>
           <dt className="text-xs font-medium uppercase text-slate-600">
             Preferred time
@@ -371,10 +375,16 @@ export function BookingDetailPage() {
         )}
       </dl>
 
-      <p className="mt-4 rounded-lg bg-cream-100/70 p-4 text-sm text-slate-700">
-        Agree payment directly with your provider. LocalServe does not take
-        payment in this version.
-      </p>
+      <div className="mt-4 flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+        <Info
+          aria-hidden="true"
+          className="mt-0.5 size-4 shrink-0 text-slate-600"
+        />
+        <p>
+          Agree payment directly with your provider. LocalServe does not take
+          payment in this version.
+        </p>
+      </div>
 
       {actionError && (
         <p
@@ -395,7 +405,7 @@ export function BookingDetailPage() {
       )}
       {canCancel && showCancel && (
         <form
-          className="mt-5 space-y-3 rounded-xl border border-cream-100 bg-white p-5"
+          className="mt-5 space-y-3 rounded-xl border border-slate-200 bg-white p-5"
           onSubmit={(event) => {
             event.preventDefault();
             void cancelBooking();
@@ -411,7 +421,7 @@ export function BookingDetailPage() {
             onChange={(event) => setCancelReason(event.target.value)}
             maxLength={1000}
             required={reasonRequired}
-            className="w-full rounded-lg border border-slate-400/50 px-3 py-2 outline-none focus:ring-2 focus:ring-teal-600"
+            className="w-full rounded-lg border border-slate-400/50 px-3 py-2 outline-none focus:ring-2 focus:ring-[#1DBF73]"
           />
           <div className="flex flex-wrap gap-2">
             <button
@@ -434,10 +444,10 @@ export function BookingDetailPage() {
         </form>
       )}
       {booking.status === "completed" && isCustomer && (
-        <section className="mt-6 border-t border-cream-100 pt-6">
+        <section className="mt-6 border-t border-slate-200 pt-6">
           <h2 className="text-xl font-semibold">Your review</h2>
           {booking.review ? (
-            <div className="mt-3 rounded-xl border border-cream-100 bg-white p-5">
+            <div className="mt-3 rounded-xl border border-slate-200 bg-white p-5">
               <p
                 className="text-amber-500"
                 aria-label={`${booking.review.rating} out of 5 stars`}
@@ -460,7 +470,7 @@ export function BookingDetailPage() {
             <form
               onSubmit={reviewForm.handleSubmit(submitReview)}
               noValidate
-              className="mt-3 space-y-4 rounded-xl border border-cream-100 bg-white p-5"
+              className="mt-3 space-y-4 rounded-xl border border-slate-200 bg-white p-5"
             >
               <fieldset>
                 <legend className="mb-2 text-sm font-medium">Rating</legend>
@@ -468,7 +478,7 @@ export function BookingDetailPage() {
                   {[1, 2, 3, 4, 5].map((rating) => (
                     <label
                       key={rating}
-                      className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-slate-400/40 px-3 has-[:checked]:border-teal-600 has-[:checked]:bg-teal-50"
+                      className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-slate-400/40 px-3 has-[:checked]:border-[#1DBF73] has-[:checked]:bg-[#E3F7EC]"
                     >
                       <input
                         type="radio"
@@ -502,7 +512,7 @@ export function BookingDetailPage() {
                   rows={4}
                   maxLength={2000}
                   {...reviewForm.register("comment")}
-                  className="w-full rounded-lg border border-slate-400/50 px-3 py-2 outline-none focus:ring-2 focus:ring-teal-600"
+                  className="w-full rounded-lg border border-slate-400/50 px-3 py-2 outline-none focus:ring-2 focus:ring-[#1DBF73]"
                 />
                 {reviewForm.formState.errors.comment && (
                   <p className="mt-1 text-sm text-rose-600">
@@ -518,7 +528,7 @@ export function BookingDetailPage() {
               <button
                 type="submit"
                 disabled={reviewForm.formState.isSubmitting}
-                className="min-h-11 rounded-xl bg-teal-600 px-5 text-sm font-medium text-white hover:bg-teal-700 disabled:opacity-50"
+                className="min-h-11 rounded-xl bg-[#1DBF73] px-5 text-sm font-medium text-white hover:bg-[#19A463] disabled:opacity-50"
               >
                 {reviewForm.formState.isSubmitting
                   ? "Submitting review..."

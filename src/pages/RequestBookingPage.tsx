@@ -7,6 +7,7 @@ import { toast } from "../lib/toast";
 import { z } from "zod";
 
 import { useAuth } from "../app/AuthContext";
+import { BackButton } from "../components/ui/BackButton";
 import { supabase } from "../lib/supabase";
 
 const requestSchema = z
@@ -172,12 +173,11 @@ export function RequestBookingPage() {
 
   return (
     <section className="shell-container max-w-3xl py-8 md:py-10">
-      <Link
-        to={`/listings/${listing.id}`}
-        className="text-sm text-teal-700 underline"
-      >
-        Back to service
-      </Link>
+      <BackButton
+        fallback={`/listings/${id}`}
+        label="Back to listing"
+        className="mb-4"
+      />
       <header className="mt-5 border-b border-cream-100 pb-5">
         <p className="text-xs font-semibold uppercase text-slate-600">
           Booking request

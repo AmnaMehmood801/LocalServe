@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router-dom";
 
 import { useAreas } from "../app/AreaContext";
+import { SelectMenu } from "../components/ui/SelectMenu";
 import { ListingCard } from "../components/listing/ListingCard";
 import {
   fetchPublicProviderProfiles,
@@ -328,22 +329,19 @@ export function SearchPage() {
             >
               Samundri area
             </label>
-            <select
-              id="search-area"
+            <SelectMenu
               value={areaId}
-              onChange={(event) => {
-                setSelectedAreaId(event.target.value);
-                updateParams({ areaId: event.target.value });
+              onChange={(value) => {
+                setSelectedAreaId(value);
+                updateParams({ areaId: value });
               }}
-              disabled={areasLoading || areas.length === 0}
-              className="min-h-11 w-full rounded-lg border border-slate-400/50 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-teal-600"
-            >
-              {areas.map((area) => (
-                <option key={area.id} value={area.id}>
-                  {area.name}
-                </option>
-              ))}
-            </select>
+              options={areas.map((area) => ({
+                value: area.id,
+                label: area.name,
+              }))}
+              ariaLabel="Samundri area"
+              className="w-full"
+            />
           </div>
           <div className="mb-5">
             <label
@@ -352,21 +350,19 @@ export function SearchPage() {
             >
               Category
             </label>
-            <select
-              id="search-category"
+            <SelectMenu
               value={categoryId}
-              onChange={(event) =>
-                updateParams({ categoryId: event.target.value })
-              }
-              className="min-h-11 w-full rounded-lg border border-slate-400/50 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-teal-600"
-            >
-              <option value="">All services</option>
-              {(categoriesQuery.data ?? []).map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
+              onChange={(value) => updateParams({ categoryId: value })}
+              options={[
+                { value: "", label: "All services" },
+                ...(categoriesQuery.data ?? []).map((category) => ({
+                  value: category.id,
+                  label: category.name,
+                })),
+              ]}
+              ariaLabel="Category"
+              className="w-full"
+            />
           </div>
           <div className="mb-5">
             <label
@@ -389,17 +385,18 @@ export function SearchPage() {
             >
               Minimum rating
             </label>
-            <select
-              id="search-rating"
+            <SelectMenu
               value={draftMinRating}
-              onChange={(event) => setDraftMinRating(event.target.value)}
-              className="min-h-11 w-full rounded-lg border border-slate-400/50 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-teal-600"
-            >
-              <option value="">Any rating</option>
-              <option value="3">3+ stars</option>
-              <option value="4">4+ stars</option>
-              <option value="4.5">4.5+ stars</option>
-            </select>
+              onChange={setDraftMinRating}
+              options={[
+                { value: "", label: "Any rating" },
+                { value: "3", label: "3+ stars" },
+                { value: "4", label: "4+ stars" },
+                { value: "4.5", label: "4.5+ stars" },
+              ]}
+              ariaLabel="Minimum rating"
+              className="w-full"
+            />
           </div>
           <fieldset className="mb-5">
             <legend className="mb-1 text-sm font-medium">
@@ -451,16 +448,18 @@ export function SearchPage() {
             </p>
             <label className="flex items-center gap-2 text-sm">
               <span className="text-slate-600">Sort</span>
-              <select
+              <SelectMenu
                 value={sort}
-                onChange={(event) => updateParams({ sort: event.target.value })}
-                className="min-h-11 rounded-lg border border-slate-400/50 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-teal-600"
-              >
-                <option value="rating">Highest rated</option>
-                <option value="price_asc">Price: low to high</option>
-                <option value="price_desc">Price: high to low</option>
-                <option value="newest">Newest</option>
-              </select>
+                onChange={(value) => updateParams({ sort: value })}
+                options={[
+                  { value: "rating", label: "Highest rated" },
+                  { value: "price_asc", label: "Price: low to high" },
+                  { value: "price_desc", label: "Price: high to low" },
+                  { value: "newest", label: "Newest" },
+                ]}
+                ariaLabel="Sort order"
+                className="w-auto min-w-[11rem]"
+              />
             </label>
           </div>
 

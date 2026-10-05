@@ -6,6 +6,7 @@ import { ChevronDown, Menu } from "lucide-react";
 import { useAreas } from "../../app/AreaContext";
 import { useAuth } from "../../app/AuthContext";
 import { Logo } from "../Logo";
+import { AreaSelect } from "./AreaSelect";
 import { NotificationBell } from "./NotificationBell";
 
 export function Header() {
@@ -57,14 +58,16 @@ export function Header() {
 
   return (
     <header ref={headerRef} className="bg-[#404145] text-white">
-      <div className="shell-container flex h-16 flex-nowrap items-center justify-between gap-3">
+      <div className="shell-container flex h-16 w-full flex-nowrap items-center gap-2 px-4">
         <Link
           to="/"
           aria-label="LocalServe home"
-          className="flex shrink-0 items-center gap-3"
+          className="flex min-w-0 shrink-0 items-center gap-3"
         >
           <Logo />
-          <span className="text-lg font-semibold">LocalServe</span>
+          <span className="hidden min-[400px]:inline text-lg font-semibold">
+            LocalServe
+          </span>
         </Link>
 
         <nav
@@ -122,40 +125,21 @@ export function Header() {
         </nav>
 
         <nav
-          className="flex items-center gap-3 text-sm"
+          className="ml-auto flex items-center gap-2 shrink-0 text-sm"
           aria-label="Main navigation"
         >
-          <div className="relative" data-header-menu="area">
-            <label className="sr-only" htmlFor="header-area">
-              Samundri area
-            </label>
-            <select
-              id="header-area"
+          <div className="relative shrink-0" data-header-menu="area">
+            <AreaSelect
               value={selectedAreaId}
-              onFocus={() => setOpenMenu("area")}
-              onBlur={() => setOpenMenu(null)}
-              onChange={(event) => {
-                setSelectedAreaId(event.target.value);
+              onChange={(nextValue) => {
+                setSelectedAreaId(nextValue);
                 setOpenMenu(null);
               }}
-              disabled={loading || areas.length === 0}
-              aria-describedby={error ? "header-area-error" : undefined}
-              className="min-h-[44px] max-w-[190px] appearance-none rounded-xl border border-white/20 bg-white/5 py-2 pl-3 pr-9 text-sm text-white outline-none focus:ring-2 focus:ring-[#1DBF73] disabled:opacity-60"
-            >
-              {loading && <option value="">Loading Samundri areas...</option>}
-              {!loading && areas.length === 0 && (
-                <option value="">Samundri</option>
-              )}
-              {areas.map((area) => (
-                <option key={area.id} value={area.id} className="text-ink">
-                  {area.name}
-                </option>
-              ))}
-            </select>
-            <ChevronDown
-              size={16}
-              aria-hidden="true"
-              className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2"
+              options={areas.map((area) => ({
+                value: area.id,
+                label: area.name,
+              }))}
+              className={loading || areas.length === 0 ? "opacity-60" : ""}
             />
           </div>
           {error && (
@@ -279,7 +263,10 @@ export function Header() {
               </>
             )}
           </div>
-          <div className="relative lg:hidden" data-header-menu="mobile">
+          <div
+            className="relative shrink-0 lg:hidden"
+            data-header-menu="mobile"
+          >
             <button
               type="button"
               aria-label="Open navigation menu"
@@ -287,14 +274,14 @@ export function Header() {
               onClick={() =>
                 setOpenMenu(openMenu === "mobile" ? null : "mobile")
               }
-              className="grid min-h-11 min-w-11 cursor-pointer list-none place-items-center rounded-xl border border-white/20 hover:bg-white/10"
+              className="grid h-10 w-10 shrink-0 cursor-pointer list-none place-items-center rounded-xl border border-white/20 hover:bg-white/10"
             >
               <Menu size={20} aria-hidden="true" />
             </button>
             {openMenu === "mobile" && (
               <div
                 onClick={() => setOpenMenu(null)}
-                className="absolute right-0 z-20 mt-2 w-52 rounded-xl border border-cream-100 bg-white p-2 text-ink shadow-lg"
+                className="absolute right-0 top-full z-20 mt-2 w-56 rounded-xl border border-cream-100 bg-white p-2 text-ink shadow-lg"
               >
                 <Link
                   to="/"

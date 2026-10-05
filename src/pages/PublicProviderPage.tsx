@@ -14,6 +14,7 @@ import { Link, useParams } from "react-router-dom";
 
 import type { ListingCardData } from "../components/listing/ListingCard";
 import { ListingCard } from "../components/listing/ListingCard";
+import { BackButton } from "../components/ui/BackButton";
 import { fetchPublicProviderProfiles, isUuid } from "../lib/catalog";
 import { supabase } from "../lib/supabase";
 
@@ -50,7 +51,9 @@ type ProviderReviewData = {
 const providerTabs = ["About Me", "Services", "Reviews"] as const;
 type ProviderTab = (typeof providerTabs)[number];
 
-async function loadProviderPage(providerId: string): Promise<ProviderPageData | null> {
+async function loadProviderPage(
+  providerId: string,
+): Promise<ProviderPageData | null> {
   if (!isUuid(providerId)) return null;
 
   const profiles = await fetchPublicProviderProfiles({
@@ -73,7 +76,9 @@ async function loadProviderPage(providerId: string): Promise<ProviderPageData | 
   if (listingsError) throw listingsError;
 
   const listings = listingRows ?? [];
-  const categoryIds = [...new Set(listings.map((listing) => listing.category_id))];
+  const categoryIds = [
+    ...new Set(listings.map((listing) => listing.category_id)),
+  ];
   const areaIds = [...new Set(listings.map((listing) => listing.area_id))];
   const [categoryResult, areaResult] = await Promise.all([
     categoryIds.length
@@ -104,13 +109,19 @@ async function loadProviderPage(providerId: string): Promise<ProviderPageData | 
       providerName: profile.display_name.trim() || "Local provider",
       providerVerified: profile.is_verified,
     })),
-    areas: [...new Set(listings.map((listing) => areas.get(listing.area_id)).filter(
-      (name): name is string => Boolean(name),
-    ))].sort((first, second) => first.localeCompare(second)),
+    areas: [
+      ...new Set(
+        listings
+          .map((listing) => areas.get(listing.area_id))
+          .filter((name): name is string => Boolean(name)),
+      ),
+    ].sort((first, second) => first.localeCompare(second)),
   };
 }
 
-async function loadProviderReviews(providerId: string): Promise<ProviderReviewData> {
+async function loadProviderReviews(
+  providerId: string,
+): Promise<ProviderReviewData> {
   const { data, error, count } = await supabase
     .from("reviews")
     .select("id, author_id, rating, comment, created_at", { count: "exact" })
@@ -121,7 +132,9 @@ async function loadProviderReviews(providerId: string): Promise<ProviderReviewDa
   if (error) throw error;
 
   const rows = data ?? [];
-  const authorIds = [...new Set(rows.slice(0, 10).map((review) => review.author_id))];
+  const authorIds = [
+    ...new Set(rows.slice(0, 10).map((review) => review.author_id)),
+  ];
   const { data: profiles, error: profileError } = authorIds.length
     ? await supabase
         .from("profiles_public")
@@ -187,9 +200,11 @@ export function PublicProviderPage() {
   function handleTabKeyDown(event: KeyboardEvent<HTMLButtonElement>) {
     const currentIndex = tabRefs.current.indexOf(event.currentTarget);
     let nextIndex: number | null = null;
-    if (event.key === "ArrowRight") nextIndex = (currentIndex + 1) % providerTabs.length;
+    if (event.key === "ArrowRight")
+      nextIndex = (currentIndex + 1) % providerTabs.length;
     if (event.key === "ArrowLeft") {
-      nextIndex = (currentIndex - 1 + providerTabs.length) % providerTabs.length;
+      nextIndex =
+        (currentIndex - 1 + providerTabs.length) % providerTabs.length;
     }
     if (event.key === "Home") nextIndex = 0;
     if (event.key === "End") nextIndex = providerTabs.length - 1;
@@ -205,7 +220,10 @@ export function PublicProviderPage() {
     return (
       <section className="shell-container py-16">
         <h1 className="text-2xl font-semibold">Provider not found</h1>
-        <Link to="/search" className="mt-4 inline-flex min-h-11 items-center text-teal-700 underline">
+        <Link
+          to="/search"
+          className="mt-4 inline-flex min-h-11 items-center text-teal-700 underline"
+        >
           Browse services
         </Link>
       </section>
@@ -214,7 +232,11 @@ export function PublicProviderPage() {
 
   if (providerQuery.isPending) {
     return (
-      <div className="shell-container py-10" role="status" aria-label="Loading provider">
+      <div
+        className="shell-container py-10"
+        role="status"
+        aria-label="Loading provider"
+      >
         <div className="h-56 animate-pulse rounded-2xl bg-cream-100 motion-reduce:animate-none" />
         <div className="mt-6 h-9 w-1/2 animate-pulse rounded bg-cream-100 motion-reduce:animate-none" />
         <div className="mt-4 h-64 animate-pulse rounded-2xl bg-cream-100 motion-reduce:animate-none" />
@@ -225,9 +247,16 @@ export function PublicProviderPage() {
   if (providerQuery.isError) {
     return (
       <section className="shell-container py-16">
-        <div className="rounded-2xl border border-rose-600/20 bg-white p-6" role="alert">
-          <h1 className="text-xl font-semibold">Provider profile unavailable</h1>
-          <p className="mt-2 text-sm text-slate-600">We couldn’t load this public profile.</p>
+        <div
+          className="rounded-2xl border border-rose-600/20 bg-white p-6"
+          role="alert"
+        >
+          <h1 className="text-xl font-semibold">
+            Provider profile unavailable
+          </h1>
+          <p className="mt-2 text-sm text-slate-600">
+            We couldn’t load this public profile.
+          </p>
           <button
             type="button"
             onClick={() => void providerQuery.refetch()}
@@ -248,9 +277,12 @@ export function PublicProviderPage() {
           <span className="grid size-12 place-items-center rounded-xl bg-teal-50 text-teal-700">
             <Wrench size={23} aria-hidden="true" />
           </span>
-          <h1 className="mt-4 text-2xl font-semibold">Provider profile unavailable</h1>
+          <h1 className="mt-4 text-2xl font-semibold">
+            Provider profile unavailable
+          </h1>
           <p className="mt-2 text-sm leading-6 text-slate-600">
-            Public profiles are available for providers with active services. This provider may no longer have a service listed.
+            Public profiles are available for providers with active services.
+            This provider may no longer have a service listed.
           </p>
           <Link
             to="/search"
@@ -271,6 +303,7 @@ export function PublicProviderPage() {
 
   return (
     <div className="shell-container py-7 md:py-12">
+      <BackButton fallback="/search" label="Back" className="mb-4" />
       <section className="overflow-hidden rounded-3xl border border-cream-100 bg-white shadow-sm">
         <div className="h-24 bg-gradient-to-r from-navy-950 via-navy-900 to-teal-700 sm:h-32" />
         <div className="grid gap-6 px-5 pb-6 sm:px-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end lg:px-10">
@@ -280,7 +313,9 @@ export function PublicProviderPage() {
               aria-label={`${provider.displayName} profile`}
               className="grid size-20 shrink-0 place-items-center rounded-2xl border-4 border-white bg-teal-50 text-2xl font-semibold text-teal-700 shadow-sm sm:size-24"
             >
-              {getInitials(provider.displayName) || <Wrench size={27} aria-hidden="true" />}
+              {getInitials(provider.displayName) || (
+                <Wrench size={27} aria-hidden="true" />
+              )}
             </div>
             <div className="min-w-0 pb-1">
               <div className="flex flex-wrap items-center gap-2">
@@ -313,7 +348,11 @@ export function PublicProviderPage() {
                     }}
                     className="inline-flex min-h-8 items-center gap-1.5 rounded-sm text-ink transition hover:text-teal-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600"
                   >
-                    <Star size={16} className="fill-amber-500 text-amber-500" aria-hidden="true" />
+                    <Star
+                      size={16}
+                      className="fill-amber-500 text-amber-500"
+                      aria-hidden="true"
+                    />
                     {ratingLabel && <strong>{ratingLabel}</strong>}
                     <span>({reviewData.count} reviews)</span>
                   </button>
@@ -336,7 +375,9 @@ export function PublicProviderPage() {
             <span className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-cream-100 bg-cream-50 px-3 text-sm font-medium text-slate-600">
               <BriefcaseBusiness size={16} aria-hidden="true" />
               {provider.listings.length}{" "}
-              {provider.listings.length === 1 ? "active service" : "active services"}
+              {provider.listings.length === 1
+                ? "active service"
+                : "active services"}
             </span>
             {provider.isVerified && (
               <span className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-teal-600/10 bg-teal-50 px-3 text-sm font-medium text-teal-700">
@@ -399,7 +440,9 @@ export function PublicProviderPage() {
               <p className="text-xs font-semibold uppercase tracking-[0.15em] text-teal-700">
                 Provider introduction
               </p>
-              <h2 className="mt-2 text-xl font-semibold">About {provider.displayName}</h2>
+              <h2 className="mt-2 text-xl font-semibold">
+                About {provider.displayName}
+              </h2>
               {provider.bio ? (
                 <p className="mt-4 whitespace-pre-line text-sm leading-7 text-slate-600">
                   {provider.bio}
@@ -479,28 +522,46 @@ export function PublicProviderPage() {
               <h2 className="mt-1 text-xl font-semibold">
                 Reviews for {provider.displayName}
               </h2>
-              {!reviewsQuery.isPending && !reviewsQuery.isError && reviewData && (
-                <p className="mt-1 text-sm text-slate-600">
-                  {reviewData.count} publicly visible{" "}
-                  {reviewData.count === 1 ? "review" : "reviews"}
-                  {ratingLabel && (
-                    <span className="ml-2 inline-flex items-center gap-1 font-semibold text-ink">
-                      <Star size={14} className="fill-amber-500 text-amber-500" aria-hidden="true" />
-                      {ratingLabel} average
-                    </span>
-                  )}
-                </p>
-              )}
+              {!reviewsQuery.isPending &&
+                !reviewsQuery.isError &&
+                reviewData && (
+                  <p className="mt-1 text-sm text-slate-600">
+                    {reviewData.count} publicly visible{" "}
+                    {reviewData.count === 1 ? "review" : "reviews"}
+                    {ratingLabel && (
+                      <span className="ml-2 inline-flex items-center gap-1 font-semibold text-ink">
+                        <Star
+                          size={14}
+                          className="fill-amber-500 text-amber-500"
+                          aria-hidden="true"
+                        />
+                        {ratingLabel} average
+                      </span>
+                    )}
+                  </p>
+                )}
             </div>
             {reviewsQuery.isPending ? (
-              <div className="space-y-3" role="status" aria-label="Loading provider reviews">
+              <div
+                className="space-y-3"
+                role="status"
+                aria-label="Loading provider reviews"
+              >
                 {[0, 1, 2].map((item) => (
-                  <div key={item} className="h-32 animate-pulse rounded-2xl bg-cream-100 motion-reduce:animate-none" />
+                  <div
+                    key={item}
+                    className="h-32 animate-pulse rounded-2xl bg-cream-100 motion-reduce:animate-none"
+                  />
                 ))}
               </div>
             ) : reviewsQuery.isError ? (
-              <div className="rounded-2xl border border-rose-600/20 bg-white p-5" role="alert">
-                <p className="text-sm text-slate-600">Reviews couldn’t be loaded.</p>
+              <div
+                className="rounded-2xl border border-rose-600/20 bg-white p-5"
+                role="alert"
+              >
+                <p className="text-sm text-slate-600">
+                  Reviews couldn’t be loaded.
+                </p>
                 <button
                   type="button"
                   onClick={() => void reviewsQuery.refetch()}
@@ -525,7 +586,9 @@ export function PublicProviderPage() {
                           {getInitials(review.authorName) || "C"}
                         </span>
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold">{review.authorName}</p>
+                          <p className="truncate text-sm font-semibold">
+                            {review.authorName}
+                          </p>
                           <time
                             className="text-xs text-slate-600"
                             dateTime={review.created_at}
@@ -538,7 +601,11 @@ export function PublicProviderPage() {
                         className="inline-flex items-center gap-1 text-sm font-semibold text-ink"
                         aria-label={`${review.rating} out of 5 stars`}
                       >
-                        <Star size={15} className="fill-amber-500 text-amber-500" aria-hidden="true" />
+                        <Star
+                          size={15}
+                          className="fill-amber-500 text-amber-500"
+                          aria-hidden="true"
+                        />
                         {review.rating}
                       </p>
                     </div>

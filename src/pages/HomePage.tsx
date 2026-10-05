@@ -17,6 +17,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { useAreas } from "../app/AreaContext";
 import { ListingCard } from "../components/listing/ListingCard";
+import { SelectMenu } from "../components/ui/SelectMenu";
 import {
   fetchPublicProviderProfiles,
   fetchSamundriCityId,
@@ -386,15 +387,17 @@ export function HomePage() {
 
   return (
     <div className="home-marketplace">
-      <section className="home-hero relative isolate overflow-hidden bg-[#292C2A] text-white">
-        <img
-          src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1800&q=82"
-          alt="A home-service professional at work in a bright home"
-          loading="eager"
-          className="absolute inset-0 size-full object-cover object-center"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#171A18]/90 via-[#171A18]/65 to-[#171A18]/25" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#171A18]/80 via-transparent to-[#171A18]/10" />
+      <section className="home-hero relative isolate z-10 bg-[#292C2A] text-white">
+        <div className="absolute inset-0 overflow-hidden">
+          <img
+            src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1800&q=82"
+            alt="A home-service professional at work in a bright home"
+            loading="eager"
+            className="absolute inset-0 size-full object-cover object-center"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#171A18]/90 via-[#171A18]/65 to-[#171A18]/25" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#171A18]/80 via-transparent to-[#171A18]/10" />
+        </div>
         <div className="shell-container relative py-8 sm:py-12 lg:py-[4.5rem]">
           <div className="home-hero-enter max-w-4xl">
             <p className="inline-flex min-h-9 items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 text-xs font-semibold text-white backdrop-blur-sm">
@@ -419,7 +422,7 @@ export function HomePage() {
           <div className="mt-6 max-w-5xl sm:mt-8">
             <form
               onSubmit={submitSearch}
-              className="home-search-panel grid grid-cols-1 gap-2 rounded-2xl bg-white p-3 text-ink shadow-[0_18px_60px_rgba(0,0,0,0.28)] sm:grid-cols-2 sm:p-4 lg:grid-cols-[0.9fr_1.25fr_0.95fr_auto] lg:items-end lg:gap-3"
+              className="home-search-panel relative z-20 grid grid-cols-1 gap-2 rounded-2xl bg-white p-3 text-ink shadow-[0_18px_60px_rgba(0,0,0,0.28)] sm:grid-cols-2 sm:p-4 lg:grid-cols-[0.9fr_1.25fr_0.95fr_auto] lg:items-end lg:gap-3"
             >
               <div className="min-w-0 px-1">
                 <label
@@ -428,19 +431,20 @@ export function HomePage() {
                 >
                   Service
                 </label>
-                <select
-                  id="home-category"
+                <SelectMenu
                   value={categoryId}
-                  onChange={(event) => setCategoryId(event.target.value)}
-                  className="home-search-control min-h-12 w-full rounded-lg border border-[#E5E7E5] bg-white px-3 text-sm text-ink outline-none transition focus:border-[#1DBF73] focus:ring-4 focus:ring-[#1DBF73]/15"
-                >
-                  <option value="">All services</option>
-                  {(categoriesQuery.data ?? []).map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
+                  onChange={setCategoryId}
+                  options={[
+                    { value: "", label: "All services" },
+                    ...(categoriesQuery.data ?? []).map((category) => ({
+                      value: category.id,
+                      label: category.name,
+                    })),
+                  ]}
+                  ariaLabel="Service"
+                  className="z-50"
+                  buttonClassName="home-search-control border-[#E5E7E5] text-sm text-ink focus:border-[#1DBF73] focus:ring-4 focus:ring-[#1DBF73]/15"
+                />
               </div>
               <div className="min-w-0 px-1">
                 <label
@@ -471,18 +475,17 @@ export function HomePage() {
                 >
                   Samundri area
                 </label>
-                <select
-                  id="home-area"
+                <SelectMenu
                   value={selectedAreaId}
-                  onChange={(event) => setSelectedAreaId(event.target.value)}
-                  className="home-search-control min-h-12 w-full rounded-lg border border-[#E5E7E5] bg-white px-3 text-sm text-ink outline-none transition focus:border-[#1DBF73] focus:ring-4 focus:ring-[#1DBF73]/15"
-                >
-                  {areas.map((area) => (
-                    <option key={area.id} value={area.id}>
-                      {area.name}
-                    </option>
-                  ))}
-                </select>
+                  onChange={setSelectedAreaId}
+                  options={areas.map((area) => ({
+                    value: area.id,
+                    label: area.name,
+                  }))}
+                  ariaLabel="Samundri area"
+                  className="z-50"
+                  buttonClassName="home-search-control border-[#E5E7E5] text-sm text-ink focus:border-[#1DBF73] focus:ring-4 focus:ring-[#1DBF73]/15"
+                />
               </div>
               <button
                 type="submit"

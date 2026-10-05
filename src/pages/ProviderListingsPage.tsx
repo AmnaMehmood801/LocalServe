@@ -1,9 +1,10 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { toast } from "../lib/toast";
-import { Eye, ImageOff, Plus, Power, SquarePen } from "lucide-react";
+import { Eye, Plus, Power, SquarePen } from "lucide-react";
 
 import { useAuth } from "../app/AuthContext";
+import { ListingCover } from "../components/listing/ListingCover";
 import { supabase } from "../lib/supabase";
 
 type ProviderListing = {
@@ -14,6 +15,7 @@ type ProviderListing = {
   area_id: string;
   price_amount: number;
   pricing_type: "hourly" | "fixed";
+  cover_image_path: string | null;
   is_active: boolean;
   rating_avg: number;
   rating_count: number;
@@ -24,7 +26,7 @@ async function loadProviderListings(providerId: string) {
   const { data, error } = await supabase
     .from("listings")
     .select(
-      "id, title, description, category_id, area_id, price_amount, pricing_type, is_active, rating_avg, rating_count, created_at",
+      "id, title, description, category_id, area_id, price_amount, pricing_type, cover_image_path, is_active, rating_avg, rating_count, created_at",
     )
     .eq("provider_id", providerId)
     .order("created_at", { ascending: false });
@@ -121,17 +123,22 @@ export function ProviderListingsPage() {
             listingsQuery.data.map((listing) => (
               <article
                 key={listing.id}
-                className="card-hover fade-up flex h-full flex-col overflow-hidden rounded-xl border border-cream-100 bg-white shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-md"
+                className="card-hover fade-up relative flex h-full cursor-pointer flex-col overflow-hidden rounded-xl border border-cream-100 bg-white shadow-sm transition-shadow duration-200 hover:-translate-y-1 hover:shadow-md"
               >
-                <div
-                  role="img"
-                  aria-label={`${listing.title} cover placeholder`}
-                  className="relative grid aspect-[16/9] place-items-center overflow-hidden bg-cream-100 text-slate-600"
+                <Link
+                  to={`/listings/${listing.id}`}
+                  aria-label={`Open ${listing.title}`}
+                  className="absolute inset-0 z-10 rounded-xl focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#1DBF73]"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-cream-100 via-white to-cream-100" />
-                  <span className="relative grid size-12 place-items-center rounded-xl border border-cream-100 bg-white text-teal-700">
-                    <ImageOff size={22} aria-hidden="true" />
-                  </span>
+                  <span className="sr-only">Open {listing.title}</span>
+                </Link>
+                <div className="group pointer-events-none aspect-[16/9] overflow-hidden rounded-t-xl">
+                  <ListingCover
+                    path={listing.cover_image_path}
+                    title={listing.title}
+                    className="size-full"
+                    imageClassName="transition duration-500 group-hover:scale-[1.025]"
+                  />
                 </div>
 
                 <div className="flex flex-1 flex-col p-5">
@@ -161,7 +168,7 @@ export function ProviderListingsPage() {
                       : "New"}
                   </p>
 
-                  <div className="mt-auto flex flex-wrap gap-2 pt-5">
+                  <div className="relative z-20 mt-auto flex flex-wrap gap-2 pt-5">
                     <Link
                       to={`/provider/listings/${listing.id}/edit`}
                       className="press inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-lg border border-ink/20 px-3 text-sm font-medium transition hover:bg-cream-50 active:scale-[0.98]"

@@ -121,52 +121,59 @@ export function NotificationBell({
       {open && (
         <div
           onClick={onItemClick}
-          className="absolute right-0 z-30 mt-2 max-h-[min(70vh,32rem)] w-[min(20rem,calc(100vw-2rem))] overflow-y-auto rounded-xl border border-cream-100 bg-white p-2 text-ink shadow-lg"
+          className="absolute right-0 top-full z-50 mt-2 w-[calc(100vw-2rem)] max-w-sm overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg max-h-[70vh]"
         >
-          <div className="flex items-center justify-between px-3 py-2">
-            <h2 className="font-semibold">Notifications</h2>
+          <div className="sticky top-0 flex items-center justify-between border-b border-slate-100 bg-white px-4 py-3">
+            <h2 className="text-base font-semibold text-slate-900">
+              Notifications
+            </h2>
             {unreadCount > 0 && (
-              <span className="text-xs text-slate-600">
+              <span className="text-xs text-slate-500">
                 {unreadCount} unread
               </span>
             )}
           </div>
           {notificationsQuery.isPending ? (
-            <p className="px-3 py-4 text-sm text-slate-600" role="status">
+            <p className="px-4 py-6 text-sm text-slate-500" role="status">
               Loading notifications...
             </p>
           ) : notificationsQuery.isError ? (
-            <div className="px-3 py-4" role="alert">
-              <p className="text-sm text-slate-600">
+            <div className="px-4 py-6" role="alert">
+              <p className="text-sm text-slate-500">
                 Notifications couldn’t be loaded.
               </p>
               <button
                 type="button"
                 onClick={() => void notificationsQuery.refetch()}
-                className="mt-3 min-h-10 rounded-lg border border-ink/20 px-3 text-sm font-medium"
+                className="mt-3 min-h-10 rounded-lg border border-slate-200 px-3 text-sm font-medium text-slate-900"
               >
                 Try again
               </button>
             </div>
           ) : notifications.length === 0 ? (
-            <p className="px-3 py-4 text-sm text-slate-600">
+            <p className="px-4 py-6 text-center text-sm text-slate-500">
               No notifications yet.
             </p>
           ) : (
-            <ul className="divide-y divide-cream-100">
+            <ul>
               {notifications.map((notification) => (
-                <li key={notification.id}>
+                <li
+                  key={notification.id}
+                  className={
+                    notification.read_at ? undefined : "bg-slate-50/40"
+                  }
+                >
                   <button
                     type="button"
                     disabled={markingId === notification.id}
                     onClick={() => void openNotification(notification)}
-                    className={`w-full rounded-lg px-3 py-3 text-left hover:bg-cream-50 disabled:opacity-60 ${notification.read_at ? "" : "bg-teal-50/70"}`}
+                    className={`min-h-[44px] w-full border-b border-slate-100 px-4 py-3 text-left text-sm text-slate-900 transition hover:bg-slate-50 disabled:opacity-60 ${notification.read_at ? "" : ""}`}
                   >
-                    <span className="block text-sm font-medium">
+                    <span className="block font-medium">
                       {notificationTitle(notification)}
                     </span>
                     <time
-                      className="mt-1 block text-xs text-slate-600"
+                      className="mt-1 block text-xs text-slate-500"
                       dateTime={notification.created_at}
                     >
                       {format(new Date(notification.created_at), "MMM d, p")}

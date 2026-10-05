@@ -2,11 +2,12 @@ import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Link, useParams } from "react-router-dom";
-import { Wrench } from "lucide-react";
+import { MapPin, MessageSquare, Star, Tag } from "lucide-react";
 
 import { useAuth } from "../app/AuthContext";
 import type { ListingCardData } from "../components/listing/ListingCard";
 import { ListingCover } from "../components/listing/ListingCover";
+import { BackButton } from "../components/ui/BackButton";
 import { fetchPublicProviderProfiles } from "../lib/catalog";
 import { supabase } from "../lib/supabase";
 
@@ -72,25 +73,20 @@ async function loadListingDetail(
   if (error) throw error;
   if (!row) return null;
 
-  const [categoryResult, cityResult, areaResult, profiles] =
-    await Promise.all([
-      supabase
-        .from("categories")
-        .select("name")
-        .eq("id", row.category_id)
-        .maybeSingle(),
-      supabase
-        .from("cities")
-        .select("name")
-        .eq("id", row.city_id)
-        .maybeSingle(),
-      supabase.from("areas").select("name").eq("id", row.area_id).maybeSingle(),
-      fetchPublicProviderProfiles({
-        providerIds: [row.provider_id],
-        cityId: row.city_id,
-        areaId: row.area_id,
-      }),
-    ]);
+  const [categoryResult, cityResult, areaResult, profiles] = await Promise.all([
+    supabase
+      .from("categories")
+      .select("name")
+      .eq("id", row.category_id)
+      .maybeSingle(),
+    supabase.from("cities").select("name").eq("id", row.city_id).maybeSingle(),
+    supabase.from("areas").select("name").eq("id", row.area_id).maybeSingle(),
+    fetchPublicProviderProfiles({
+      providerIds: [row.provider_id],
+      cityId: row.city_id,
+      areaId: row.area_id,
+    }),
+  ]);
 
   if (categoryResult.error) throw categoryResult.error;
   if (cityResult.error) throw cityResult.error;
@@ -203,15 +199,7 @@ export function ListingDetailPage() {
   const requestPath = `/listings/${listing.id}/request`;
   return (
     <div className="shell-container py-8 md:py-12">
-      <nav aria-label="Breadcrumb" className="mb-5 text-sm text-slate-600">
-        <Link to="/search" className="underline">
-          Services
-        </Link>
-        <span className="mx-2" aria-hidden="true">
-          /
-        </span>
-        <span>{listing.categoryName}</span>
-      </nav>
+      <BackButton fallback="/search" label="Back to results" className="mb-4" />
 
       {!listing.isActive && isOwner && (
         <p className="mb-4 inline-flex rounded-full bg-cream-100 px-3 py-1 text-sm text-slate-700">
@@ -221,38 +209,72 @@ export function ListingDetailPage() {
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1.5fr)_minmax(300px,0.8fr)]">
         <div>
-          <ListingCover
-            path={listing.cover_image_path}
-            title={listing.title}
-            className="aspect-[4/3] rounded-2xl"
-          />
+          <div className="aspect-video w-full overflow-hidden rounded-2xl border border-slate-200 max-h-[420px]">
+            <ListingCover
+              path={listing.cover_image_path}
+              title={listing.title}
+              className="size-full"
+            />
+          </div>
 
           <div className="mt-6 flex flex-wrap items-start justify-between gap-4">
             <div>
-              <p className="text-sm font-medium text-teal-700">
-                {listing.categoryName} · {listing.areaName}, {listing.cityName}
-              </p>
-              <h1 className="mt-2 text-3xl font-semibold">{listing.title}</h1>
+              <div className="flex flex-wrap gap-2">
+                <span className="rounded-full bg-[#E3F7EC] px-3 py-1 text-xs font-medium text-[#168A55]">
+                  {listing.categoryName}
+                </span>
+                <span className="rounded-full bg-[#E3F7EC] px-3 py-1 text-xs font-medium text-[#168A55]">
+                  {listing.areaName}
+                </span>
+              </div>
+              <h1 className="mt-3 text-3xl font-semibold">{listing.title}</h1>
             </div>
-            {listing.providerVerified && (
-              <span className="inline-flex min-h-8 items-center rounded-full bg-teal-50 px-3 text-sm font-medium text-teal-700">
-                Verified
-              </span>
-            )}
           </div>
 
-          <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-600">
-            <span>
-              {listing.rating_count > 0
-                ? `★ ${listing.rating_avg.toFixed(1)} (${listing.rating_count} reviews)`
-                : "New · No reviews yet"}
+          <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-slate-600">
+            <span
+              className="inline-flex items-center gap-1.5"
+              aria-label={
+                listing.rating_count > 0
+                  ? `${listing.rating_avg.toFixed(1)} from ${listing.rating_count} reviews`
+                  : "No reviews yet"
+              }
+            >
+              {listing.rating_count > 0 ? (
+                <>
+                  <Star
+                    size={15}
+                    className="fill-amber-500 text-amber-500"
+                    aria-hidden="true"
+                  />
+                  {listing.rating_avg.toFixed(1)}
+                  <span>({listing.rating_count})</span>
+                </>
+              ) : (
+                "New"
+              )}
             </span>
+            <span aria-hidden="true">·</span>
             <Link
               to={`/providers/${listing.provider_id}`}
-              className="min-h-8 rounded-sm font-medium text-teal-700 underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600"
+              className="inline-flex min-h-8 items-center gap-2 rounded-sm font-medium text-teal-700 underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600"
             >
+              <span className="grid size-7 shrink-0 place-items-center rounded-full bg-[#E3F7EC] text-xs font-semibold text-[#168A55]">
+                {listing.providerName.trim().charAt(0).toUpperCase()}
+              </span>
               {listing.providerName}
             </Link>
+          </div>
+
+          <div className="mt-5 flex flex-wrap gap-2">
+            <span className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
+              <Tag size={16} aria-hidden="true" />
+              {listing.pricing_type === "hourly" ? "Hourly" : "Fixed price"}
+            </span>
+            <span className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
+              <MapPin size={16} aria-hidden="true" />
+              {listing.areaName}
+            </span>
           </div>
 
           <section className="mt-8 border-t border-cream-100 pt-6">
@@ -270,11 +292,11 @@ export function ListingDetailPage() {
             )}
           </section>
 
-          <section className="mt-8 border-t border-cream-100 pt-6">
+          <section className="mt-8 rounded-xl border border-slate-200 bg-white p-5">
             <h2 className="text-xl font-semibold">About the provider</h2>
             <div className="mt-3 flex items-start gap-3">
-              <span className="grid size-11 shrink-0 place-items-center rounded-full bg-teal-50 text-teal-700">
-                <Wrench size={20} aria-hidden="true" />
+              <span className="grid size-14 shrink-0 place-items-center rounded-full bg-[#E3F7EC] font-semibold text-[#168A55]">
+                {listing.providerName.trim().charAt(0).toUpperCase()}
               </span>
               <div>
                 <Link
@@ -293,7 +315,7 @@ export function ListingDetailPage() {
                   </p>
                 )}
                 {listing.providerVerified && (
-                  <p className="mt-2 text-sm font-medium text-teal-700">
+                  <p className="mt-2 inline-flex rounded-full bg-[#E3F7EC] px-3 py-1 text-xs font-medium text-[#168A55]">
                     Verified by LocalServe
                   </p>
                 )}
@@ -338,7 +360,14 @@ export function ListingDetailPage() {
                 </button>
               </div>
             ) : reviewsQuery.data.length === 0 ? (
-              <p className="mt-3 text-sm text-slate-600">No reviews yet.</p>
+              <div className="mt-3 flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-600">
+                <MessageSquare
+                  size={18}
+                  className="shrink-0 text-[#168A55]"
+                  aria-hidden="true"
+                />
+                <p>No reviews yet. Reviews appear after a completed booking.</p>
+              </div>
             ) : (
               <div className="mt-4 space-y-3">
                 {reviewsQuery.data.map((review) => (
@@ -369,7 +398,7 @@ export function ListingDetailPage() {
           </section>
         </div>
 
-        <aside className="h-fit rounded-xl border border-cream-100 bg-white p-5 shadow-sm lg:sticky lg:top-6">
+        <aside className="self-start rounded-xl border border-cream-100 bg-white p-5 shadow-sm lg:sticky lg:top-24">
           <p className="text-sm text-slate-600">Service price</p>
           <p className="mt-1 text-2xl font-semibold">
             Rs.{" "}

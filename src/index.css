@@ -57,12 +57,40 @@
   select {
     font: inherit;
   }
+
+  select {
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23475569' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 7.5l5 5 5-5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1.25rem 1.25rem;
+    padding-right: 2.5rem;
+    text-overflow: ellipsis;
+  }
+
+  select:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  select option {
+    background-color: #ffffff;
+    color: #0f172a;
+  }
 }
 
 @layer utilities {
   .shell-container {
     @apply mx-auto w-full max-w-6xl px-4 md:px-6;
   }
+}
+
+.auth-form input:-webkit-autofill,
+.auth-form input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset;
+  -webkit-text-fill-color: #0f172a;
+  transition: background-color 9999s ease-in-out 0s;
 }
 
 @keyframes home-content-enter {
@@ -147,14 +175,18 @@
 }
 
 .home-marketplace
-  [class~="rounded-full"][class~="px-2.5"][class~="py-1"][class~="text-xs"][class~="font-medium"] {
+  [class~="rounded-full"]:not(
+    .booking-status-badge
+  )[class~="px-2.5"][class~="py-1"][class~="text-xs"][class~="font-medium"] {
   border-color: rgb(29 191 115 / 25%);
   background-color: #e3f7ec;
   color: var(--market-green-dark);
 }
 
 .home-marketplace
-  [class~="rounded-full"][class~="px-2.5"][class~="py-1"][class~="text-xs"][class~="font-medium"]::before,
+  [class~="rounded-full"]:not(
+    .booking-status-badge
+  )[class~="px-2.5"][class~="py-1"][class~="text-xs"][class~="font-medium"]::before,
 .home-marketplace
   [class~="rounded-full"][class~="bg-teal-50"][class~="text-teal-700"]::before {
   display: inline-block;

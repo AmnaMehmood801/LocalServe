@@ -1,7 +1,7 @@
-import { useEffect, useState, type ChangeEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "../lib/toast";
 import { z } from "zod";
@@ -14,6 +14,9 @@ import {
   SAMUNDRI_CITY_QUERY_KEY,
 } from "../lib/catalog";
 import { supabase } from "../lib/supabase";
+import { SelectMenu } from "../components/ui/SelectMenu";
+import { BackButton } from "../components/ui/BackButton";
+import { CoverCropper } from "../components/ui/CoverCropper";
 
 const listingSchema = z.object({
   title: z
@@ -70,9 +73,24 @@ export function ProviderListingFormPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [pendingCoverFile, setPendingCoverFile] = useState<File | null>(null);
+  const [isCoverCropperOpen, setIsCoverCropperOpen] = useState(false);
+  const [coverPreviewUrl, setCoverPreviewUrl] = useState<string | null>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
   const [removeCover, setRemoveCover] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!coverFile) {
+      setCoverPreviewUrl(null);
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(coverFile);
+    setCoverPreviewUrl(previewUrl);
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [coverFile]);
 
   const cityQuery = useQuery({
     queryKey: SAMUNDRI_CITY_QUERY_KEY,
@@ -108,6 +126,7 @@ export function ProviderListingFormPage() {
   });
 
   const {
+    control,
     register,
     handleSubmit,
     reset,
@@ -156,13 +175,30 @@ export function ProviderListingFormPage() {
       event.target.value = "";
       return;
     }
-    if (file.size > maxImageBytes) {
+    setPendingCoverFile(file);
+    setIsCoverCropperOpen(true);
+    event.currentTarget.value = "";
+  }
+
+  function cancelCoverCrop() {
+    setIsCoverCropperOpen(false);
+    setPendingCoverFile(coverFile);
+    if (coverInputRef.current) coverInputRef.current.value = "";
+  }
+
+  function finishCoverCrop(cropped: File) {
+    setIsCoverCropperOpen(false);
+    if (cropped.size > maxImageBytes) {
       setFormError("The image must be 2 MB or smaller.");
-      event.target.value = "";
+      setPendingCoverFile(coverFile);
+      if (coverInputRef.current) coverInputRef.current.value = "";
       return;
     }
-    setCoverFile(file);
+
+    setCoverFile(cropped);
+    setPendingCoverFile(cropped);
     setRemoveCover(false);
+    setFormError(null);
   }
 
   async function onSubmit(values: ListingFormValues) {
@@ -209,11 +245,14 @@ export function ProviderListingFormPage() {
       availability_note: values.availability_note || null,
       cover_image_path: coverPath,
     };
+    const updatePayload = Object.fromEntries(
+      Object.entries(record).filter(([key]) => key !== "provider_id"),
+    ) as Omit<typeof record, "provider_id">;
 
     const result = isEditing
       ? await supabase
           .from("listings")
-          .update(record)
+          .update(updatePayload)
           .eq("id", listingId)
           .eq("provider_id", user.id)
           .select("id")
@@ -275,6 +314,11 @@ export function ProviderListingFormPage() {
 
   return (
     <section className="mx-auto w-full max-w-3xl px-4 py-8 md:py-10">
+      <BackButton
+        fallback="/provider/listings"
+        label="Back to my listings"
+        className="mb-4"
+      />
       <header className="mb-6 border-b border-cream-100 pb-5">
         <p className="text-xs font-semibold uppercase text-slate-600">
           Provider workspace
@@ -343,18 +387,22 @@ export function ProviderListingFormPage() {
             >
               Category
             </label>
-            <select
-              id="listing-category"
-              {...register("category_id")}
-              className="min-h-11 w-full rounded-lg border border-slate-400/50 bg-white px-3 outline-none focus:ring-2 focus:ring-teal-600"
-            >
-              <option value="">Select a category</option>
-              {(categoriesQuery.data ?? []).map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
+            <Controller
+              name="category_id"
+              control={control}
+              render={({ field }) => (
+                <SelectMenu
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
+                  options={(categoriesQuery.data ?? []).map((category) => ({
+                    value: category.id,
+                    label: category.name,
+                  }))}
+                  ariaLabel="Category"
+                  placeholder="Select a category"
+                />
+              )}
+            />
             {errors.category_id && (
               <p className="mt-1 text-sm text-rose-600">
                 {errors.category_id.message}
@@ -368,19 +416,22 @@ export function ProviderListingFormPage() {
             >
               Service area
             </label>
-            <select
-              id="listing-area"
-              {...register("area_id")}
-              disabled={areasLoading || areas.length === 0}
-              className="min-h-11 w-full rounded-lg border border-slate-400/50 bg-white px-3 outline-none focus:ring-2 focus:ring-teal-600 disabled:opacity-60"
-            >
-              <option value="">Select an area</option>
-              {areas.map((area) => (
-                <option key={area.id} value={area.id}>
-                  {area.name}
-                </option>
-              ))}
-            </select>
+            <Controller
+              name="area_id"
+              control={control}
+              render={({ field }) => (
+                <SelectMenu
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
+                  options={areas.map((area) => ({
+                    value: area.id,
+                    label: area.name,
+                  }))}
+                  ariaLabel="Service area"
+                  placeholder="Select an area"
+                />
+              )}
+            />
             {errors.area_id && (
               <p className="mt-1 text-sm text-rose-600">
                 {errors.area_id.message}
@@ -397,14 +448,21 @@ export function ProviderListingFormPage() {
             >
               Pricing
             </label>
-            <select
-              id="listing-pricing"
-              {...register("pricing_type")}
-              className="min-h-11 w-full rounded-lg border border-slate-400/50 bg-white px-3 outline-none focus:ring-2 focus:ring-teal-600"
-            >
-              <option value="fixed">Fixed price</option>
-              <option value="hourly">Per hour</option>
-            </select>
+            <Controller
+              name="pricing_type"
+              control={control}
+              render={({ field }) => (
+                <SelectMenu
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
+                  options={[
+                    { value: "fixed", label: "Fixed price" },
+                    { value: "hourly", label: "Per hour" },
+                  ]}
+                  ariaLabel="Pricing"
+                />
+              )}
+            />
           </div>
           <div>
             <label
@@ -477,6 +535,7 @@ export function ProviderListingFormPage() {
           </label>
           <input
             id="listing-cover"
+            ref={coverInputRef}
             type="file"
             accept="image/jpeg,image/png,image/webp"
             onChange={onCoverChange}
@@ -493,9 +552,29 @@ export function ProviderListingFormPage() {
             </label>
           )}
           {coverFile && (
-            <p className="mt-2 text-sm text-slate-600">
-              Selected: {coverFile.name}
-            </p>
+            <div className="mt-2 flex items-center gap-3">
+              {coverPreviewUrl && (
+                <img
+                  src={coverPreviewUrl}
+                  alt="Cropped cover preview"
+                  className="h-24 aspect-video rounded-lg object-cover border"
+                />
+              )}
+              <div>
+                <p className="text-sm text-slate-600">
+                  Selected: {coverFile.name}
+                </p>
+                {pendingCoverFile && (
+                  <button
+                    type="button"
+                    onClick={() => setIsCoverCropperOpen(true)}
+                    className="mt-1 text-sm font-medium text-teal-700 underline"
+                  >
+                    Adjust
+                  </button>
+                )}
+              </div>
+            </div>
           )}
         </div>
 
@@ -532,6 +611,13 @@ export function ProviderListingFormPage() {
           </Link>
         </div>
       </form>
+      {isCoverCropperOpen && pendingCoverFile && (
+        <CoverCropper
+          file={pendingCoverFile}
+          onCancel={cancelCoverCrop}
+          onDone={finishCoverCrop}
+        />
+      )}
     </section>
   );
 }
