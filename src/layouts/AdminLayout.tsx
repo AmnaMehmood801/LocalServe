@@ -23,7 +23,6 @@ import {
 import { toast } from "../lib/toast";
 
 import { useAuth } from "../app/AuthContext";
-import { AdminMigrationNotice } from "../components/admin/AdminMigrationNotice";
 
 const adminNavigation = [
   { label: "Dashboard", path: "/admin", icon: LayoutDashboard, end: true },
@@ -106,10 +105,10 @@ export function AdminLayout() {
               end={end}
               onClick={() => setMobileOpen(false)}
               className={({ isActive }) =>
-                `flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-teal-600 ${
+                `flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium transition-colors outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 ${
                   isActive
-                    ? "bg-teal-600 text-white"
-                    : "text-slate-300 hover:bg-white/10 hover:text-white"
+                    ? "border border-white/10 bg-white/[0.04] text-white"
+                    : "text-slate-300 hover:bg-white/[0.06] hover:text-white"
                 }`
               }
             >
@@ -148,8 +147,8 @@ export function AdminLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-cream-50 text-ink md:flex">
-      <aside className="hidden min-h-screen w-64 shrink-0 bg-navy-950 md:block">
+    <div className="min-h-screen bg-[#F7F8F7] text-ink md:flex">
+      <aside className="hidden min-h-screen w-64 shrink-0 bg-[#252724] md:block">
         <SidebarNavigation />
       </aside>
       {mobileOpen && (
@@ -160,7 +159,7 @@ export function AdminLayout() {
             onClick={() => setMobileOpen(false)}
             className="absolute inset-0 bg-navy-950/60"
           />
-          <aside className="relative z-10 h-full w-[min(18rem,85vw)] bg-navy-950 shadow-lg">
+          <aside className="relative z-10 h-full w-[min(18rem,85vw)] bg-[#252724] shadow-lg">
             <SidebarNavigation mobile />
           </aside>
         </div>
@@ -198,7 +197,6 @@ export function AdminLayout() {
           </div>
         </header>
         <main className="mx-auto w-full max-w-[1440px] p-4 md:p-8">
-          <AdminMigrationNotice />
           <Outlet />
         </main>
       </div>
