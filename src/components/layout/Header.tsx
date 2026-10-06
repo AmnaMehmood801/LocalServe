@@ -215,6 +215,12 @@ export function Header() {
                     {roles.includes("provider") && (
                       <>
                         <Link
+                          to="/provider"
+                          className="block rounded-lg px-3 py-2 text-sm hover:bg-cream-50"
+                        >
+                          Provider hub
+                        </Link>
+                        <Link
                           to="/provider/listings"
                           className="block rounded-lg px-3 py-2 text-sm hover:bg-cream-50"
                         >
@@ -321,6 +327,12 @@ export function Header() {
                     )}
                     {roles.includes("provider") && (
                       <>
+                        <Link
+                          to="/provider"
+                          className="block rounded-lg px-3 py-2 text-sm hover:bg-cream-50"
+                        >
+                          Provider hub
+                        </Link>
                         <Link
                           to="/provider/listings"
                           className="block rounded-lg px-3 py-2 text-sm hover:bg-cream-50"

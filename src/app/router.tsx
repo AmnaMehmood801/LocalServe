@@ -12,6 +12,7 @@ import { LoginPage } from "../pages/LoginPage";
 import { ForgotPasswordPage } from "../pages/ForgotPasswordPage";
 import { NotFoundPage } from "../pages/NotFoundPage";
 import { PrivacyPage } from "../pages/PrivacyPage";
+import ProviderHubPage from "../pages/ProviderHubPage";
 import { ProviderListingFormPage } from "../pages/ProviderListingFormPage";
 import { ProviderListingsPage } from "../pages/ProviderListingsPage";
 import { ProviderRequestsPage } from "../pages/ProviderRequestsPage";
@@ -123,6 +124,7 @@ const router = createBrowserRouter([
       {
         element: <ProtectedRoute requiredRole="provider" />,
         children: [
+          { path: "/provider", element: <ProviderHubPage /> },
           { path: "/provider/listings", element: <ProviderListingsPage /> },
           {
             path: "/provider/listings/new",
