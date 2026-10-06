@@ -60,7 +60,7 @@ export function ListingCard({
           <MapPin size={13} aria-hidden="true" />
           {listing.categoryName} · Samundri
         </p>
-        <h2 className="mt-2 line-clamp-2 min-h-12 text-base font-semibold leading-6 tracking-tight text-ink">
+        <h2 className="mt-2 line-clamp-2 text-base font-semibold leading-6 tracking-tight text-ink sm:min-h-12">
           <Link
             to={`/listings/${listing.id}`}
             className="rounded-sm transition-colors hover:text-teal-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600"
@@ -109,16 +109,16 @@ export function ListingCard({
             {listing.pricing_type === "hourly" ? " / hr" : " fixed"}
           </span>
         </p>
-        <div className="mt-auto grid grid-cols-2 gap-2 pt-4">
+        <div className="mt-auto flex gap-2 pt-4">
           <Link
             to={`/listings/${listing.id}/request`}
-            className="inline-flex min-h-11 items-center justify-center rounded-xl bg-teal-600 px-3 text-center text-xs font-semibold text-white transition hover:bg-teal-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-600/25"
+            className="inline-flex h-10 flex-[1.3] items-center justify-center whitespace-nowrap rounded-xl bg-teal-600 px-3 text-center text-sm font-semibold text-white transition hover:bg-teal-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-600/25"
           >
-            Request booking
+            Book now
           </Link>
           <Link
             to={`/listings/${listing.id}`}
-            className="inline-flex min-h-11 items-center justify-center rounded-xl border border-cream-100 px-3 text-xs font-semibold text-ink transition hover:border-teal-600/30 hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-600/15"
+            className="inline-flex h-10 flex-1 items-center justify-center rounded-xl border border-cream-100 px-3 text-sm font-semibold text-ink transition hover:border-teal-600/30 hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-600/15"
           >
             View
           </Link>

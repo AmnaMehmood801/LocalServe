@@ -1,16 +1,21 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import {
   ArrowRight,
   BookOpen,
   Brush,
+  ChevronDown,
+  ChevronUp,
+  Droplets,
   Hammer,
   House,
   MapPin,
+  MessageSquareQuote,
   Search,
   ShieldCheck,
   Snowflake,
+  Star,
   Wrench,
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -66,7 +71,7 @@ type HomeReview = ReviewRow & {
 
 const categoryIcons: Record<string, typeof Wrench> = {
   electrician: Wrench,
-  plumbing: Wrench,
+  plumbing: Droplets,
   ac: Snowflake,
   cleaning: Brush,
   carpentry: Hammer,
@@ -79,7 +84,7 @@ const categoryPhotos: Record<string, string> = {
     "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=720&q=75",
   plumbing:
     "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?auto=format&fit=crop&w=720&q=75",
-  ac: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=720&q=75",
+  ac: "/ac-repair.jpg",
   cleaning:
     "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=720&q=75",
   carpentry:
@@ -238,6 +243,58 @@ async function fetchRecentReviews(): Promise<HomeReview[]> {
   });
 }
 
+function ReviewCard({ review }: { review: HomeReview }) {
+  return (
+    <article className="flex w-full min-h-0 shrink-0 snap-start flex-col items-start gap-3 rounded-lg border border-slate-200/70 bg-white p-5 text-left basis-full md:shrink md:basis-1/2 lg:basis-1/3">
+      <span className="grid size-8 place-items-center rounded-full bg-[#E3F7EC] text-[#168A55]">
+        <MessageSquareQuote size={16} aria-hidden="true" />
+      </span>
+      <div
+        className="flex gap-0.5"
+        aria-label={`${review.rating} out of 5 stars`}
+      >
+        {Array.from({ length: 5 }, (_, index) => (
+          <Star
+            key={index}
+            size={14}
+            className={
+              index < review.rating
+                ? "fill-amber-400 text-amber-400"
+                : "text-slate-300"
+            }
+            strokeWidth={1.75}
+            aria-hidden="true"
+          />
+        ))}
+      </div>
+      {review.comment?.trim() ? (
+        <p className="line-clamp-3 text-sm text-slate-700">
+          {review.comment.slice(0, 160)}
+          {review.comment.length > 160 ? "…" : ""}
+        </p>
+      ) : (
+        <p className="text-sm text-slate-400 italic">Rated without a comment</p>
+      )}
+      <div className="mt-auto flex items-center gap-3 pt-1">
+        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#E3F7EC] text-sm font-bold text-[#168A55]">
+          {review.authorName.trim().slice(0, 1).toUpperCase() || "L"}
+        </span>
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-slate-900">
+            {review.authorName}
+          </p>
+          <Link
+            to={`/listings/${review.listing_id}`}
+            className="mt-0.5 block max-w-[200px] truncate text-xs text-slate-500 hover:text-[#168A55] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1DBF73]"
+          >
+            {review.listingTitle}
+          </Link>
+        </div>
+      </div>
+    </article>
+  );
+}
+
 export function HomePage() {
   useEffect(() => {
     document.title = "LocalServe — Trusted local services";
@@ -258,6 +315,11 @@ export function HomePage() {
   const navigate = useNavigate();
   const [keyword, setKeyword] = useState("");
   const [categoryId, setCategoryId] = useState("");
+  const reviewSliderRef = useRef<HTMLDivElement>(null);
+  const [activeReviewPage, setActiveReviewPage] = useState(0);
+  const [reviewPaused, setReviewPaused] = useState(false);
+  const [showAllReviews, setShowAllReviews] = useState(false);
+  const [cardsPerReviewPage, setCardsPerReviewPage] = useState(1);
 
   const cityQuery = useQuery({
     queryKey: SAMUNDRI_CITY_QUERY_KEY,
@@ -303,6 +365,77 @@ export function HomePage() {
         first.sort_order - second.sort_order,
     )
     .slice(0, 5);
+  const hasRatedListing = (listingsQuery.data ?? []).some(
+    (listing) => listing.rating_count > 0,
+  );
+  const loadedReviews = reviewsQuery.data ?? [];
+  const reviewPageCount = Math.max(
+    1,
+    Math.ceil(loadedReviews.length / cardsPerReviewPage),
+  );
+  const visibleReviews = showAllReviews
+    ? loadedReviews
+    : loadedReviews.slice(
+        activeReviewPage * cardsPerReviewPage,
+        (activeReviewPage + 1) * cardsPerReviewPage,
+      );
+
+  useEffect(() => {
+    const updateCardsPerPage = () => {
+      if (window.matchMedia("(min-width: 1024px)").matches) {
+        setCardsPerReviewPage(3);
+      } else if (window.matchMedia("(min-width: 768px)").matches) {
+        setCardsPerReviewPage(2);
+      } else {
+        setCardsPerReviewPage(1);
+      }
+    };
+
+    updateCardsPerPage();
+    window.addEventListener("resize", updateCardsPerPage);
+    return () => window.removeEventListener("resize", updateCardsPerPage);
+  }, []);
+
+  useEffect(() => {
+    setActiveReviewPage((current) => Math.min(current, reviewPageCount - 1));
+  }, [reviewPageCount]);
+
+  useEffect(() => {
+    if (
+      showAllReviews ||
+      cardsPerReviewPage !== 1 ||
+      !window.matchMedia("(max-width: 767px)").matches
+    ) {
+      return;
+    }
+
+    const slider = reviewSliderRef.current;
+    const card = slider?.children.item(activeReviewPage) as HTMLElement | null;
+    const firstCard = slider?.firstElementChild as HTMLElement | null;
+    if (!slider || !card || !firstCard) return;
+
+    slider.scrollTo({
+      left: card.offsetLeft - firstCard.offsetLeft,
+      behavior: "smooth",
+    });
+  }, [activeReviewPage, cardsPerReviewPage, showAllReviews]);
+
+  useEffect(() => {
+    if (
+      showAllReviews ||
+      reviewPageCount <= 1 ||
+      reviewPaused ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      return;
+    }
+
+    const interval = window.setInterval(() => {
+      setActiveReviewPage((current) => (current + 1) % reviewPageCount);
+    }, 4000);
+
+    return () => window.clearInterval(interval);
+  }, [reviewPageCount, reviewPaused, showAllReviews]);
 
   useEffect(() => {
     const elements = Array.from(
@@ -410,7 +543,7 @@ export function HomePage() {
                 right here in Samundri.
               </span>
             </h1>
-            <p className="mt-4 max-w-2xl text-sm leading-6 text-white/85 sm:mt-5 sm:text-lg sm:leading-7">
+            <p className="mt-4 max-w-2xl text-balance text-sm leading-6 text-white/85 sm:mt-5 sm:text-lg sm:leading-7">
               Compare local services, prices and reviews, then request a time
               that works for you.
             </p>
@@ -598,14 +731,14 @@ export function HomePage() {
             No services are listed in Samundri yet.
           </p>
         ) : (
-          <div className="home-reveal mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="home-reveal mt-6 grid items-stretch gap-3 sm:grid-cols-2 lg:grid-cols-5">
             {featuredCategories.map((category) => {
               const Icon = categoryIcons[category.slug] ?? Wrench;
               return (
                 <Link
                   key={category.id}
                   to={`/search?areaId=${encodeURIComponent(selectedAreaId)}&categoryId=${encodeURIComponent(category.id)}`}
-                  className="home-category-card group overflow-hidden rounded-xl border border-[#E8EAE8] bg-white shadow-sm transition duration-200 hover:-translate-y-1 hover:border-[#1DBF73]/45 hover:shadow-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#1DBF73]/20"
+                  className="home-category-card group flex h-full flex-col overflow-hidden rounded-xl border border-[#E8EAE8] bg-white shadow-sm transition duration-200 hover:-translate-y-1 hover:border-[#1DBF73]/45 hover:shadow-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#1DBF73]/20"
                 >
                   <div className="relative h-28 overflow-hidden bg-[#E9EEE9]">
                     <img
@@ -622,15 +755,15 @@ export function HomePage() {
                       <Icon size={18} aria-hidden="true" />
                     </span>
                   </div>
-                  <div className="p-4">
+                  <div className="flex flex-1 flex-col p-4">
                     <h3 className="font-bold tracking-tight">
                       {category.name}
                     </h3>
-                    <p className="mt-1 min-h-10 text-sm leading-5 text-slate-600">
+                    <p className="mt-1 line-clamp-2 min-h-10 text-sm leading-5 text-slate-600">
                       {categoryBlurbs[category.slug] ??
                         "Explore local services and compare providers."}
                     </p>
-                    <p className="mt-2 flex items-center justify-between text-xs text-slate-600">
+                    <p className="mt-auto flex items-center justify-between pt-2 text-xs text-slate-600">
                       {category.listingCount}{" "}
                       {category.listingCount === 1 ? "listing" : "listings"}
                       <ArrowRight
@@ -652,10 +785,12 @@ export function HomePage() {
           <div className="flex items-end justify-between gap-4">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#168A55]">
-                Chosen for your area
+                {hasRatedListing ? "Chosen for your area" : "IN YOUR AREA"}
               </p>
               <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
-                Top rated in {selectedArea?.name ?? "Samundri"}
+                {hasRatedListing
+                  ? `Top rated in ${selectedArea?.name ?? "Samundri"}`
+                  : `Services in ${selectedArea?.name ?? "Samundri"}`}
               </h2>
               <p className="mt-2 text-sm text-slate-600">
                 Compare real services and customer ratings.
@@ -738,10 +873,6 @@ export function HomePage() {
         id="how-it-works"
         className="relative isolate overflow-hidden bg-[#252724] py-10 text-white md:py-14"
       >
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -right-24 -top-40 size-96 rounded-full border border-white/[0.06]"
-        />
         <div className="shell-container">
           <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#55D99A]">
             Simple by design
@@ -820,52 +951,108 @@ export function HomePage() {
         <section
           className="shell-container py-10 md:py-14"
           aria-label="Recent reviews"
+          onMouseEnter={() => setReviewPaused(true)}
+          onMouseLeave={() => setReviewPaused(false)}
+          onFocusCapture={() => setReviewPaused(true)}
+          onBlurCapture={(event) => {
+            if (!event.currentTarget.contains(event.relatedTarget as Node)) {
+              setReviewPaused(false);
+            }
+          }}
         >
-          <div className="flex items-end justify-between gap-4">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#168A55]">
-                Customer feedback
-              </p>
-              <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
-                Recent reviews
-              </h2>
+          <div className="text-center">
+            <p className="text-sm text-slate-500">Happy customers</p>
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">
+              Loved by our customers
+            </h2>
+          </div>
+
+          {showAllReviews ? (
+            <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {loadedReviews.map((review) => (
+                <ReviewCard key={review.id} review={review} />
+              ))}
             </div>
-          </div>
-          <div className="home-reveal mt-6 grid gap-4 md:grid-cols-3">
-            {reviewsQuery.data.map((review) => (
-              <article
-                key={review.id}
-                className="flex h-full flex-col rounded-xl border border-[#E8EAE8] bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-lg sm:p-6"
+          ) : (
+            <>
+              <div
+                ref={reviewSliderRef}
+                className="mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth md:hidden"
+                aria-live="polite"
+                onScroll={(event) => {
+                  const slider = event.currentTarget;
+                  const firstCard =
+                    slider.firstElementChild as HTMLElement | null;
+                  if (!firstCard) return;
+
+                  let nearestIndex = 0;
+                  let nearestDistance = Number.POSITIVE_INFINITY;
+                  Array.from(slider.children).forEach((child, index) => {
+                    const distance = Math.abs(
+                      (child as HTMLElement).offsetLeft -
+                        firstCard.offsetLeft -
+                        slider.scrollLeft,
+                    );
+                    if (distance < nearestDistance) {
+                      nearestIndex = index;
+                      nearestDistance = distance;
+                    }
+                  });
+                  setActiveReviewPage(nearestIndex);
+                }}
               >
-                <p
-                  className="text-sm font-medium text-amber-500"
-                  aria-label={`${review.rating} out of 5 stars`}
-                >
-                  {"★".repeat(review.rating)}
-                  {"☆".repeat(5 - review.rating)}
-                </p>
-                <Link
-                  to={`/listings/${review.listing_id}`}
-                  className="mt-4 block font-bold leading-6 hover:text-[#168A55] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1DBF73]"
-                >
-                  {review.listingTitle}
-                </Link>
-                {review.comment && (
-                  <p className="mt-3 flex-1 text-sm leading-6 text-slate-600">
-                    “{review.comment.slice(0, 160)}
-                    {review.comment.length > 160 ? "…" : ""}”
-                  </p>
+                {loadedReviews.map((review) => (
+                  <ReviewCard key={review.id} review={review} />
+                ))}
+              </div>
+              <div
+                key={activeReviewPage}
+                className="mt-6 hidden flex-wrap justify-center gap-4 transition-all duration-500 ease-out md:flex"
+                aria-live="polite"
+              >
+                {visibleReviews.map((review) => (
+                  <ReviewCard key={review.id} review={review} />
+                ))}
+              </div>
+            </>
+          )}
+
+          {loadedReviews.length > cardsPerReviewPage && !showAllReviews && (
+            <div
+              className="mt-6 flex justify-center gap-2"
+              aria-label="Review pages"
+            >
+              {Array.from({ length: reviewPageCount }, (_, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => setActiveReviewPage(index)}
+                  className={`size-2.5 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1DBF73] focus-visible:ring-offset-2 ${
+                    index === activeReviewPage ? "bg-[#1DBF73]" : "bg-slate-300"
+                  }`}
+                  aria-label={`Go to slide ${index + 1}`}
+                  aria-current={index === activeReviewPage ? "true" : undefined}
+                />
+              ))}
+            </div>
+          )}
+
+          {loadedReviews.length > 3 && (
+            <div className="mt-6 flex justify-center">
+              <button
+                type="button"
+                onClick={() => setShowAllReviews((current) => !current)}
+                className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#168A55]/30 px-4 text-sm font-medium text-[#168A55] transition hover:bg-[#F0FAF4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1DBF73]"
+              >
+                {showAllReviews ? "Show less" : "View all"}
+                {showAllReviews ? (
+                  <ChevronUp size={16} aria-hidden="true" />
+                ) : (
+                  <ChevronDown size={16} aria-hidden="true" />
                 )}
-                <p className="mt-5 flex items-center gap-2 border-t border-[#E8EAE8] pt-4 text-xs text-slate-600">
-                  <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#E3F7EC] text-xs font-bold text-[#168A55]">
-                    {review.authorName.trim().slice(0, 1).toUpperCase() || "L"}
-                  </span>
-                  {review.authorName} ·{" "}
-                  {format(new Date(review.created_at), "MMM d, yyyy")}
-                </p>
-              </article>
-            ))}
-          </div>
+              </button>
+            </div>
+          )}
         </section>
       ) : null}
     </div>
