@@ -352,7 +352,7 @@ export function ProviderRequestsPage() {
   ).length;
 
   return (
-    <section className="shell-container py-8 md:py-10">
+    <div>
       <header className="border-b border-cream-100 pb-5">
         <p className="text-xs font-semibold uppercase text-slate-600">
           Provider
@@ -471,6 +471,6 @@ export function ProviderRequestsPage() {
           ))}
         </div>
       )}
-    </section>
+    </div>
   );
 }

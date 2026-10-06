@@ -7,6 +7,7 @@ import { z } from "zod";
 
 import { useAuth } from "../app/AuthContext";
 import { useAreas } from "../app/AreaContext";
+import { BackButton } from "../components/ui/BackButton";
 import { SelectMenu } from "../components/ui/SelectMenu";
 import { supabase } from "../lib/supabase";
 
@@ -149,6 +150,7 @@ export function AccountPage() {
   if (authLoading || (areasLoading && !profile)) {
     return (
       <div className="shell-container py-12" role="status">
+        <BackButton fallback="/" label="Back" className="mb-4" />
         Loading account...
       </div>
     );
@@ -157,6 +159,7 @@ export function AccountPage() {
   if (profileError || !profile) {
     return (
       <section className="shell-container py-12">
+        <BackButton fallback="/" label="Back" className="mb-4" />
         <h1 className="text-3xl font-semibold">Account</h1>
         <p className="mt-3 text-sm text-rose-600" role="alert">
           {profileError ?? "Your profile could not be found."}
@@ -176,6 +179,7 @@ export function AccountPage() {
 
   return (
     <section className="mx-auto w-full max-w-3xl px-4 py-8 md:py-10">
+      <BackButton fallback="/" label="Back" className="mb-4" />
       <header className="border-b border-cream-100 pb-5">
         <p className="text-xs font-semibold uppercase text-slate-600">
           Your account

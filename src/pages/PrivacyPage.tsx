@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { BackButton } from "../components/ui/BackButton";
 
 export function PrivacyPage() {
   useEffect(() => {
@@ -10,6 +11,7 @@ export function PrivacyPage() {
 
   return (
     <article className="shell-container max-w-3xl py-10 md:py-14">
+      <BackButton fallback="/" label="Back" className="mb-4" />
       <p className="text-xs font-semibold uppercase text-slate-600">
         LocalServe · Samundri
       </p>

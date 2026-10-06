@@ -1,55 +1,20 @@
 import { useQuery } from "@tanstack/react-query";
-import { startOfMonth } from "date-fns";
 import {
   BadgeCheck,
   BriefcaseBusiness,
-  CalendarClock,
-  CheckCircle2,
   ExternalLink,
   LayoutDashboard,
   Inbox,
   Pencil,
   Star,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, NavLink, Outlet } from "react-router-dom";
 
 import { useAuth } from "../app/AuthContext";
 import { supabase } from "../lib/supabase";
 
 export default function ProviderHubPage() {
   const { user, profile, profileError, loading: authLoading } = useAuth();
-
-  const listingsQuery = useQuery({
-    queryKey: ["provider", "listings", user?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("listings")
-        .select(
-          "id, title, description, category_id, area_id, price_amount, pricing_type, cover_image_path, is_active, rating_avg, rating_count, created_at",
-        )
-        .eq("provider_id", user!.id)
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data ?? [];
-    },
-    enabled: Boolean(user),
-  });
-
-  const bookingsQuery = useQuery({
-    queryKey: ["provider-hub", "bookings", user?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("bookings")
-        .select(
-          "id, customer_id, status, scheduled_start, scheduled_end, completed_at, address_text, notes, snapshot_title, snapshot_price_amount, snapshot_currency, decline_reason, cancel_reason",
-        )
-        .eq("provider_id", user!.id)
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data ?? [];
-    },
-    enabled: Boolean(user),
-  });
 
   const reviewsQuery = useQuery({
     queryKey: ["provider-hub", "reviews", user?.id],
@@ -95,23 +60,13 @@ export default function ProviderHubPage() {
     );
   }
 
-  if (
-    profileError ||
-    !profile ||
-    listingsQuery.isError ||
-    bookingsQuery.isError ||
-    reviewsQuery.isError
-  ) {
+  if (profileError || !profile || reviewsQuery.isError) {
     return (
       <div className={pageClassName}>Provider details are unavailable.</div>
     );
   }
 
-  if (
-    listingsQuery.isPending ||
-    bookingsQuery.isPending ||
-    reviewsQuery.isPending
-  ) {
+  if (reviewsQuery.isPending) {
     return (
       <div className={pageClassName} role="status">
         Loading provider overview...
@@ -119,47 +74,15 @@ export default function ProviderHubPage() {
     );
   }
 
-  const listings = listingsQuery.data ?? [];
-  const bookings = bookingsQuery.data ?? [];
   const reviewCount = reviewsQuery.data.count;
   const averageRating = reviewsQuery.data.average;
-  const monthStart = startOfMonth(new Date());
   const displayName = profile.display_name.trim() || "Provider";
-  const stats = [
-    {
-      label: "Active listings",
-      value: listings.filter((listing) => listing.is_active).length,
-      Icon: BriefcaseBusiness,
-    },
-    {
-      label: "New requests",
-      value: bookings.filter((booking) => booking.status === "requested")
-        .length,
-      Icon: Inbox,
-    },
-    {
-      label: "Upcoming",
-      value: bookings.filter(
-        (booking) =>
-          booking.status === "accepted" || booking.status === "in_progress",
-      ).length,
-      Icon: CalendarClock,
-    },
-    {
-      label: "Completed this month",
-      value: bookings.filter(
-        (booking) =>
-          booking.status === "completed" &&
-          booking.completed_at !== null &&
-          new Date(booking.completed_at).getTime() >= monthStart.getTime(),
-      ).length,
-      Icon: CheckCircle2,
-    },
-  ];
-  const navigation = [
-    { label: "Overview", to: "/provider", Icon: LayoutDashboard },
+  const routeNavigation = [
+    { label: "Overview", to: "/provider", Icon: LayoutDashboard, end: true },
     { label: "My listings", to: "/provider/listings", Icon: BriefcaseBusiness },
     { label: "Requests", to: "/provider/requests", Icon: Inbox },
+  ];
+  const profileNavigation = [
     { label: "Edit profile", to: "/account", Icon: Pencil },
     {
       label: "View public profile",
@@ -214,9 +137,7 @@ export default function ProviderHubPage() {
                     </span>
                   </>
                 ) : (
-                  <span className="text-sm text-slate-500">
-                    No reviews yet
-                  </span>
+                  <span className="text-sm text-slate-500">No reviews yet</span>
                 )}
               </div>
             </div>
@@ -225,16 +146,28 @@ export default function ProviderHubPage() {
               className="mt-6 hidden space-y-1 border-t border-slate-200 pt-4 lg:block"
               aria-label="Provider navigation"
             >
-              {navigation.map(({ label, to, Icon }, index) => (
+              {routeNavigation.map(({ label, to, Icon, end }) => (
+                <NavLink
+                  key={label}
+                  to={to}
+                  end={end}
+                  className={({ isActive }) =>
+                    `flex h-10 items-center gap-3 rounded-lg px-3 text-sm transition-colors ${
+                      isActive
+                        ? "bg-[#E3F7EC] font-medium text-[#168A55]"
+                        : "text-slate-700 hover:bg-[#F0FAF4]"
+                    }`
+                  }
+                >
+                  <Icon size={17} aria-hidden="true" />
+                  {label}
+                </NavLink>
+              ))}
+              {profileNavigation.map(({ label, to, Icon }) => (
                 <Link
                   key={label}
                   to={to}
-                  aria-current={index === 0 ? "page" : undefined}
-                  className={`flex h-10 items-center gap-3 rounded-lg px-3 text-sm transition-colors ${
-                    index === 0
-                      ? "bg-[#E3F7EC] font-medium text-[#168A55]"
-                      : "text-slate-700 hover:bg-[#F0FAF4]"
-                  }`}
+                  className="flex h-10 items-center gap-3 rounded-lg px-3 text-sm text-slate-700 transition-colors hover:bg-[#F0FAF4]"
                 >
                   <Icon size={17} aria-hidden="true" />
                   {label}
@@ -247,16 +180,28 @@ export default function ProviderHubPage() {
             className="flex w-full max-w-full min-w-0 flex-nowrap gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:hidden"
             aria-label="Provider navigation"
           >
-            {navigation.map(({ label, to, Icon }, index) => (
+            {routeNavigation.map(({ label, to, Icon, end }) => (
+              <NavLink
+                key={label}
+                to={to}
+                end={end}
+                className={({ isActive }) =>
+                  `inline-flex h-9 shrink-0 whitespace-nowrap items-center gap-2 rounded-lg px-3.5 text-sm transition-colors ${
+                    isActive
+                      ? "bg-[#E3F7EC] font-medium text-[#168A55]"
+                      : "bg-white text-slate-700 hover:bg-[#F0FAF4]"
+                  }`
+                }
+              >
+                <Icon size={16} aria-hidden="true" />
+                {label}
+              </NavLink>
+            ))}
+            {profileNavigation.map(({ label, to, Icon }) => (
               <Link
                 key={label}
                 to={to}
-                aria-current={index === 0 ? "page" : undefined}
-                className={`inline-flex h-9 shrink-0 whitespace-nowrap items-center gap-2 rounded-lg px-3.5 text-sm transition-colors ${
-                  index === 0
-                    ? "bg-[#E3F7EC] font-medium text-[#168A55]"
-                    : "bg-white text-slate-700 hover:bg-[#F0FAF4]"
-                }`}
+                className="inline-flex h-9 shrink-0 whitespace-nowrap items-center gap-2 rounded-lg bg-white px-3.5 text-sm text-slate-700 transition-colors hover:bg-[#F0FAF4]"
               >
                 <Icon size={16} aria-hidden="true" />
                 {label}
@@ -266,48 +211,7 @@ export default function ProviderHubPage() {
         </aside>
 
         <main className="min-w-0">
-          <header>
-            <h2 className="text-xl font-semibold text-slate-900">Overview</h2>
-            <p className="mt-1 text-sm text-slate-500">
-              A quick look at your services and bookings.
-            </p>
-          </header>
-
-          <div className="mt-5 grid grid-cols-2 gap-4">
-            {stats.map(({ label, value, Icon }) => (
-              <article
-                key={label}
-                className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5"
-              >
-                <span className="grid size-9 place-items-center rounded-lg bg-[#E3F7EC] text-[#168A55]">
-                  <Icon size={18} aria-hidden="true" />
-                </span>
-                <p className="mt-4 text-2xl font-semibold text-slate-900">
-                  {value}
-                </p>
-                <p className="mt-1 text-sm text-slate-500">{label}</p>
-              </article>
-            ))}
-          </div>
-
-          <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
-            <h3 className="text-base font-semibold text-slate-900">About me</h3>
-            {profile.bio?.trim() ? (
-              <p className="mt-3 whitespace-pre-line text-sm leading-6 text-slate-600">
-                {profile.bio}
-              </p>
-            ) : (
-              <p className="mt-3 text-sm text-slate-500">
-                Add a bio in your account.{" "}
-                <Link
-                  to="/account"
-                  className="font-medium text-[#168A55] underline underline-offset-2 hover:text-[#116B42]"
-                >
-                  Edit profile
-                </Link>
-              </p>
-            )}
-          </section>
+          <Outlet />
         </main>
       </div>
     </div>

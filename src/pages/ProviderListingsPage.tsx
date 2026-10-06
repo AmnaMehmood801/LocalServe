@@ -61,7 +61,7 @@ export function ProviderListingsPage() {
   }
 
   return (
-    <section className="shell-container py-8 md:py-10">
+    <div>
       <header className="flex flex-wrap items-end justify-between gap-4 border-b border-cream-100 pb-6">
         <div className="fade-up">
           <p className="text-xs font-semibold uppercase text-slate-600">
@@ -225,6 +225,6 @@ export function ProviderListingsPage() {
           </Link>
         </div>
       )}
-    </section>
+    </div>
   );
 }

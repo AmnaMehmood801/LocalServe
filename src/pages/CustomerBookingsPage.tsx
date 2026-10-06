@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 
 import { useAuth } from "../app/AuthContext";
 import { BookingStatusBadge } from "../components/booking/BookingStatusBadge";
+import { BackButton } from "../components/ui/BackButton";
 import { supabase } from "../lib/supabase";
 import { formatBookingPrice, type BookingStatus } from "../lib/booking";
 
@@ -67,6 +68,7 @@ export function CustomerBookingsPage() {
 
   return (
     <section className="shell-container py-8 md:py-10">
+      <BackButton fallback="/" label="Back" className="mb-4" />
       <header className="flex flex-wrap items-end justify-between gap-3 border-b border-cream-100 pb-5">
         <div>
           <p className="text-xs font-semibold uppercase text-slate-600">
