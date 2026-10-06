@@ -3,10 +3,11 @@ import { Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { toast } from "../lib/toast";
 
 import { useAreas } from "../app/AreaContext";
+import { SelectMenu } from "../components/ui/SelectMenu";
 import { supabase } from "../lib/supabase";
 import { AuthShell } from "../components/auth/AuthShell";
 
@@ -57,6 +58,7 @@ export function RegisterPage() {
   const [signupError, setSignupError] = useState<string | null>(null);
   const [confirmationEmail, setConfirmationEmail] = useState("");
   const {
+    control,
     register,
     handleSubmit,
     setValue,
@@ -226,20 +228,30 @@ export function RegisterPage() {
             >
               Samundri area
             </label>
-            <select
-              id="register-area"
-              {...register("area_id")}
+            <fieldset
               disabled={areasLoading || areas.length === 0}
-              aria-invalid={Boolean(errors.area_id)}
-              className="min-h-11 w-full rounded-lg border border-slate-400/50 bg-white px-3 outline-none focus:ring-2 focus:ring-[#1DBF73] disabled:opacity-60"
+              className="m-0 min-w-0 border-0 p-0"
             >
-              <option value="">Select an area</option>
-              {areas.map((area) => (
-                <option key={area.id} value={area.id}>
-                  {area.name}
-                </option>
-              ))}
-            </select>
+              <Controller
+                name="area_id"
+                control={control}
+                render={({ field }) => (
+                  <SelectMenu
+                    id="register-area"
+                    value={field.value}
+                    onChange={field.onChange}
+                    options={areas.map((area) => ({
+                      value: area.id,
+                      label: area.name,
+                    }))}
+                    ariaLabel="Samundri area"
+                    placeholder="Select an area"
+                    size="md"
+                    buttonClassName="!h-10 !min-h-0 !px-3 !py-0 !pr-10 !text-sm disabled:opacity-60"
+                  />
+                )}
+              />
+            </fieldset>
             {areasLoading && (
               <p className="mt-1 text-sm text-slate-600" role="status">
                 Loading Samundri areas...
