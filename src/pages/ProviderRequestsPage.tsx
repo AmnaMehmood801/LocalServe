@@ -186,7 +186,7 @@ function ProviderBookingCard({ booking }: { booking: ProviderBooking }) {
       <div className="mt-4 flex flex-wrap gap-2 border-t border-cream-100 pt-4">
         <Link
           to={`/bookings/${booking.id}`}
-          className="inline-flex min-h-11 items-center rounded-lg border border-ink/20 px-4 text-sm font-medium hover:bg-cream-50"
+          className="inline-flex h-9 items-center rounded-lg border border-slate-200 bg-white px-3.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
         >
           View details
         </Link>

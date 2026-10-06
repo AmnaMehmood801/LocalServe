@@ -151,7 +151,7 @@ export default function ProviderOverviewPage() {
             Add a bio in your account.{" "}
             <Link
               to="/account"
-              className="font-medium text-[#168A55] underline underline-offset-2 hover:text-[#116B42]"
+              className="font-medium text-[#168A55] no-underline underline-offset-2 hover:text-[#116B42] hover:underline"
             >
               Edit profile
             </Link>
