@@ -43,6 +43,11 @@
     @apply m-0 min-h-full min-w-[320px];
   }
 
+  html,
+  body {
+    overscroll-behavior-x: none;
+  }
+
   html {
     overscroll-behavior-y: none;
     background-color: #f7f8f7;
@@ -51,6 +56,7 @@
   body {
     @apply min-h-screen bg-cream-50 text-ink;
     overscroll-behavior-y: none;
+    overflow-x: clip;
   }
 
   a {
