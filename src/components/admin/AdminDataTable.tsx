@@ -1,6 +1,8 @@
 import { useMemo, useState, type ReactNode } from "react";
 import { Search, X } from "lucide-react";
 
+import { SelectMenu } from "../ui/SelectMenu";
+
 export type AdminColumn<T> = {
   header: string;
   render: (row: T) => ReactNode;
@@ -51,29 +53,30 @@ export function AdminDataTable<T>({
   }, [filters, getSearchText, rows, search]);
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-cream-100 bg-white shadow-sm">
-      <div className="flex flex-col gap-4 border-b border-cream-100 p-5 sm:flex-row sm:items-end sm:justify-between">
-        <div>
+    <section className="min-w-0 w-full max-w-full overflow-hidden rounded-2xl border border-cream-100 bg-white shadow-sm">
+      <div className="flex min-w-0 flex-col gap-4 border-b border-cream-100 p-5 sm:flex-row sm:items-end sm:justify-between">
+        <div className="min-w-0">
           <h2 className="text-lg font-semibold text-ink">{title}</h2>
           {description && (
             <p className="mt-1 text-sm text-slate-600">{description}</p>
           )}
         </div>
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+        <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-end">
           {filters.map((filter) => (
-            <label key={filter.label} className="text-xs font-medium text-slate-600">
+            <label
+              key={filter.label}
+              className="text-xs font-medium text-slate-600"
+            >
               {filter.label}
-              <select
+              <SelectMenu
                 value={filter.value}
-                onChange={(event) => filter.onChange(event.target.value)}
-                className="mt-1 block min-h-11 w-full rounded-lg border border-cream-100 bg-white px-3 text-sm text-ink outline-none focus:ring-2 focus:ring-teal-600 sm:min-w-36"
-              >
-                {filter.options.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+                onChange={filter.onChange}
+                options={filter.options}
+                ariaLabel={filter.label}
+                placeholder={filter.options[0]?.label ?? filter.label}
+                size="md"
+                className="mt-1 w-full sm:min-w-36"
+              />
             </label>
           ))}
           <label className="text-xs font-medium text-slate-600">
@@ -117,24 +120,31 @@ export function AdminDataTable<T>({
         </div>
       </div>
       {visibleRows.length === 0 ? (
-        <p className="px-5 py-12 text-center text-sm text-slate-600" role="status">
+        <p
+          className="px-5 py-12 text-center text-sm text-slate-600"
+          role="status"
+        >
           {rows.length === 0 ? emptyMessage : "No records match your filters."}
         </p>
       ) : (
-        <div className="overflow-x-auto">
+        <div className="w-full max-w-full overflow-x-auto">
           <table className="w-full min-w-[680px] border-collapse text-left text-sm">
-            <thead className="bg-cream-50 text-xs uppercase tracking-wide text-slate-600">
+            <thead className="bg-[#F7F8F7] text-xs uppercase tracking-wide text-slate-500">
               <tr>
                 {columns.map((column) => (
-                  <th key={column.header} scope="col" className="px-5 py-3 font-semibold">
+                  <th
+                    key={column.header}
+                    scope="col"
+                    className="px-5 py-3 font-semibold"
+                  >
                     {column.header}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-cream-100">
+            <tbody className="divide-y divide-slate-100">
               {visibleRows.map((row) => (
-                <tr key={getKey(row)} className="hover:bg-cream-50/70">
+                <tr key={getKey(row)} className="bg-white">
                   {columns.map((column) => (
                     <td key={column.header} className="px-5 py-4 align-middle">
                       {column.render(row)}
@@ -146,7 +156,10 @@ export function AdminDataTable<T>({
           </table>
         </div>
       )}
-      <p className="border-t border-cream-100 px-5 py-3 text-xs text-slate-600" role="status">
+      <p
+        className="border-t border-cream-100 px-5 py-3 text-xs text-slate-600"
+        role="status"
+      >
         Showing {visibleRows.length} of {rows.length} records
       </p>
     </section>

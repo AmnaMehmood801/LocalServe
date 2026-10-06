@@ -13,13 +13,7 @@ import {
   Users,
   X,
 } from "lucide-react";
-import {
-  Link,
-  NavLink,
-  Outlet,
-  useLocation,
-  useNavigate,
-} from "react-router-dom";
+import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import { toast } from "../lib/toast";
 
 import { useAuth } from "../app/AuthContext";
@@ -41,15 +35,6 @@ export function AdminLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, displayName, signOut } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-  const currentPage =
-    [...adminNavigation]
-      .sort((first, second) => second.path.length - first.path.length)
-      .find((item) =>
-        item.end
-          ? location.pathname === item.path
-          : location.pathname.startsWith(item.path),
-      )?.label ?? "Admin";
 
   useEffect(() => {
     if (!mobileOpen) return;
@@ -95,7 +80,7 @@ export function AdminLayout() {
           )}
         </div>
         <nav
-          className="flex-1 space-y-1 overflow-y-auto px-3 py-5"
+          className="flex-1 space-y-0.5 overflow-x-hidden overflow-y-auto px-3 pt-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           aria-label="Admin navigation"
         >
           {adminNavigation.map(({ label, path, icon: Icon, end }) => (
@@ -105,7 +90,7 @@ export function AdminLayout() {
               end={end}
               onClick={() => setMobileOpen(false)}
               className={({ isActive }) =>
-                `flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium transition-colors outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 ${
+                `flex min-h-9 items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 ${
                   isActive
                     ? "border border-white/10 bg-white/[0.04] text-white"
                     : "text-slate-300 hover:bg-white/[0.06] hover:text-white"
@@ -147,8 +132,8 @@ export function AdminLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F7F8F7] text-ink md:flex">
-      <aside className="hidden min-h-screen w-64 shrink-0 bg-[#252724] md:block">
+    <div className="min-h-screen overflow-x-clip bg-[#252724] text-ink md:flex">
+      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 overflow-y-auto bg-[#252724] md:block">
         <SidebarNavigation />
       </aside>
       {mobileOpen && (
@@ -164,7 +149,7 @@ export function AdminLayout() {
           </aside>
         </div>
       )}
-      <div className="min-w-0 flex-1">
+      <div className="min-h-screen min-w-0 flex-1 overflow-x-clip bg-[#F7F8F7]">
         <header className="sticky top-0 z-30 flex min-h-[76px] items-center justify-between border-b border-cream-100 bg-white px-4 shadow-sm md:px-8">
           <div className="flex items-center gap-3">
             <button
@@ -178,7 +163,6 @@ export function AdminLayout() {
             </button>
             <div>
               <p className="text-xs text-slate-600">LocalServe / Admin</p>
-              <h1 className="text-lg font-semibold text-ink">{currentPage}</h1>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -196,7 +180,7 @@ export function AdminLayout() {
             </span>
           </div>
         </header>
-        <main className="mx-auto w-full max-w-[1440px] p-4 md:p-8">
+        <main className="mx-auto min-w-0 w-full max-w-[1440px] p-4 md:p-8">
           <Outlet />
         </main>
       </div>
