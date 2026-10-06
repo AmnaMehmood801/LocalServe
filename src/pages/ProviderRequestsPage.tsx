@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format, startOfMonth } from "date-fns";
+import { CalendarClock, CheckCircle2, Inbox } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "../lib/toast";
 
@@ -135,7 +136,7 @@ function ProviderBookingCard({ booking }: { booking: ProviderBooking }) {
           <dt className="text-xs font-medium uppercase text-slate-600">
             Service address
           </dt>
-          <dd className="mt-1 whitespace-pre-line text-sm">
+          <dd className="mt-1 whitespace-pre-line text-sm capitalize">
             {booking.address_text}
           </dd>
         </div>
@@ -233,7 +234,7 @@ function ProviderBookingCard({ booking }: { booking: ProviderBooking }) {
 
       {reasonOpen && (isRequested || isConfirmed) && (
         <form
-          className="mt-4 space-y-3 rounded-lg bg-cream-50 p-4"
+          className="mt-4 space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4"
           onSubmit={(event) => {
             event.preventDefault();
             void runAction(isRequested ? "decline" : "cancel");
@@ -252,8 +253,11 @@ function ProviderBookingCard({ booking }: { booking: ProviderBooking }) {
             maxLength={1000}
             rows={3}
             required
-            className="w-full rounded-lg border border-slate-400/50 bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-teal-600"
+            className="w-full rounded-lg border border-slate-400/50 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-600"
           />
+          <p className="mt-1 text-xs text-slate-500">
+            This reason is shown to the customer
+          </p>
           {actionError && (
             <p className="text-sm text-rose-600" role="alert">
               {actionError}
@@ -263,7 +267,7 @@ function ProviderBookingCard({ booking }: { booking: ProviderBooking }) {
             <button
               type="submit"
               disabled={busy || !reason.trim()}
-              className="min-h-11 rounded-lg bg-rose-600 px-4 text-sm font-medium text-white disabled:opacity-50"
+              className="h-10 rounded-lg bg-rose-600 px-4 text-sm font-medium text-white disabled:opacity-50"
             >
               {busy
                 ? "Saving..."
@@ -274,7 +278,7 @@ function ProviderBookingCard({ booking }: { booking: ProviderBooking }) {
             <button
               type="button"
               onClick={() => setReasonOpen(false)}
-              className="min-h-11 rounded-lg border border-ink/20 px-4 text-sm font-medium"
+              className="h-10 rounded-lg border border-ink/20 px-4 text-sm font-medium"
             >
               Keep request
             </button>
@@ -357,21 +361,42 @@ export function ProviderRequestsPage() {
       </header>
 
       <dl className="mt-5 grid grid-cols-3 gap-3">
-        <div className="rounded-xl border border-cream-100 bg-white p-4">
-          <dt className="text-xs text-slate-600">New</dt>
-          <dd className="mt-1 text-2xl font-semibold">
+        <div className="min-w-0 rounded-xl border border-cream-100 bg-white p-3">
+          <dt className="flex min-w-0 items-center gap-1.5 text-xs text-slate-500">
+            <Inbox
+              size={16}
+              className="shrink-0 text-[#168A55]"
+              aria-hidden="true"
+            />
+            <span className="min-w-0">New</span>
+          </dt>
+          <dd className="mt-1 text-xl font-semibold">
             {bookingsQuery.isPending ? "—" : newCount}
           </dd>
         </div>
-        <div className="rounded-xl border border-cream-100 bg-white p-4">
-          <dt className="text-xs text-slate-600">Upcoming</dt>
-          <dd className="mt-1 text-2xl font-semibold">
+        <div className="min-w-0 rounded-xl border border-cream-100 bg-white p-3">
+          <dt className="flex min-w-0 items-center gap-1.5 text-xs text-slate-500">
+            <CalendarClock
+              size={16}
+              className="shrink-0 text-amber-500"
+              aria-hidden="true"
+            />
+            <span className="min-w-0">Upcoming</span>
+          </dt>
+          <dd className="mt-1 text-xl font-semibold">
             {bookingsQuery.isPending ? "—" : upcomingCount}
           </dd>
         </div>
-        <div className="rounded-xl border border-cream-100 bg-white p-4">
-          <dt className="text-xs text-slate-600">Completed this month</dt>
-          <dd className="mt-1 text-2xl font-semibold">
+        <div className="min-w-0 rounded-xl border border-cream-100 bg-white p-3">
+          <dt className="flex min-w-0 items-center gap-1.5 text-xs text-slate-500">
+            <CheckCircle2
+              size={16}
+              className="shrink-0 text-[#168A55]"
+              aria-hidden="true"
+            />
+            <span className="min-w-0">Completed this month</span>
+          </dt>
+          <dd className="mt-1 text-xl font-semibold">
             {bookingsQuery.isPending ? "—" : completedCount}
           </dd>
         </div>
@@ -387,7 +412,7 @@ export function ProviderRequestsPage() {
             type="button"
             aria-pressed={filter === option.key}
             onClick={() => setFilter(option.key)}
-            className={`min-h-10 rounded-full border px-4 text-sm font-medium ${filter === option.key ? "border-teal-600 bg-teal-600 text-white" : "border-ink/15 bg-white hover:bg-cream-100"}`}
+            className={`h-9 rounded-full border px-3.5 text-sm font-medium ${filter === option.key ? "border-teal-600 bg-teal-600 text-white" : "border-ink/15 bg-white hover:bg-cream-100"}`}
           >
             {option.label}
           </button>
@@ -422,11 +447,23 @@ export function ProviderRequestsPage() {
           </button>
         </div>
       ) : visibleBookings.length === 0 ? (
-        <p className="mt-6 rounded-xl border border-cream-100 bg-white p-6 text-sm text-slate-600">
-          {bookings.length === 0
-            ? "No booking requests yet."
-            : "No requests in this group."}
-        </p>
+        <div className="mt-6 rounded-xl border border-cream-100 bg-white py-10 text-center">
+          <Inbox
+            size={28}
+            className="mx-auto text-slate-300"
+            aria-hidden="true"
+          />
+          <p className="mt-3 text-sm font-medium text-slate-600">
+            {bookings.length === 0
+              ? "No booking requests yet."
+              : "No requests in this group."}
+          </p>
+          <p className="mt-1 text-xs text-slate-500">
+            {bookings.length === 0
+              ? "New requests from customers will appear here"
+              : "Try another tab"}
+          </p>
+        </div>
       ) : (
         <div className="mt-6 space-y-3">
           {visibleBookings.map((booking) => (

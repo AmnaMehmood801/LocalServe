@@ -330,7 +330,9 @@ export function BookingDetailPage() {
           <dt className="text-xs font-medium uppercase text-slate-600">
             Service address
           </dt>
-          <dd className="mt-1 whitespace-pre-line">{booking.address_text}</dd>
+          <dd className="mt-1 whitespace-pre-line capitalize">
+            {booking.address_text}
+          </dd>
         </div>
         {booking.notes && (
           <div className="sm:col-span-2">
