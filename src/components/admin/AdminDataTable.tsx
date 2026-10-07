@@ -54,14 +54,14 @@ export function AdminDataTable<T>({
 
   return (
     <section className="min-w-0 w-full max-w-full overflow-hidden rounded-2xl border border-cream-100 bg-white shadow-sm">
-      <div className="flex min-w-0 flex-col gap-4 border-b border-cream-100 p-5 sm:flex-row sm:items-end sm:justify-between">
+      <div className="flex min-w-0 flex-wrap gap-4 border-b border-cream-100 p-5 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
           <h2 className="text-lg font-semibold text-ink">{title}</h2>
           {description && (
             <p className="mt-1 text-sm text-slate-600">{description}</p>
           )}
         </div>
-        <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-end">
+        <div className="flex min-w-0 flex-wrap gap-3 pr-6 sm:flex-row sm:items-end">
           {filters.map((filter) => (
             <label
               key={filter.label}
@@ -81,7 +81,7 @@ export function AdminDataTable<T>({
           ))}
           <label className="text-xs font-medium text-slate-600">
             Search {title.toLowerCase()}
-            <span className="relative mt-1 block">
+            <span className="relative mt-1 block w-full max-w-[260px] min-w-0">
               <Search
                 size={16}
                 aria-hidden="true"
@@ -112,7 +112,7 @@ export function AdminDataTable<T>({
                 setSearch("");
                 filters.forEach((filter) => filter.onChange("all"));
               }}
-              className="min-h-11 rounded-lg px-3 text-sm font-medium text-teal-700 hover:bg-teal-50 focus:outline-none focus:ring-2 focus:ring-teal-600"
+              className="min-h-11 shrink-0 whitespace-nowrap rounded-lg px-3 text-sm font-medium text-teal-700 hover:bg-teal-50 focus:outline-none focus:ring-2 focus:ring-teal-600"
             >
               Reset filters
             </button>
@@ -146,7 +146,17 @@ export function AdminDataTable<T>({
               {visibleRows.map((row) => (
                 <tr key={getKey(row)} className="bg-white">
                   {columns.map((column) => (
-                    <td key={column.header} className="px-5 py-4 align-middle">
+                    <td
+                      key={column.header}
+                      className={
+                        column.header === "Status" ||
+                        column.header === "Verified" ||
+                        column.header === "Joined" ||
+                        column.header === "Created"
+                          ? "whitespace-nowrap px-5 py-4 align-middle"
+                          : "px-5 py-4 align-middle"
+                      }
+                    >
                       {column.render(row)}
                     </td>
                   ))}

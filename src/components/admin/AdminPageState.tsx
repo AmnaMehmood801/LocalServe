@@ -26,13 +26,21 @@ export function AdminPageHeader({
   );
 }
 
-export function AdminLoadingState({ label = "Loading admin data" }: { label?: string }) {
+export function AdminLoadingState({
+  label = "Loading admin data",
+}: {
+  label?: string;
+}) {
   return (
     <div
       className="flex min-h-64 items-center justify-center gap-3 rounded-2xl border border-cream-100 bg-white text-sm text-slate-600 shadow-sm"
       role="status"
     >
-      <LoaderCircle size={20} className="animate-spin text-teal-600" aria-hidden="true" />
+      <LoaderCircle
+        size={20}
+        className="animate-spin text-teal-600"
+        aria-hidden="true"
+      />
       {label}…
     </div>
   );
@@ -58,7 +66,7 @@ export function AdminStatusBadge({
   tone?: "neutral" | "success" | "warning" | "danger" | "info";
 }) {
   const tones = {
-    neutral: "bg-cream-100 text-slate-600",
+    neutral: "bg-slate-100 text-slate-700",
     success: "bg-emerald-600/10 text-emerald-600",
     warning: "bg-amber-500/15 text-ink",
     danger: "bg-rose-600/10 text-rose-600",
@@ -66,7 +74,9 @@ export function AdminStatusBadge({
   };
 
   return (
-    <span className={`inline-flex min-h-6 items-center rounded-full px-2.5 text-xs font-medium ${tones[tone]}`}>
+    <span
+      className={`inline-flex min-h-6 items-center rounded-full px-2.5 text-xs font-medium ${tones[tone]}`}
+    >
       {children}
     </span>
   );

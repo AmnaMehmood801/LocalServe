@@ -15,11 +15,15 @@ export function AdminSettingsPage() {
         <dl className="mt-5 grid gap-5 sm:grid-cols-2">
           <div>
             <dt className="text-xs font-medium text-slate-600">Display name</dt>
-            <dd className="mt-1 text-sm text-ink">{displayName ?? profile?.display_name ?? "—"}</dd>
+            <dd className="mt-1 text-sm text-ink">
+              {displayName ?? profile?.display_name ?? "—"}
+            </dd>
           </div>
           <div>
             <dt className="text-xs font-medium text-slate-600">Email</dt>
-            <dd className="mt-1 break-all text-sm text-ink">{user?.email ?? "—"}</dd>
+            <dd className="mt-1 break-all text-sm text-ink">
+              {user?.email ?? "—"}
+            </dd>
           </div>
           <div>
             <dt className="text-xs font-medium text-slate-600">Role</dt>
@@ -32,8 +36,9 @@ export function AdminSettingsPage() {
             <dd className="mt-1 text-sm text-ink">LocalServe</dd>
           </div>
         </dl>
-        <p className="mt-6 rounded-xl bg-cream-50 p-4 text-sm text-slate-600">
-          Profile and system settings are view-only here. No account or security settings can be changed from this page.
+        <p className="mt-6 rounded-xl bg-slate-100 p-4 text-sm text-slate-700">
+          Profile and system settings are view-only here. No account or security
+          settings can be changed from this page.
         </p>
       </section>
     </>
