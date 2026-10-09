@@ -62,7 +62,14 @@ type HomeListing = ListingRow & {
   categoryName: string;
   categorySlug: string;
   providerName: string;
+  avatarPath: string | null;
   providerVerified: boolean;
+};
+type HomeProviderProfile = {
+  id: string;
+  display_name: string;
+  is_verified: boolean;
+  avatar_path: string | null;
 };
 type ReviewRow = {
   id: string;
@@ -75,6 +82,7 @@ type ReviewRow = {
 type HomeReview = ReviewRow & {
   listingTitle: string;
   authorName: string;
+  authorAvatarPath: string | null;
 };
 type ReviewTheme = {
   backgroundColor: string;
@@ -224,7 +232,10 @@ async function fetchTopListings(
   if (categoriesResult.error) throw categoriesResult.error;
 
   const profiles = new Map(
-    profilesResult.map((profile) => [profile.id, profile]),
+    (profilesResult as HomeProviderProfile[]).map((profile) => [
+      profile.id,
+      profile,
+    ]),
   );
   const categories = new Map(
     ((categoriesResult.data ?? []) as Array<{ id: string; name: string }>).map(
@@ -242,6 +253,7 @@ async function fetchTopListings(
       ),
       providerName:
         profile?.display_name?.trim() || "Provider details unavailable",
+      avatarPath: profile?.avatar_path ?? null,
       providerVerified: profile?.is_verified ?? false,
     };
   });
@@ -265,7 +277,7 @@ async function fetchRecentReviews(): Promise<HomeReview[]> {
     supabase.from("listings").select("id, title").in("id", listingIds),
     supabase
       .from("profiles_public")
-      .select("id, display_name")
+      .select("id, display_name, avatar_path")
       .in("id", authorIds),
   ]);
   if (listingsResult.error) throw listingsResult.error;
@@ -277,8 +289,15 @@ async function fetchRecentReviews(): Promise<HomeReview[]> {
   );
   const authors = new Map(
     (
-      (profilesResult.data ?? []) as Array<{ id: string; display_name: string }>
-    ).map((profile) => [profile.id, profile.display_name]),
+      (profilesResult.data ?? []) as Array<{
+        id: string;
+        display_name: string;
+        avatar_path: string | null;
+      }>
+    ).map((profile) => [
+      profile.id,
+      { name: profile.display_name, avatarPath: profile.avatar_path },
+    ]),
   );
 
   return reviews.flatMap((review) => {
@@ -288,7 +307,9 @@ async function fetchRecentReviews(): Promise<HomeReview[]> {
       {
         ...review,
         listingTitle,
-        authorName: authors.get(review.author_id) ?? "Local customer",
+        authorName: authors.get(review.author_id)?.name ?? "Local customer",
+        authorAvatarPath:
+          authors.get(review.author_id)?.avatarPath ?? null,
       },
     ];
   });
@@ -364,22 +385,11 @@ function ReviewCard({
           style={{ borderColor: theme.dividerColor }}
           className="mt-auto flex min-w-0 items-center gap-3 border-t pt-4 pr-12"
         >
-          <span
-            style={{
-              backgroundColor: theme.avatarColor,
-              color: theme.avatarTextColor,
-            }}
-            className="grid size-11 shrink-0 place-items-center rounded-full text-sm font-bold"
-          >
-            {review.authorName
-              .trim()
-              .split(/\s+/)
-              .map((part) => part.charAt(0))
-              .filter(Boolean)
-              .slice(0, 2)
-              .join("")
-              .toUpperCase() || "L"}
-          </span>
+          <Avatar
+            avatarPath={review.authorAvatarPath}
+            name={review.authorName}
+            size={44}
+          />
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold">
               {review.authorName}
@@ -1261,6 +1271,7 @@ export function HomePage() {
                   <ListingCard
                     key={listing.id}
                     listing={listing}
+                    avatarPath={listing.avatarPath}
                     fallbackImageUrl={
                       categoryPhotos[listing.categorySlug] ??
                       categoryPhotos["home-repair"]
