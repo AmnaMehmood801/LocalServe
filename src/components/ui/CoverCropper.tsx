@@ -11,6 +11,8 @@ type CoverCropperProps = {
   onCancel: () => void;
   onDone: (cropped: File) => void;
   aspect?: number;
+  outputSize?: Size;
+  title?: string;
 };
 
 type Point = { x: number; y: number };
@@ -43,6 +45,8 @@ export function CoverCropper({
   onCancel,
   onDone,
   aspect = 16 / 9,
+  outputSize = { width: 1280, height: 720 },
+  title = "Adjust cover photo",
 }: CoverCropperProps) {
   const [objectUrl, setObjectUrl] = useState("");
   const [loadError, setLoadError] = useState(false);
@@ -196,8 +200,8 @@ export function CoverCropper({
     const sourceWidth = frameSize.width / displayScale;
     const sourceHeight = frameSize.height / displayScale;
     const canvas = document.createElement("canvas");
-    canvas.width = 1280;
-    canvas.height = 720;
+    canvas.width = outputSize.width;
+    canvas.height = outputSize.height;
     const context = canvas.getContext("2d");
 
     if (!context) {
@@ -240,7 +244,7 @@ export function CoverCropper({
         className="my-auto max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl bg-white p-5"
       >
         <h2 id="cover-cropper-title" className="text-lg font-semibold">
-          Adjust cover photo
+          {title}
         </h2>
         <p className="mt-1 text-sm text-slate-600">
           Drag to choose the visible part. This is how customers will see it.

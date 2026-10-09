@@ -1,10 +1,14 @@
 import { useEffect, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "../../lib/toast";
-import { ChevronDown, Menu } from "lucide-react";
+import { Menu } from "lucide-react";
 
 import { useAreas } from "../../app/AreaContext";
 import { useAuth } from "../../app/AuthContext";
+import { getAreaGroup } from "../../lib/areaGroups";
+import { supabase } from "../../lib/supabase";
+import { Avatar } from "../Avatar";
 import { Logo } from "../Logo";
 import { AreaSelect } from "./AreaSelect";
 import { NotificationBell } from "./NotificationBell";
@@ -19,6 +23,20 @@ export function Header() {
   const [openMenu, setOpenMenu] = useState<
     "area" | "notifications" | "profile" | "mobile" | null
   >(null);
+  const { data: avatarPath = null } = useQuery({
+    queryKey: ["profile-avatar", user?.id],
+    enabled: Boolean(user?.id),
+    queryFn: async () => {
+      if (!user) return null;
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("avatar_path")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data?.avatar_path ?? null;
+    },
+  });
 
   useEffect(() => {
     if (!openMenu) return;
@@ -138,6 +156,7 @@ export function Header() {
               options={areas.map((area) => ({
                 value: area.id,
                 label: area.name,
+                group: getAreaGroup(area.slug),
               }))}
               className={loading || areas.length === 0 ? "opacity-60" : ""}
             />
@@ -167,23 +186,18 @@ export function Header() {
               <div className="relative" data-header-menu="profile">
                 <button
                   type="button"
+                  aria-label={`${displayName ?? user.email ?? "Account"} menu`}
                   aria-expanded={openMenu === "profile"}
                   onClick={() =>
                     setOpenMenu(openMenu === "profile" ? null : "profile")
                   }
-                  className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-xl border border-white/20 px-3 hover:bg-white/10"
+                  className="grid size-10 cursor-pointer place-items-center rounded-full hover:bg-white/10"
                 >
-                  <span className="grid size-7 place-items-center rounded-full bg-[#1DBF73] text-xs font-semibold">
-                    {(
-                      displayName?.trim().charAt(0) ||
-                      user.email?.charAt(0) ||
-                      "U"
-                    ).toUpperCase()}
-                  </span>
-                  <span className="hidden max-w-32 truncate sm:inline">
-                    {displayName ?? user.email}
-                  </span>
-                  <ChevronDown size={16} aria-hidden="true" />
+                  <Avatar
+                    avatarPath={avatarPath}
+                    name={displayName ?? user.email ?? "Account"}
+                    size={36}
+                  />
                 </button>
                 {openMenu === "profile" && (
                   <div

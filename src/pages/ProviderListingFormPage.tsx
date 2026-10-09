@@ -13,6 +13,7 @@ import {
   isUuid,
   SAMUNDRI_CITY_QUERY_KEY,
 } from "../lib/catalog";
+import { getAreaGroup } from "../lib/areaGroups";
 import { supabase } from "../lib/supabase";
 import { SelectMenu } from "../components/ui/SelectMenu";
 import { BackButton } from "../components/ui/BackButton";
@@ -448,6 +449,7 @@ export function ProviderListingFormPage() {
                   options={areas.map((area) => ({
                     value: area.id,
                     label: area.name,
+                    group: getAreaGroup(area.slug),
                   }))}
                   ariaLabel="Service area"
                   placeholder="Select an area"

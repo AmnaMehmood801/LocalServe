@@ -12,6 +12,7 @@ import {
   isUuid,
   SAMUNDRI_CITY_QUERY_KEY,
 } from "../lib/catalog";
+import { getAreaGroup } from "../lib/areaGroups";
 import { supabase } from "../lib/supabase";
 
 const PAGE_SIZE = 20;
@@ -389,6 +390,7 @@ export function SearchPage() {
               options={areas.map((area) => ({
                 value: area.id,
                 label: area.name,
+                group: getAreaGroup(area.slug),
               }))}
               ariaLabel="Samundri area"
               size="sm"

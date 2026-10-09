@@ -373,6 +373,8 @@ export type Database = {
       profiles: {
         Row: {
           area_id: string;
+          avatar_path: string | null;
+          banner_path: string | null;
           bio: string | null;
           city_id: string;
           created_at: string;
@@ -385,6 +387,8 @@ export type Database = {
         };
         Insert: {
           area_id: string;
+          avatar_path?: string | null;
+          banner_path?: string | null;
           bio?: string | null;
           city_id: string;
           created_at?: string;
@@ -397,6 +401,8 @@ export type Database = {
         };
         Update: {
           area_id?: string;
+          avatar_path?: string | null;
+          banner_path?: string | null;
           bio?: string | null;
           city_id?: string;
           created_at?: string;
@@ -540,6 +546,8 @@ export type Database = {
     Views: {
       profiles_public: {
         Row: {
+          avatar_path: string | null;
+          banner_path: string | null;
           bio: string | null;
           city_id: string | null;
           display_name: string | null;
@@ -603,6 +611,14 @@ export type Database = {
       };
       add_marketplace_role: {
         Args: { p_role: Database["public"]["Enums"]["user_role"] };
+        Returns: undefined;
+      };
+      set_my_avatar: {
+        Args: { p_path: string | null };
+        Returns: undefined;
+      };
+      set_my_banner: {
+        Args: { p_path: string | null };
         Returns: undefined;
       };
       admin_set_listing_active: {
@@ -758,6 +774,8 @@ export type Database = {
           p_provider_ids: string[] | null;
         };
         Returns: {
+          avatar_path: string | null;
+          banner_path: string | null;
           bio: string | null;
           display_name: string;
           id: string;

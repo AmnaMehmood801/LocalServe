@@ -1,17 +1,23 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type FormEvent,
+} from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import {
   ArrowRight,
+  BadgeCheck,
   BookOpen,
   Brush,
-  ChevronDown,
-  ChevronUp,
+  ChevronLeft,
+  ChevronRight,
   Droplets,
   Hammer,
   House,
   MapPin,
-  MessageSquareQuote,
   Search,
   ShieldCheck,
   Snowflake,
@@ -21,6 +27,7 @@ import {
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { useAreas } from "../app/AreaContext";
+import { Avatar } from "../components/Avatar";
 import { ListingCard } from "../components/listing/ListingCard";
 import { SelectMenu } from "../components/ui/SelectMenu";
 import {
@@ -29,6 +36,7 @@ import {
   isUuid,
   SAMUNDRI_CITY_QUERY_KEY,
 } from "../lib/catalog";
+import { getAreaGroup } from "../lib/areaGroups";
 import { supabase } from "../lib/supabase";
 
 type CategoryRow = {
@@ -68,6 +76,49 @@ type HomeReview = ReviewRow & {
   listingTitle: string;
   authorName: string;
 };
+type ReviewTheme = {
+  backgroundColor: string;
+  textColor: string;
+  quoteColor: string;
+  avatarColor: string;
+  avatarTextColor: string;
+  dividerColor: string;
+};
+
+const reviewThemes: ReviewTheme[] = [
+  {
+    backgroundColor: "#3F4246",
+    textColor: "#FFFFFF",
+    quoteColor: "#34C98A",
+    avatarColor: "#19A463",
+    avatarTextColor: "#FFFFFF",
+    dividerColor: "rgba(255, 255, 255, 0.2)",
+  },
+  {
+    backgroundColor: "#1F6F4F",
+    textColor: "#FFFFFF",
+    quoteColor: "#A7E8C8",
+    avatarColor: "#CFE9DB",
+    avatarTextColor: "#1F3A2E",
+    dividerColor: "rgba(255, 255, 255, 0.24)",
+  },
+  {
+    backgroundColor: "#CFE9DB",
+    textColor: "#1F3A2E",
+    quoteColor: "#19A463",
+    avatarColor: "#19A463",
+    avatarTextColor: "#FFFFFF",
+    dividerColor: "rgba(31, 58, 46, 0.2)",
+  },
+  {
+    backgroundColor: "#E6E9EC",
+    textColor: "#2B2E33",
+    quoteColor: "#19A463",
+    avatarColor: "#19A463",
+    avatarTextColor: "#FFFFFF",
+    dividerColor: "rgba(43, 46, 51, 0.18)",
+  },
+];
 
 const categoryIcons: Record<string, typeof Wrench> = {
   electrician: Wrench,
@@ -243,55 +294,366 @@ async function fetchRecentReviews(): Promise<HomeReview[]> {
   });
 }
 
-function ReviewCard({ review }: { review: HomeReview }) {
+function ReviewCard({
+  review,
+  theme,
+  active = true,
+  interactive = true,
+}: {
+  review: HomeReview;
+  theme: ReviewTheme;
+  active?: boolean;
+  interactive?: boolean;
+}) {
   return (
-    <article className="flex w-full min-h-0 shrink-0 snap-start flex-col items-start gap-3 rounded-lg border border-slate-200/70 bg-white p-5 text-left basis-full md:shrink md:basis-1/2 lg:basis-1/3">
-      <span className="grid size-8 place-items-center rounded-full bg-[#E3F7EC] text-[#168A55]">
-        <MessageSquareQuote size={16} aria-hidden="true" />
+    <article
+      style={{
+        backgroundColor: theme.backgroundColor,
+        color: theme.textColor,
+        borderColor: theme.dividerColor,
+      }}
+      className="relative flex h-full w-full shrink-0 flex-col rounded-2xl border p-6 text-left shadow-md transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-xl sm:p-8 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+    >
+      <span
+        aria-hidden="true"
+        style={{ color: theme.quoteColor }}
+        className="pointer-events-none absolute left-6 top-4 z-0 font-serif text-[36px] leading-none"
+      >
+        “
+      </span>
+      <span
+        aria-hidden="true"
+        style={{ color: theme.quoteColor }}
+        className="pointer-events-none absolute bottom-4 right-6 z-0 font-serif text-[32px] leading-none"
+      >
+        ”
       </span>
       <div
-        className="flex gap-0.5"
-        aria-label={`${review.rating} out of 5 stars`}
+        className={`relative z-10 flex min-h-0 flex-1 flex-col transition-[opacity,transform] duration-[300ms] delay-0 motion-reduce:transition-none motion-reduce:delay-0 ${
+          active ? "translate-y-0 opacity-100" : "translate-y-2 opacity-80"
+        }`}
       >
-        {Array.from({ length: 5 }, (_, index) => (
-          <Star
-            key={index}
-            size={14}
-            className={
-              index < review.rating
-                ? "fill-amber-400 text-amber-400"
-                : "text-slate-300"
-            }
-            strokeWidth={1.75}
-            aria-hidden="true"
-          />
-        ))}
-      </div>
-      {review.comment?.trim() ? (
-        <p className="line-clamp-3 text-sm text-slate-700">
-          {review.comment.slice(0, 160)}
-          {review.comment.length > 160 ? "…" : ""}
-        </p>
-      ) : (
-        <p className="text-sm text-slate-400 italic">Rated without a comment</p>
-      )}
-      <div className="mt-auto flex items-center gap-3 pt-1">
-        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#E3F7EC] text-sm font-bold text-[#168A55]">
-          {review.authorName.trim().slice(0, 1).toUpperCase() || "L"}
-        </span>
-        <div className="min-w-0">
-          <p className="text-sm font-semibold text-slate-900">
-            {review.authorName}
-          </p>
-          <Link
-            to={`/listings/${review.listing_id}`}
-            className="mt-0.5 block max-w-[200px] truncate text-xs text-slate-500 hover:text-[#168A55] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1DBF73]"
+        <div
+          className="mt-10 flex gap-1"
+          aria-label={`${review.rating} out of 5 stars`}
+        >
+          {Array.from({ length: 5 }, (_, index) => (
+            <Star
+              key={index}
+              size={14}
+              style={{
+                color: "#F5B301",
+                fill: index < review.rating ? "#F5B301" : "transparent",
+              }}
+              strokeWidth={1.75}
+              aria-hidden="true"
+            />
+          ))}
+        </div>
+        <div className="mt-3 flex min-h-0 flex-1 items-center">
+          {review.comment?.trim() ? (
+            <p className="line-clamp-4 text-lg leading-7">
+              {review.comment.slice(0, 160)}
+              {review.comment.length > 160 ? "…" : ""}
+            </p>
+          ) : (
+            <p className="text-lg italic">Rated without a comment</p>
+          )}
+        </div>
+        <div
+          style={{ borderColor: theme.dividerColor }}
+          className="mt-auto flex min-w-0 items-center gap-3 border-t pt-4 pr-12"
+        >
+          <span
+            style={{
+              backgroundColor: theme.avatarColor,
+              color: theme.avatarTextColor,
+            }}
+            className="grid size-11 shrink-0 place-items-center rounded-full text-sm font-bold"
           >
-            {review.listingTitle}
-          </Link>
+            {review.authorName
+              .trim()
+              .split(/\s+/)
+              .map((part) => part.charAt(0))
+              .filter(Boolean)
+              .slice(0, 2)
+              .join("")
+              .toUpperCase() || "L"}
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold">
+              {review.authorName}
+            </p>
+            {interactive ? (
+              <Link
+                to={`/listings/${review.listing_id}`}
+                style={{
+                  color: theme.textColor,
+                  textDecorationColor: theme.quoteColor,
+                }}
+                className="mt-0.5 block truncate text-xs underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1DBF73]"
+              >
+                {review.listingTitle}
+              </Link>
+            ) : (
+              <span className="mt-0.5 block truncate text-xs">
+                {review.listingTitle}
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </article>
+  );
+}
+
+type HomeVerifiedProvider = {
+  id: string;
+  displayName: string;
+  avatarPath: string | null;
+};
+
+function VerifiedProvidersSection() {
+  const providersQuery = useQuery({
+    queryKey: ["providers", "home-verified"],
+    queryFn: async (): Promise<HomeVerifiedProvider[]> => {
+      const { data, error } = await supabase
+        .from("profiles_public")
+        .select("id, display_name, avatar_path, is_verified")
+        .eq("is_verified", true)
+        .limit(7);
+      if (error) throw error;
+
+      return (data ?? []).flatMap((profile) =>
+        profile.id
+          ? [
+              {
+                id: profile.id,
+                displayName: profile.display_name?.trim() || "Local provider",
+                avatarPath: profile.avatar_path,
+              },
+            ]
+          : [],
+      );
+    },
+  });
+  const sectionRef = useRef<HTMLElement>(null);
+  const [hasEntered, setHasEntered] = useState(false);
+  const [entranceComplete, setEntranceComplete] = useState(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [hoveredTile, setHoveredTile] = useState<number | null>(null);
+  const [focusedTile, setFocusedTile] = useState<number | null>(null);
+  const [displayedName, setDisplayedName] = useState("");
+  const [nameVisible, setNameVisible] = useState(true);
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setPrefersReducedMotion(true);
+      setHasEntered(true);
+      setEntranceComplete(true);
+      return;
+    }
+
+    if (!("IntersectionObserver" in window)) {
+      setHasEntered(true);
+      setEntranceComplete(true);
+      return;
+    }
+
+    let completionTimer = 0;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        setHasEntered(true);
+        observer.disconnect();
+        completionTimer = window.setTimeout(
+          () => setEntranceComplete(true),
+          1900,
+        );
+      },
+      { threshold: 0.3 },
+    );
+    observer.observe(section);
+
+    return () => {
+      observer.disconnect();
+      window.clearTimeout(completionTimer);
+    };
+  }, []);
+
+  const providers = providersQuery.data ?? [];
+  const tiles = Array.from({ length: 7 }, (_, index) => ({
+    provider: providers[index % Math.max(1, providers.length)],
+    index,
+    isRepeated: index >= providers.length,
+    distance: Math.abs(index - 3),
+  }));
+  const selectedTile = hoveredTile ?? focusedTile ?? 3;
+  const selectedProvider = tiles[selectedTile]?.provider;
+
+  useEffect(() => {
+    if (!selectedProvider) return;
+    if (!displayedName || prefersReducedMotion) {
+      setDisplayedName(selectedProvider.displayName);
+      setNameVisible(true);
+      return;
+    }
+    if (displayedName === selectedProvider.displayName) return;
+
+    setNameVisible(false);
+    const timer = window.setTimeout(() => {
+      setDisplayedName(selectedProvider.displayName);
+      setNameVisible(true);
+    }, 120);
+    return () => window.clearTimeout(timer);
+  }, [displayedName, prefersReducedMotion, selectedProvider]);
+
+  if (
+    providersQuery.isError ||
+    (providersQuery.data !== undefined && providers.length === 0)
+  ) {
+    return null;
+  }
+
+  const revealStyle = (delay: number) => ({
+    opacity: hasEntered ? 1 : 0,
+    transform: hasEntered ? "translateY(0)" : "translateY(12px)",
+    transition: prefersReducedMotion
+      ? "none"
+      : "transform 600ms cubic-bezier(0.22, 1, 0.36, 1), opacity 600ms cubic-bezier(0.22, 1, 0.36, 1)",
+    transitionDelay: hasEntered ? `${delay}ms` : "0ms",
+    willChange:
+      hasEntered && !entranceComplete ? "transform, opacity" : "auto",
+  });
+
+  const dimensions = (distance: number) => {
+    if (distance === 0) return "size-[104px] md:size-[168px]";
+    if (distance === 1) return "size-[76px] md:size-[128px]";
+    if (distance === 2) return "size-[60px] md:size-[100px]";
+    return "size-[80px]";
+  };
+
+  return (
+    <section
+      ref={sectionRef}
+      aria-labelledby="verified-providers-heading"
+      aria-busy={providersQuery.isPending}
+      className="overflow-hidden bg-[#F7F8F7] py-12 md:py-16"
+    >
+      <div className="shell-container text-center">
+        <p
+          style={revealStyle(0)}
+          className="text-sm font-semibold text-[#19A463]"
+        >
+          Trusted providers
+        </p>
+        <h2
+          id="verified-providers-heading"
+          style={revealStyle(100)}
+          className="mt-2 text-2xl font-semibold text-[#404145] sm:text-3xl"
+        >
+          Verified providers you can trust
+        </h2>
+        <p
+          style={revealStyle(200)}
+          className="mt-2 whitespace-nowrap text-sm text-slate-600"
+        >
+          Every provider here is checked by LocalServe.
+        </p>
+
+        <div
+          className="mt-9 flex items-end justify-center -space-x-4 md:-space-x-6"
+          role={providersQuery.isPending ? "status" : undefined}
+          aria-label={providersQuery.isPending ? "Loading verified providers" : undefined}
+        >
+          {providersQuery.isPending
+            ? Array.from({ length: 7 }, (_, index) => {
+                const distance = Math.abs(index - 3);
+                return (
+                  <div
+                    key={index}
+                    aria-hidden="true"
+                    className={`${dimensions(distance)} shrink-0 rounded-[20px] bg-[#E3F7EC] animate-pulse motion-reduce:animate-none ${
+                      distance === 3 ? "hidden md:block" : ""
+                    }`}
+                  />
+                );
+              })
+            : tiles.map(({ provider, index, isRepeated, distance }) => {
+                if (!provider) return null;
+                const isHovered = hoveredTile === index;
+                const isFocused = focusedTile === index;
+                const isHighlighted = isHovered || isFocused;
+                const entranceInProgress = hasEntered && !entranceComplete;
+                const baseOpacity = [1, 0.85, 0.65, 0.45][distance];
+                const initialX = index < 3 ? 40 : index > 3 ? -40 : 0;
+                const delay = 800 + distance * 120;
+                const tileTransition = prefersReducedMotion
+                  ? "none"
+                  : entranceInProgress
+                    ? "transform 700ms cubic-bezier(0.22, 1, 0.36, 1), opacity 700ms cubic-bezier(0.22, 1, 0.36, 1)"
+                    : "transform 300ms cubic-bezier(0.22, 1, 0.36, 1), opacity 300ms cubic-bezier(0.22, 1, 0.36, 1)";
+
+                return (
+                  <Link
+                    key={`${index}-${provider.id}`}
+                    to={`/providers/${provider.id}`}
+                    aria-label={`${provider.displayName}, verified provider`}
+                    aria-hidden={isRepeated ? true : undefined}
+                    tabIndex={isRepeated ? -1 : 0}
+                    onMouseEnter={() => setHoveredTile(index)}
+                    onMouseLeave={() => setHoveredTile(null)}
+                    onFocus={() => setFocusedTile(index)}
+                    onBlur={() => setFocusedTile(null)}
+                    style={{
+                      opacity: hasEntered
+                        ? isHighlighted
+                          ? 1
+                          : baseOpacity
+                        : 0,
+                      transform: hasEntered
+                        ? `translateX(0) scale(${isHighlighted ? 1.12 : 1})`
+                        : `translateX(${initialX}px) scale(0.7)`,
+                      transition: tileTransition,
+                      transitionDelay: entranceInProgress
+                        ? `${delay}ms`
+                        : "0ms",
+                      willChange: entranceInProgress
+                        ? "transform, opacity"
+                        : "auto",
+                    }}
+                    className={`relative z-0 block shrink-0 overflow-hidden rounded-[20px] bg-[#E3F7EC] shadow-sm outline-none transition-[transform,opacity] focus-visible:ring-2 focus-visible:ring-[#19A463] ${dimensions(distance)} [&_img]:!h-full [&_img]:!w-full [&_img]:!rounded-[20px] [&_span]:!h-full [&_span]:!w-full [&_span]:!rounded-[20px] [&_span]:!text-xl md:[&_span]:!text-3xl ${
+                      distance === 3 ? "hidden md:block" : ""
+                    }`}
+                  >
+                    <Avatar
+                      avatarPath={provider.avatarPath}
+                      name={provider.displayName}
+                      size={distance === 0 ? 168 : distance === 1 ? 128 : distance === 2 ? 100 : 80}
+                    />
+                    {index === 3 && (
+                      <span className="absolute inset-x-1 bottom-1 mx-auto inline-flex w-fit items-center gap-1 rounded-full bg-[#E3F7EC] px-2 py-1 text-[10px] font-semibold text-[#168A55] shadow-sm md:bottom-2 md:text-xs">
+                        <BadgeCheck size={13} aria-hidden="true" />
+                        Verified
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
+        </div>
+
+        <p
+          aria-live="polite"
+          className="mt-4 min-h-6 text-sm font-semibold text-[#404145] transition-opacity duration-200 motion-reduce:transition-none"
+          style={{ opacity: nameVisible ? 1 : 0 }}
+        >
+          {providersQuery.isPending ? " " : displayedName}
+        </p>
+      </div>
+    </section>
   );
 }
 
@@ -315,11 +677,14 @@ export function HomePage() {
   const navigate = useNavigate();
   const [keyword, setKeyword] = useState("");
   const [categoryId, setCategoryId] = useState("");
-  const reviewSliderRef = useRef<HTMLDivElement>(null);
-  const [activeReviewPage, setActiveReviewPage] = useState(0);
-  const [reviewPaused, setReviewPaused] = useState(false);
-  const [showAllReviews, setShowAllReviews] = useState(false);
-  const [cardsPerReviewPage, setCardsPerReviewPage] = useState(1);
+  const [activeReviewIndex, setActiveReviewIndex] = useState(0);
+  const [reviewTrackOffset, setReviewTrackOffset] = useState(0);
+  const [reviewTrackTransition, setReviewTrackTransition] = useState(true);
+  const [reviewHovered, setReviewHovered] = useState(false);
+  const [reviewFocused, setReviewFocused] = useState(false);
+  const reviewViewportRef = useRef<HTMLDivElement>(null);
+  const reviewTrackRef = useRef<HTMLDivElement>(null);
+  const reviewResetInProgressRef = useRef(false);
 
   const cityQuery = useQuery({
     queryKey: SAMUNDRI_CITY_QUERY_KEY,
@@ -369,73 +734,126 @@ export function HomePage() {
     (listing) => listing.rating_count > 0,
   );
   const loadedReviews = reviewsQuery.data ?? [];
-  const reviewPageCount = Math.max(
-    1,
-    Math.ceil(loadedReviews.length / cardsPerReviewPage),
-  );
-  const visibleReviews = showAllReviews
-    ? loadedReviews
-    : loadedReviews.slice(
-        activeReviewPage * cardsPerReviewPage,
-        (activeReviewPage + 1) * cardsPerReviewPage,
-      );
+  const repeatedReviews = Array.from({ length: 3 }, (_, copyIndex) =>
+    loadedReviews.map((review, reviewIndex) => ({
+      review,
+      copyIndex,
+      reviewIndex,
+      trackIndex: copyIndex * loadedReviews.length + reviewIndex,
+    })),
+  ).flat();
 
-  useEffect(() => {
-    const updateCardsPerPage = () => {
-      if (window.matchMedia("(min-width: 1024px)").matches) {
-        setCardsPerReviewPage(3);
-      } else if (window.matchMedia("(min-width: 768px)").matches) {
-        setCardsPerReviewPage(2);
-      } else {
-        setCardsPerReviewPage(1);
-      }
+  useLayoutEffect(() => {
+    const count = loadedReviews.length;
+    if (count === 0) return;
+
+    setReviewTrackTransition(false);
+    setActiveReviewIndex(count > 1 ? count : 0);
+    requestAnimationFrame(() => setReviewTrackTransition(true));
+  }, [loadedReviews.length]);
+
+  useLayoutEffect(() => {
+    const viewport = reviewViewportRef.current;
+    const track = reviewTrackRef.current;
+    const firstCard = track?.firstElementChild;
+    if (!viewport || !track || !(firstCard instanceof HTMLElement)) return;
+
+    const updateOffset = () => {
+      const cardWidth = firstCard.offsetWidth;
+      const gap = Number.parseFloat(getComputedStyle(track).columnGap) || 24;
+      const nextOffset =
+        viewport.clientWidth / 2 -
+        cardWidth / 2 -
+        activeReviewIndex * (cardWidth + gap);
+      setReviewTrackOffset((current) =>
+        Math.abs(current - nextOffset) < 0.5 ? current : nextOffset,
+      );
     };
 
-    updateCardsPerPage();
-    window.addEventListener("resize", updateCardsPerPage);
-    return () => window.removeEventListener("resize", updateCardsPerPage);
-  }, []);
+    updateOffset();
+    const observer = new ResizeObserver(updateOffset);
+    observer.observe(viewport);
+    observer.observe(firstCard);
+    window.addEventListener("resize", updateOffset);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", updateOffset);
+    };
+  }, [activeReviewIndex, loadedReviews.length]);
 
-  useEffect(() => {
-    setActiveReviewPage((current) => Math.min(current, reviewPageCount - 1));
-  }, [reviewPageCount]);
-
-  useEffect(() => {
+  useLayoutEffect(() => {
+    const count = loadedReviews.length;
     if (
-      showAllReviews ||
-      cardsPerReviewPage !== 1 ||
-      !window.matchMedia("(max-width: 767px)").matches
+      count <= 1 ||
+      !window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+      (activeReviewIndex >= count && activeReviewIndex < count * 2)
     ) {
       return;
     }
 
-    const slider = reviewSliderRef.current;
-    const card = slider?.children.item(activeReviewPage) as HTMLElement | null;
-    const firstCard = slider?.firstElementChild as HTMLElement | null;
-    if (!slider || !card || !firstCard) return;
-
-    slider.scrollTo({
-      left: card.offsetLeft - firstCard.offsetLeft,
-      behavior: "smooth",
-    });
-  }, [activeReviewPage, cardsPerReviewPage, showAllReviews]);
+    setActiveReviewIndex(
+      count + (((activeReviewIndex % count) + count) % count),
+    );
+  }, [activeReviewIndex, loadedReviews.length]);
 
   useEffect(() => {
-    if (
-      showAllReviews ||
-      reviewPageCount <= 1 ||
-      reviewPaused ||
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    ) {
-      return;
-    }
+    if (loadedReviews.length <= 1 || reviewHovered || reviewFocused) return;
 
     const interval = window.setInterval(() => {
-      setActiveReviewPage((current) => (current + 1) % reviewPageCount);
-    }, 4000);
+      setActiveReviewIndex((current) => current + 1);
+    }, 3000);
 
     return () => window.clearInterval(interval);
-  }, [reviewPageCount, reviewPaused, showAllReviews]);
+  }, [loadedReviews.length, reviewHovered, reviewFocused]);
+
+  const moveToReview = (reviewIndex: number) => {
+    const count = loadedReviews.length;
+    if (count <= 1 || reviewResetInProgressRef.current) return;
+
+    const candidates = [
+      reviewIndex,
+      reviewIndex + count,
+      reviewIndex + count * 2,
+    ];
+    const target = candidates.reduce((closest, candidate) =>
+      Math.abs(candidate - activeReviewIndex) <
+      Math.abs(closest - activeReviewIndex)
+        ? candidate
+        : closest,
+    );
+    setActiveReviewIndex(target);
+  };
+
+  const handleReviewTrackTransitionEnd = (
+    event: React.TransitionEvent<HTMLDivElement>,
+  ) => {
+    if (
+      event.target !== event.currentTarget ||
+      event.propertyName !== "transform"
+    ) {
+      return;
+    }
+
+    const count = loadedReviews.length;
+    if (
+      count <= 1 ||
+      (activeReviewIndex >= count && activeReviewIndex < count * 2)
+    ) {
+      return;
+    }
+
+    reviewResetInProgressRef.current = true;
+    setReviewTrackTransition(false);
+    setActiveReviewIndex(
+      count + (((activeReviewIndex % count) + count) % count),
+    );
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
+        setReviewTrackTransition(true);
+        reviewResetInProgressRef.current = false;
+      }),
+    );
+  };
 
   useEffect(() => {
     const elements = Array.from(
@@ -616,6 +1034,7 @@ export function HomePage() {
                   options={areas.map((area) => ({
                     value: area.id,
                     label: area.name,
+                    group: getAreaGroup(area.slug),
                   }))}
                   ariaLabel="Samundri area"
                   className="z-50"
@@ -949,14 +1368,14 @@ export function HomePage() {
         </section>
       ) : reviewsQuery.data?.length ? (
         <section
-          className="shell-container py-10 md:py-14"
+          className="home-review-section shell-container py-10 md:py-14"
           aria-label="Recent reviews"
-          onMouseEnter={() => setReviewPaused(true)}
-          onMouseLeave={() => setReviewPaused(false)}
-          onFocusCapture={() => setReviewPaused(true)}
+          onMouseEnter={() => setReviewHovered(true)}
+          onMouseLeave={() => setReviewHovered(false)}
+          onFocusCapture={() => setReviewFocused(true)}
           onBlurCapture={(event) => {
             if (!event.currentTarget.contains(event.relatedTarget as Node)) {
-              setReviewPaused(false);
+              setReviewFocused(false);
             }
           }}
         >
@@ -967,94 +1386,118 @@ export function HomePage() {
             </h2>
           </div>
 
-          {showAllReviews ? (
-            <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {loadedReviews.map((review) => (
-                <ReviewCard key={review.id} review={review} />
-              ))}
+          {loadedReviews.length === 1 ? (
+            <div className="mx-auto mt-8 aspect-square w-[260px] sm:w-[320px]">
+              <ReviewCard review={loadedReviews[0]} theme={reviewThemes[0]} />
             </div>
           ) : (
             <>
-              <div
-                ref={reviewSliderRef}
-                className="mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth md:hidden"
-                aria-live="polite"
-                onScroll={(event) => {
-                  const slider = event.currentTarget;
-                  const firstCard =
-                    slider.firstElementChild as HTMLElement | null;
-                  if (!firstCard) return;
+              <div className="mx-auto mt-8 grid w-full max-w-[1120px] grid-cols-2 items-center gap-x-4 gap-y-4 sm:grid-cols-[40px_minmax(0,1fr)_40px] sm:gap-4">
+                <button
+                  type="button"
+                  aria-label="Previous review"
+                  onClick={() => {
+                    if (reviewResetInProgressRef.current) return;
+                    setActiveReviewIndex((current) => current - 1);
+                  }}
+                  className="col-start-1 row-start-2 grid size-10 place-items-center justify-self-start rounded-full border border-slate-300 bg-white text-[#404145] shadow-sm transition-[transform,box-shadow,border-color,background-color] duration-200 hover:scale-[1.06] hover:border-[#1DBF73] hover:bg-[#E3F7EC] hover:shadow-md active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1DBF73] motion-reduce:transition-none motion-reduce:hover:scale-100 motion-reduce:active:scale-100 sm:row-start-1"
+                >
+                  <ChevronLeft size={20} aria-hidden="true" />
+                </button>
 
-                  let nearestIndex = 0;
-                  let nearestDistance = Number.POSITIVE_INFINITY;
-                  Array.from(slider.children).forEach((child, index) => {
-                    const distance = Math.abs(
-                      (child as HTMLElement).offsetLeft -
-                        firstCard.offsetLeft -
-                        slider.scrollLeft,
-                    );
-                    if (distance < nearestDistance) {
-                      nearestIndex = index;
-                      nearestDistance = distance;
-                    }
-                  });
-                  setActiveReviewPage(nearestIndex);
-                }}
-              >
-                {loadedReviews.map((review) => (
-                  <ReviewCard key={review.id} review={review} />
-                ))}
+                <div
+                  ref={reviewViewportRef}
+                  className="-mx-4 col-span-2 row-start-1 h-[260px] min-w-0 w-[calc(100%+2rem)] overflow-hidden sm:mx-0 sm:col-span-1 sm:col-start-2 sm:h-[320px] sm:w-full"
+                >
+                  <div
+                    ref={reviewTrackRef}
+                    onTransitionEnd={handleReviewTrackTransitionEnd}
+                    className={`flex h-full w-max items-center gap-4 will-change-transform sm:gap-6 ${
+                      reviewTrackTransition
+                        ? "transition-transform duration-[450ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
+                        : "transition-none"
+                    } motion-reduce:transition-none`}
+                    style={{ transform: `translateX(${reviewTrackOffset}px)` }}
+                  >
+                    {repeatedReviews.map(
+                      ({ review, copyIndex, reviewIndex, trackIndex }) => {
+                        const isActive = trackIndex === activeReviewIndex;
+                        const distance = Math.abs(
+                          trackIndex - activeReviewIndex,
+                        );
+                        const scale =
+                          distance === 0 ? 1 : distance === 1 ? 0.8 : 0.65;
+                        const opacity =
+                          distance === 0 ? 1 : distance === 1 ? 0.6 : 0;
+
+                        return (
+                          <div
+                            key={`${copyIndex}-${review.id}`}
+                            aria-hidden={copyIndex === 1 ? undefined : true}
+                            className={`relative aspect-square w-[260px] shrink-0 will-change-[transform,opacity] transition-[transform,opacity] duration-[450ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none sm:w-[320px] ${
+                              isActive
+                                ? "z-20 pointer-events-auto"
+                                : distance === 1
+                                  ? "z-10 pointer-events-none"
+                                  : "z-0 pointer-events-none"
+                            }`}
+                            style={{
+                              transform: `scale(${scale})`,
+                              opacity,
+                            }}
+                          >
+                            <ReviewCard
+                              review={review}
+                              theme={reviewThemes[reviewIndex % 4]}
+                              active={isActive}
+                              interactive={copyIndex === 1 && isActive}
+                            />
+                          </div>
+                        );
+                      },
+                    )}
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  aria-label="Next review"
+                  onClick={() => {
+                    if (reviewResetInProgressRef.current) return;
+                    setActiveReviewIndex((current) => current + 1);
+                  }}
+                  className="col-start-2 row-start-2 grid size-10 place-items-center justify-self-end rounded-full border border-slate-300 bg-white text-[#404145] shadow-sm transition-[transform,box-shadow,border-color,background-color] duration-200 hover:scale-[1.06] hover:border-[#1DBF73] hover:bg-[#E3F7EC] hover:shadow-md active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1DBF73] motion-reduce:transition-none motion-reduce:hover:scale-100 motion-reduce:active:scale-100 sm:col-start-3 sm:row-start-1"
+                >
+                  <ChevronRight size={20} aria-hidden="true" />
+                </button>
               </div>
               <div
-                key={activeReviewPage}
-                className="mt-6 hidden flex-wrap justify-center gap-4 transition-all duration-500 ease-out md:flex"
-                aria-live="polite"
+                className="mt-5 flex items-center justify-center gap-2"
+                role="group"
+                aria-label="Review pages"
               >
-                {visibleReviews.map((review) => (
-                  <ReviewCard key={review.id} review={review} />
-                ))}
+                {loadedReviews.map((review, index) => {
+                  const isActive =
+                    activeReviewIndex % loadedReviews.length === index;
+                  return (
+                    <button
+                      key={review.id}
+                      type="button"
+                      onClick={() => moveToReview(index)}
+                      className={`h-2.5 rounded-full transition-[width,background-color] duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1DBF73] focus-visible:ring-offset-2 motion-reduce:transition-none ${
+                        isActive ? "w-8 bg-[#19A463]" : "w-2.5 bg-slate-300"
+                      }`}
+                      aria-label={`Go to review ${index + 1}`}
+                      aria-current={isActive ? "true" : undefined}
+                    />
+                  );
+                })}
               </div>
             </>
           )}
-
-          {loadedReviews.length > cardsPerReviewPage && !showAllReviews && (
-            <div
-              className="mt-6 flex justify-center gap-2"
-              aria-label="Review pages"
-            >
-              {Array.from({ length: reviewPageCount }, (_, index) => (
-                <button
-                  key={index}
-                  type="button"
-                  onClick={() => setActiveReviewPage(index)}
-                  className={`size-2.5 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1DBF73] focus-visible:ring-offset-2 ${
-                    index === activeReviewPage ? "bg-[#1DBF73]" : "bg-slate-300"
-                  }`}
-                  aria-label={`Go to slide ${index + 1}`}
-                  aria-current={index === activeReviewPage ? "true" : undefined}
-                />
-              ))}
-            </div>
-          )}
-
-          {loadedReviews.length > 3 && (
-            <div className="mt-6 flex justify-center">
-              <button
-                type="button"
-                onClick={() => setShowAllReviews((current) => !current)}
-                className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#168A55]/30 px-4 text-sm font-medium text-[#168A55] transition hover:bg-[#F0FAF4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1DBF73]"
-              >
-                {showAllReviews ? "Show less" : "View all"}
-                {showAllReviews ? (
-                  <ChevronUp size={16} aria-hidden="true" />
-                ) : (
-                  <ChevronDown size={16} aria-hidden="true" />
-                )}
-              </button>
-            </div>
-          )}
         </section>
       ) : null}
+      <VerifiedProvidersSection />
     </div>
   );
 }

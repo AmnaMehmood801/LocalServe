@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Check } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
@@ -7,8 +8,11 @@ import { z } from "zod";
 
 import { useAuth } from "../app/AuthContext";
 import { useAreas } from "../app/AreaContext";
+import { Avatar } from "../components/Avatar";
 import { BackButton } from "../components/ui/BackButton";
+import { CoverCropper } from "../components/ui/CoverCropper";
 import { SelectMenu } from "../components/ui/SelectMenu";
+import { getAreaGroup } from "../lib/areaGroups";
 import { supabase } from "../lib/supabase";
 
 const accountSchema = z.object({
@@ -61,8 +65,12 @@ export function AccountPage() {
     loading: areasLoading,
     error: areasError,
   } = useAreas();
+  const queryClient = useQueryClient();
   const [saving, setSaving] = useState(false);
   const [addingProvider, setAddingProvider] = useState(false);
+  const [pendingAvatarFile, setPendingAvatarFile] = useState<File | null>(null);
+  const [avatarBusy, setAvatarBusy] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const {
     control,
@@ -77,6 +85,20 @@ export function AccountPage() {
       phone: "",
       area_id: "",
       bio: "",
+    },
+  });
+  const { data: avatarPath = null } = useQuery({
+    queryKey: ["profile-avatar", user?.id],
+    enabled: Boolean(user?.id),
+    queryFn: async () => {
+      if (!user) return null;
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("avatar_path")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data?.avatar_path ?? null;
     },
   });
 
@@ -147,6 +169,76 @@ export function AccountPage() {
     }
   }
 
+  function handleAvatarFileChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.currentTarget.files?.[0];
+    event.currentTarget.value = "";
+    if (!file) return;
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      toast.error("Choose a JPEG, PNG, or WebP image.");
+      return;
+    }
+    setPendingAvatarFile(file);
+  }
+
+  async function uploadAvatar(file: File) {
+    if (!user) return;
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("This photo is too large to upload. Choose another image.");
+      setPendingAvatarFile(null);
+      return;
+    }
+
+    setAvatarBusy(true);
+    const path = `${user.id}/avatar-${crypto.randomUUID()}.jpg`;
+    try {
+      const { error: uploadError } = await supabase.storage
+        .from("profile-images")
+        .upload(path, file, { contentType: "image/jpeg", upsert: false });
+      if (uploadError) throw uploadError;
+
+      const { error: updateError } = await supabase.rpc("set_my_avatar", {
+        p_path: path,
+      });
+      if (updateError) {
+        await supabase.storage.from("profile-images").remove([path]);
+        throw updateError;
+      }
+
+      queryClient.setQueryData(["profile-avatar", user.id], path);
+      await queryClient.invalidateQueries({
+        queryKey: ["profile-avatar", user.id],
+      });
+      toast.success("Profile photo updated.");
+    } catch {
+      toast.error("Could not update your photo. Please try again.");
+    } finally {
+      setAvatarBusy(false);
+      setPendingAvatarFile(null);
+    }
+  }
+
+  async function removeAvatar() {
+    if (!user || !avatarPath) return;
+    setAvatarBusy(true);
+    const oldPath = avatarPath;
+    try {
+      const { error } = await supabase.rpc("set_my_avatar", { p_path: null });
+      if (error) throw error;
+      queryClient.setQueryData(["profile-avatar", user.id], null);
+      try {
+        await supabase.storage.from("profile-images").remove([oldPath]);
+      } catch {}
+      await queryClient.invalidateQueries({
+        queryKey: ["profile-avatar", user.id],
+      });
+      toast.success("Profile photo removed.");
+    } catch {
+      toast.error("Could not remove your photo. Please try again.");
+    } finally {
+      setAvatarBusy(false);
+    }
+  }
+
   if (authLoading || (areasLoading && !profile)) {
     return (
       <div className="shell-container py-12" role="status">
@@ -210,6 +302,45 @@ export function AccountPage() {
         noValidate
         className="mt-6 space-y-5 rounded-xl border border-cream-100 bg-white p-5 shadow-sm md:p-7"
       >
+        <div className="flex flex-wrap items-center gap-4 border-b border-cream-100 pb-5">
+          <Avatar
+            avatarPath={avatarPath}
+            name={profile.display_name || user?.email || "Account"}
+            size={80}
+          />
+          <div className="min-w-0">
+            <p className="mb-2 text-sm font-medium">Profile photo</p>
+            <input
+              ref={avatarInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={handleAvatarFileChange}
+              className="sr-only"
+              aria-label="Choose a profile photo"
+            />
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => avatarInputRef.current?.click()}
+                disabled={avatarBusy || inactive}
+                className="h-10 rounded-lg border border-slate-400/50 px-3 text-sm font-medium hover:bg-slate-50 disabled:opacity-50"
+              >
+                Upload photo
+              </button>
+              {avatarPath && (
+                <button
+                  type="button"
+                  onClick={() => void removeAvatar()}
+                  disabled={avatarBusy || inactive}
+                  className="h-10 rounded-lg border border-slate-400/50 px-3 text-sm font-medium text-rose-600 hover:bg-rose-50 disabled:opacity-50"
+                >
+                  Remove
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
         <div>
           <label
             htmlFor="account-display-name"
@@ -300,6 +431,7 @@ export function AccountPage() {
                   options={areas.map((area) => ({
                     value: area.id,
                     label: area.name,
+                    group: getAreaGroup(area.slug),
                   }))}
                   ariaLabel="Samundri locality"
                   placeholder="Choose a locality"
@@ -391,6 +523,17 @@ export function AccountPage() {
           {saving ? "Saving profile..." : "Save changes"}
         </button>
       </form>
+
+      {pendingAvatarFile && (
+        <CoverCropper
+          file={pendingAvatarFile}
+          aspect={1}
+          outputSize={{ width: 512, height: 512 }}
+          title="Adjust profile photo"
+          onCancel={() => setPendingAvatarFile(null)}
+          onDone={(file) => void uploadAvatar(file)}
+        />
+      )}
 
       {roles.includes("customer") && !roles.includes("provider") && (
         <section className="mt-6 border-t border-cream-100 pt-6">

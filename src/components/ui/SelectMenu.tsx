@@ -6,10 +6,12 @@ import {
   type KeyboardEvent,
 } from "react";
 import { Check, ChevronDown } from "lucide-react";
+import { groupAreaOptions } from "../../lib/areaGroups";
 
 type SelectMenuOption = {
   value: string;
   label: string;
+  group?: string;
 };
 
 type SelectMenuProps = {
@@ -24,6 +26,31 @@ type SelectMenuProps = {
   id?: string;
 };
 
+type SelectMenuRow =
+  | { type: "group"; group: string; count: number }
+  | { type: "option"; option: SelectMenuOption };
+
+function getVisibleRows(
+  groups: ReturnType<typeof groupAreaOptions<SelectMenuOption>>,
+  expandedGroup: string | null,
+): SelectMenuRow[] {
+  return groups.flatMap(({ group, options: groupOptions }) => {
+    if (!group) {
+      return groupOptions.map((option) => ({
+        type: "option" as const,
+        option,
+      }));
+    }
+
+    return [
+      { type: "group" as const, group, count: groupOptions.length },
+      ...(expandedGroup === group
+        ? groupOptions.map((option) => ({ type: "option" as const, option }))
+        : []),
+    ];
+  });
+}
+
 export function SelectMenu({
   value,
   onChange,
@@ -37,20 +64,22 @@ export function SelectMenu({
 }: SelectMenuProps) {
   const [open, setOpen] = useState(false);
   const [highlightIndex, setHighlightIndex] = useState(-1);
+  const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const optionRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const rowRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   const selectedOption = useMemo(
     () => options.find((option) => option.value === value),
     [options, value],
   );
-
-  useEffect(() => {
-    if (!open) return;
-
-    const currentIndex = options.findIndex((option) => option.value === value);
-    setHighlightIndex(currentIndex >= 0 ? currentIndex : 0);
-  }, [open, options, value]);
+  const optionGroups = useMemo(() => groupAreaOptions(options), [options]);
+  const visibleRows = useMemo(
+    () => getVisibleRows(optionGroups, expandedGroup),
+    [expandedGroup, optionGroups],
+  );
+  const hasGroupedOptions = optionGroups.some((optionGroup) =>
+    Boolean(optionGroup.group),
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -77,7 +106,7 @@ export function SelectMenu({
   useEffect(() => {
     if (highlightIndex < 0 || !open) return;
 
-    optionRefs.current[highlightIndex]?.scrollIntoView({ block: "nearest" });
+    rowRefs.current[highlightIndex]?.scrollIntoView({ block: "nearest" });
   }, [highlightIndex, open]);
 
   function handleSelect(nextValue: string) {
@@ -85,31 +114,83 @@ export function SelectMenu({
     setOpen(false);
   }
 
+  function openMenu() {
+    const nextExpandedGroup = selectedOption?.group ?? null;
+    const rows = getVisibleRows(optionGroups, nextExpandedGroup);
+    const selectedIndex = rows.findIndex(
+      (row) => row.type === "option" && row.option.value === value,
+    );
+
+    setExpandedGroup(nextExpandedGroup);
+    setHighlightIndex(selectedIndex >= 0 ? selectedIndex : 0);
+    setOpen(true);
+  }
+
+  function activateRow(index: number) {
+    const row = visibleRows[index];
+    if (!row) return;
+
+    if (row.type === "group") {
+      const nextExpandedGroup = expandedGroup === row.group ? null : row.group;
+      const nextRows = getVisibleRows(optionGroups, nextExpandedGroup);
+      const nextIndex = nextRows.findIndex(
+        (nextRow) => nextRow.type === "group" && nextRow.group === row.group,
+      );
+
+      setExpandedGroup(nextExpandedGroup);
+      setHighlightIndex(nextIndex);
+    } else {
+      handleSelect(row.option.value);
+    }
+  }
+
+  function moveHighlight(index: number, direction: -1 | 1) {
+    if (visibleRows.length === 0) return;
+
+    const nextIndex =
+      index < 0
+        ? direction === 1
+          ? 0
+          : visibleRows.length - 1
+        : (index + direction + visibleRows.length) % visibleRows.length;
+    setHighlightIndex(nextIndex);
+    if (hasGroupedOptions) rowRefs.current[nextIndex]?.focus();
+  }
+
   function handleButtonKeyDown(event: KeyboardEvent<HTMLButtonElement>) {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
       if (!open) {
-        setOpen(true);
-      } else if (highlightIndex >= 0 && options[highlightIndex]) {
-        handleSelect(options[highlightIndex].value);
-      }
+        openMenu();
+      } else activateRow(highlightIndex);
       return;
     }
 
-    if (!open || options.length === 0) return;
+    if (!open) return;
 
     if (event.key === "ArrowDown") {
       event.preventDefault();
-      setHighlightIndex((current) =>
-        current < 0 ? 0 : (current + 1) % options.length,
-      );
+      moveHighlight(highlightIndex, 1);
     }
 
     if (event.key === "ArrowUp") {
       event.preventDefault();
-      setHighlightIndex((current) =>
-        current < 0 ? 0 : (current - 1 + options.length) % options.length,
-      );
+      moveHighlight(highlightIndex, -1);
+    }
+  }
+
+  function handleRowKeyDown(
+    event: KeyboardEvent<HTMLButtonElement>,
+    index: number,
+  ) {
+    if (event.key === "Escape") {
+      setOpen(false);
+    } else if (event.key === "ArrowDown") {
+      event.preventDefault();
+      moveHighlight(index, 1);
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      moveHighlight(index, -1);
     }
   }
 
@@ -121,7 +202,7 @@ export function SelectMenu({
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={ariaLabel}
-        onClick={() => setOpen((current) => !current)}
+        onClick={() => (open ? setOpen(false) : openMenu())}
         onKeyDown={handleButtonKeyDown}
         className={`flex ${size === "sm" ? "h-10 px-3 text-sm" : "min-h-12 px-3 py-1.5 pr-10 text-base"} w-full items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white text-left outline-none transition-colors hover:border-[#1DBF73] focus:border-[#1DBF73] focus:outline-none focus:!ring-2 focus:!ring-[#1DBF73]/30 aria-expanded:border-[#1DBF73] aria-expanded:!ring-2 aria-expanded:!ring-[#1DBF73]/30 ${buttonClassName}`}
       >
@@ -137,23 +218,59 @@ export function SelectMenu({
         <div
           role="listbox"
           aria-label={`${ariaLabel} options`}
-          className="absolute left-0 top-full z-50 mt-2 max-h-64 w-full min-w-full overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg"
+          className="absolute left-0 top-full z-50 mt-2 max-h-80 w-full min-w-full overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg"
         >
-          {options.map((option, index) => {
-            const isSelected = option.value === value;
+          {visibleRows.map((row, index) => {
             const isHighlighted = index === highlightIndex;
+
+            if (row.type === "group") {
+              const isExpanded = expandedGroup === row.group;
+
+              return (
+                <button
+                  key={`group-${row.group}`}
+                  ref={(element) => {
+                    rowRefs.current[index] = element;
+                  }}
+                  type="button"
+                  aria-expanded={isExpanded}
+                  aria-label={`${row.group}, ${row.count} areas`}
+                  onClick={() => activateRow(index)}
+                  onKeyDown={(event) => handleRowKeyDown(event, index)}
+                  className={`flex min-h-9 w-full cursor-pointer items-center justify-between gap-3 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide transition-colors duration-150 ${
+                    isHighlighted
+                      ? "bg-[#F0FAF4] text-slate-900"
+                      : "bg-white text-slate-600 hover:bg-[#F0FAF4]"
+                  }`}
+                >
+                  <span className="truncate">{row.group}</span>
+                  <span className="ml-auto shrink-0 text-xs font-medium normal-case tracking-normal text-slate-500">
+                    {row.count}
+                  </span>
+                  <ChevronDown
+                    size={14}
+                    aria-hidden="true"
+                    className={`shrink-0 transition-transform ${isExpanded ? "" : "-rotate-90"}`}
+                  />
+                </button>
+              );
+            }
+
+            const option = row.option;
+            const isSelected = option.value === value;
 
             return (
               <button
                 key={option.value}
                 ref={(element) => {
-                  optionRefs.current[index] = element;
+                  rowRefs.current[index] = element;
                 }}
                 type="button"
                 role="option"
                 aria-selected={isSelected}
                 onClick={() => handleSelect(option.value)}
-                className={`flex ${size === "sm" ? "px-3 py-2 text-sm" : "min-h-[44px] px-4 text-base"} w-full cursor-pointer items-center justify-between gap-3 text-left transition-colors duration-150 ${
+                onKeyDown={(event) => handleRowKeyDown(event, index)}
+                className={`flex ${option.group ? "min-h-[34px] px-3 py-1.5 text-sm" : size === "sm" ? "px-3 py-2 text-sm" : "min-h-[44px] px-4 text-base"} w-full cursor-pointer items-center justify-between gap-3 text-left transition-colors duration-150 ${
                   isSelected
                     ? "bg-[#E3F7EC] font-medium text-[#168A55] hover:bg-[#D3F0DF]"
                     : isHighlighted

@@ -8,6 +8,7 @@ import { toast } from "../lib/toast";
 
 import { useAreas } from "../app/AreaContext";
 import { SelectMenu } from "../components/ui/SelectMenu";
+import { getAreaGroup } from "../lib/areaGroups";
 import { supabase } from "../lib/supabase";
 import { AuthShell } from "../components/auth/AuthShell";
 
@@ -243,6 +244,7 @@ export function RegisterPage() {
                     options={areas.map((area) => ({
                       value: area.id,
                       label: area.name,
+                      group: getAreaGroup(area.slug),
                     }))}
                     ariaLabel="Samundri area"
                     placeholder="Select an area"
