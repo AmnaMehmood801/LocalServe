@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 
+import { Avatar } from "../components/Avatar";
 import type { ListingCardData } from "../components/listing/ListingCard";
 import { ListingCard } from "../components/listing/ListingCard";
 import { BackButton } from "../components/ui/BackButton";
@@ -26,6 +27,7 @@ type ProviderListing = ListingCardData & {
 type ProviderPageData = {
   id: string;
   displayName: string;
+  avatarPath: string | null;
   bio: string | null;
   isVerified: boolean;
   listings: ProviderListing[];
@@ -39,6 +41,7 @@ type ProviderReview = {
   comment: string | null;
   created_at: string;
   authorName: string;
+  authorAvatarPath: string | null;
 };
 
 type ProviderReviewData = {
@@ -60,7 +63,9 @@ async function loadProviderPage(
     cityId: null,
     areaId: null,
   });
-  const profile = profiles[0];
+  const profile = profiles[0] as
+    | ((typeof profiles)[number] & { avatar_path?: string | null })
+    | undefined;
   if (!profile) return null;
 
   const { data: listingRows, error: listingsError } = await supabase
@@ -100,6 +105,7 @@ async function loadProviderPage(
   return {
     id: profile.id,
     displayName: profile.display_name.trim() || "Local provider",
+    avatarPath: profile.avatar_path ?? null,
     bio: profile.bio,
     isVerified: profile.is_verified,
     listings: listings.map((listing) => ({
@@ -137,15 +143,18 @@ async function loadProviderReviews(
   const { data: profiles, error: profileError } = authorIds.length
     ? await supabase
         .from("profiles_public")
-        .select("id, display_name")
+          .select("id, display_name, avatar_path")
         .in("id", authorIds)
     : { data: [], error: null };
   if (profileError) throw profileError;
 
-  const authorNames = new Map(
+  const authors = new Map(
     (profiles ?? []).map((profile) => [
       profile.id,
-      profile.display_name?.trim() || "Local customer",
+      {
+        name: profile.display_name?.trim() || "Local customer",
+        avatarPath: profile.avatar_path,
+      },
     ]),
   );
   const totalCount = count ?? rows.length;
@@ -158,18 +167,10 @@ async function loadProviderReviews(
       : null,
     reviews: rows.slice(0, 10).map((review) => ({
       ...review,
-      authorName: authorNames.get(review.author_id) ?? "Local customer",
+      authorName: authors.get(review.author_id)?.name ?? "Local customer",
+      authorAvatarPath: authors.get(review.author_id)?.avatarPath ?? null,
     })),
   };
-}
-
-function getInitials(name: string) {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join("");
 }
 
 export function PublicProviderPage() {
@@ -305,15 +306,11 @@ export function PublicProviderPage() {
       <BackButton fallback="/search" label="Back" className="mb-4" />
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
         <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
-          <div
-            role="img"
-            aria-label={`${provider.displayName} profile`}
-            className="grid size-20 shrink-0 place-items-center rounded-2xl bg-[#E3F7EC] text-2xl font-semibold text-[#168A55]"
-          >
-            {getInitials(provider.displayName) || (
-              <Wrench size={27} aria-hidden="true" />
-            )}
-          </div>
+          <Avatar
+            avatarPath={provider.avatarPath}
+            name={provider.displayName}
+            size={80}
+          />
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
               <h1 className="min-w-0 break-words text-2xl font-semibold text-[#1D1F23]">
@@ -492,7 +489,11 @@ export function PublicProviderPage() {
             {provider.listings.length > 0 ? (
               <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 {provider.listings.map((listing) => (
-                  <ListingCard key={listing.id} listing={listing} />
+                  <ListingCard
+                    key={listing.id}
+                    listing={listing}
+                    avatarPath={provider.avatarPath}
+                  />
                 ))}
               </div>
             ) : (
@@ -575,12 +576,11 @@ export function PublicProviderPage() {
                   >
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <div className="flex min-w-0 items-center gap-3">
-                        <span
-                          aria-label={`${review.authorName} reviewer`}
-                          className="grid size-10 shrink-0 place-items-center rounded-full bg-cream-50 text-sm font-semibold text-slate-600"
-                        >
-                          {getInitials(review.authorName) || "C"}
-                        </span>
+                        <Avatar
+                          avatarPath={review.authorAvatarPath}
+                          name={review.authorName}
+                          size={36}
+                        />
                         <div className="min-w-0">
                           <p className="truncate text-sm font-semibold">
                             {review.authorName}

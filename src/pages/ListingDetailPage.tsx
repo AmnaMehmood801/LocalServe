@@ -5,6 +5,7 @@ import { Link, useParams } from "react-router-dom";
 import { MapPin, MessageSquare, Star, Tag } from "lucide-react";
 
 import { useAuth } from "../app/AuthContext";
+import { Avatar } from "../components/Avatar";
 import type { ListingCardData } from "../components/listing/ListingCard";
 import { ListingCover } from "../components/listing/ListingCover";
 import { BackButton } from "../components/ui/BackButton";
@@ -16,6 +17,7 @@ type ListingDetail = ListingCardData & {
   description: string;
   availability_note: string | null;
   providerBio: string | null;
+  providerAvatarPath: string | null;
   areaName: string;
   cityName: string;
   isActive: boolean;
@@ -28,6 +30,7 @@ type ListingReview = {
   comment: string | null;
   created_at: string;
   authorName: string;
+  authorAvatarPath: string | null;
 };
 
 async function loadListingReviews(listingId: string): Promise<ListingReview[]> {
@@ -46,16 +49,23 @@ async function loadListingReviews(listingId: string): Promise<ListingReview[]> {
   const authorIds = [...new Set(reviews.map((review) => review.author_id))];
   const { data: profiles, error: profileError } = await supabase
     .from("profiles_public")
-    .select("id, display_name")
+    .select("id, display_name, avatar_path")
     .in("id", authorIds);
   if (profileError) throw profileError;
 
   const authors = new Map(
-    (profiles ?? []).map((profile) => [profile.id, profile.display_name]),
+    (profiles ?? []).map((profile) => [
+      profile.id,
+      {
+        name: profile.display_name,
+        avatarPath: profile.avatar_path,
+      },
+    ]),
   );
   return reviews.map((review) => ({
     ...review,
-    authorName: authors.get(review.author_id) ?? "Local customer",
+    authorName: authors.get(review.author_id)?.name ?? "Local customer",
+    authorAvatarPath: authors.get(review.author_id)?.avatarPath ?? null,
   }));
 }
 
@@ -92,7 +102,9 @@ async function loadListingDetail(
   if (cityResult.error) throw cityResult.error;
   if (areaResult.error) throw areaResult.error;
 
-  const profile = profiles[0] ?? null;
+  const profile = (profiles[0] ?? null) as
+    | ((typeof profiles)[number] & { avatar_path?: string | null })
+    | null;
 
   return {
     id: row.id,
@@ -109,6 +121,7 @@ async function loadListingDetail(
       profile?.display_name?.trim() || "Provider details unavailable",
     providerVerified: profile?.is_verified ?? false,
     providerBio: profile?.bio ?? null,
+    providerAvatarPath: profile?.avatar_path ?? null,
     availability_note: row.availability_note,
     areaName: areaResult.data?.name ?? "Samundri",
     cityName: cityResult.data?.name ?? "Samundri",
@@ -256,9 +269,11 @@ export function ListingDetailPage() {
               to={`/providers/${listing.provider_id}`}
               className="inline-flex min-h-8 items-center gap-2 rounded-sm font-medium text-teal-700 no-underline hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600"
             >
-              <span className="grid size-7 shrink-0 place-items-center rounded-full bg-[#E3F7EC] text-xs font-semibold text-[#168A55]">
-                {listing.providerName.trim().charAt(0).toUpperCase()}
-              </span>
+              <Avatar
+                avatarPath={listing.providerAvatarPath}
+                name={listing.providerName}
+                size={24}
+              />
               {listing.providerName}
             </Link>
           </div>
@@ -292,9 +307,11 @@ export function ListingDetailPage() {
           <section className="mt-8 rounded-xl border border-slate-200 bg-white p-5">
             <h2 className="text-xl font-semibold">About the provider</h2>
             <div className="mt-3 flex items-start gap-3">
-              <span className="grid size-14 shrink-0 place-items-center rounded-full bg-[#E3F7EC] font-semibold text-[#168A55]">
-                {listing.providerName.trim().charAt(0).toUpperCase()}
-              </span>
+              <Avatar
+                avatarPath={listing.providerAvatarPath}
+                name={listing.providerName}
+                size={48}
+              />
               <div>
                 <Link
                   to={`/providers/${listing.provider_id}`}
@@ -384,10 +401,17 @@ export function ListingDetailPage() {
                         {review.comment}
                       </p>
                     )}
-                    <p className="mt-3 text-xs text-slate-600">
-                      {review.authorName} ·{" "}
-                      {format(new Date(review.created_at), "MMM d, yyyy")}
-                    </p>
+                    <div className="mt-3 flex items-center gap-2 text-xs text-slate-600">
+                      <Avatar
+                        avatarPath={review.authorAvatarPath}
+                        name={review.authorName}
+                        size={36}
+                      />
+                      <p>
+                        {review.authorName} ·{" "}
+                        {format(new Date(review.created_at), "MMM d, yyyy")}
+                      </p>
+                    </div>
                   </article>
                 ))}
               </div>
