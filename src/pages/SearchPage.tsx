@@ -33,8 +33,15 @@ type SearchListingRow = {
 };
 type SearchListing = SearchListingRow & {
   providerName: string;
+  avatarPath: string | null;
   providerVerified: boolean;
   categoryName: string;
+};
+type SearchProviderProfile = {
+  id: string;
+  display_name: string;
+  is_verified: boolean;
+  avatar_path: string | null;
 };
 type SearchResult = { listings: SearchListing[]; count: number };
 
@@ -151,7 +158,10 @@ async function loadSearchResults(
   if (categoriesResult.error) throw categoriesResult.error;
 
   const profiles = new Map(
-    profilesResult.map((profile) => [profile.id, profile]),
+    (profilesResult as SearchProviderProfile[]).map((profile) => [
+      profile.id,
+      profile,
+    ]),
   );
   const categories = new Map(
     ((categoriesResult.data ?? []) as Array<{ id: string; name: string }>).map(
@@ -167,6 +177,7 @@ async function loadSearchResults(
         ...row,
         providerName:
           profile?.display_name?.trim() || "Provider details unavailable",
+        avatarPath: profile?.avatar_path ?? null,
         providerVerified: profile?.is_verified ?? false,
         categoryName: categories.get(row.category_id) ?? "Local service",
       };
@@ -579,7 +590,13 @@ export function SearchPage() {
             <>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {resultsQuery.data.listings.map((listing) => {
-                  return <ListingCard key={listing.id} listing={listing} />;
+                  return (
+                    <ListingCard
+                      key={listing.id}
+                      listing={listing}
+                      avatarPath={listing.avatarPath}
+                    />
+                  );
                 })}
               </div>
               {totalPages > 1 && (

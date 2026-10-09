@@ -1,6 +1,7 @@
 import { ArrowUpRight, MapPin, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 
+import { Avatar } from "../Avatar";
 import { ListingCover } from "./ListingCover";
 
 export type ListingCardData = {
@@ -19,9 +20,11 @@ export type ListingCardData = {
 
 export function ListingCard({
   listing,
+  avatarPath,
   fallbackImageUrl,
 }: {
   listing: ListingCardData;
+  avatarPath?: string | null;
   fallbackImageUrl?: string;
 }) {
   return (
@@ -68,12 +71,19 @@ export function ListingCard({
             {listing.title}
           </Link>
         </h2>
-        <Link
-          to={`/providers/${listing.provider_id}`}
-          className="mt-2 inline-flex min-h-8 max-w-full items-center self-start truncate rounded-sm text-sm text-slate-600 transition hover:text-teal-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600"
-        >
-          {listing.providerName}
-        </Link>
+        <div className="mt-2 inline-flex min-w-0 max-w-full items-center gap-2 self-start">
+          <Avatar
+            avatarPath={avatarPath}
+            name={listing.providerName}
+            size={24}
+          />
+          <Link
+            to={`/providers/${listing.provider_id}`}
+            className="inline-flex min-h-8 max-w-full items-center truncate rounded-sm text-sm text-slate-600 transition hover:text-teal-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600"
+          >
+            {listing.providerName}
+          </Link>
+        </div>
         <div className="mt-3 flex min-h-5 items-center justify-between gap-3">
           <p
             className="inline-flex items-center gap-1.5 text-sm font-medium text-ink"
