@@ -9,6 +9,7 @@ import { BookingDetailPage } from "../pages/BookingDetailPage";
 import { CustomerBookingsPage } from "../pages/CustomerBookingsPage";
 import { ListingDetailPage } from "../pages/ListingDetailPage";
 import { LoginPage } from "../pages/LoginPage";
+import { MemberHomePage } from "../pages/MemberHomePage";
 import { ForgotPasswordPage } from "../pages/ForgotPasswordPage";
 import { NotFoundPage } from "../pages/NotFoundPage";
 import { PrivacyPage } from "../pages/PrivacyPage";
@@ -102,6 +103,7 @@ const router = createBrowserRouter([
       {
         element: <ProtectedRoute />,
         children: [
+          { path: "/home", element: <MemberHomePage /> },
           {
             path: "/account",
             element: <AccountPage />,

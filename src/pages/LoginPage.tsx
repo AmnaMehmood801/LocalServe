@@ -22,7 +22,7 @@ function getSafeNext(value: string | null) {
     value.startsWith("//") ||
     value.includes("\\")
   )
-    return "/";
+    return "/home";
   return value;
 }
 
