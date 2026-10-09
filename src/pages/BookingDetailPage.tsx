@@ -9,6 +9,7 @@ import { toast } from "../lib/toast";
 import { z } from "zod";
 
 import { useAuth } from "../app/AuthContext";
+import { Avatar } from "../components/Avatar";
 import { BookingStatusBadge } from "../components/booking/BookingStatusBadge";
 import { BackButton } from "../components/ui/BackButton";
 import {
@@ -37,6 +38,7 @@ type BookingDetails = {
   cancel_reason: string | null;
   completed_at: string | null;
   counterpart_name: string | null;
+  counterpart_avatar_path: string | null;
   review: {
     id: string;
     rating: number;
@@ -93,16 +95,21 @@ export function BookingDetailPage() {
       if (error) throw error;
       if (!data) return null;
 
-      const row = data as Omit<BookingDetails, "counterpart_name">;
+      const row = data as Omit<
+        BookingDetails,
+        "counterpart_name" | "counterpart_avatar_path"
+      >;
       const isCustomer = row.customer_id === user!.id;
       let counterpartName: string | null = null;
+      let counterpartAvatarPath: string | null = null;
       if (isCustomer) {
         const { data: publicProfile } = await supabase
           .from("profiles_public")
-          .select("display_name")
+          .select("display_name, avatar_path")
           .eq("id", row.provider_id)
           .maybeSingle();
         counterpartName = publicProfile?.display_name?.trim() || null;
+        counterpartAvatarPath = publicProfile?.avatar_path ?? null;
       } else {
         const { data: bookingNames } = await supabase.rpc(
           "get_booking_customer_names",
@@ -128,6 +135,7 @@ export function BookingDetailPage() {
       return {
         ...row,
         counterpart_name: counterpartName,
+        counterpart_avatar_path: counterpartAvatarPath,
         review,
       } satisfies BookingDetails;
     },
@@ -282,12 +290,11 @@ export function BookingDetailPage() {
                 to={`/providers/${booking.provider_id}`}
                 className="inline-flex items-center gap-1.5 text-[#168A55] no-underline hover:underline"
               >
-                <span className="grid size-6 shrink-0 place-items-center rounded-md bg-[#E3F7EC] text-xs font-semibold text-[#168A55]">
-                  {(booking.counterpart_name ?? "LocalServe member")
-                    .trim()
-                    .charAt(0)
-                    .toUpperCase()}
-                </span>
+                <Avatar
+                  avatarPath={booking.counterpart_avatar_path}
+                  name={booking.counterpart_name ?? "LocalServe member"}
+                  size={40}
+                />
                 {booking.counterpart_name ?? "LocalServe member"}
               </Link>
             ) : (

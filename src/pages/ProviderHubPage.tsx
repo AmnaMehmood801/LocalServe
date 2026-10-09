@@ -11,10 +11,25 @@ import {
 import { Link, NavLink, Outlet } from "react-router-dom";
 
 import { useAuth } from "../app/AuthContext";
+import { Avatar } from "../components/Avatar";
 import { supabase } from "../lib/supabase";
 
 export default function ProviderHubPage() {
   const { user, profile, profileError, loading: authLoading } = useAuth();
+  const { data: avatarPath = null } = useQuery({
+    queryKey: ["profile-avatar", user?.id],
+    enabled: Boolean(user?.id),
+    queryFn: async () => {
+      if (!user) return null;
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("avatar_path")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data?.avatar_path ?? null;
+    },
+  });
 
   const reviewsQuery = useQuery({
     queryKey: ["provider-hub", "reviews", user?.id],
@@ -97,9 +112,7 @@ export default function ProviderHubPage() {
         <aside className="min-w-0 space-y-3">
           <section className="rounded-2xl border border-slate-200 bg-white p-6">
             <div className="flex flex-col items-center text-center">
-              <div className="mx-auto grid size-[88px] place-items-center rounded-full bg-[#E3F7EC] text-3xl font-semibold text-[#168A55]">
-                {displayName.slice(0, 1).toUpperCase() || "P"}
-              </div>
+              <Avatar avatarPath={avatarPath} name={displayName} size={88} />
               <h1 className="mt-4 text-lg font-semibold text-slate-900">
                 {displayName}
               </h1>
