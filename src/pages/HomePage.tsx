@@ -308,8 +308,7 @@ async function fetchRecentReviews(): Promise<HomeReview[]> {
         ...review,
         listingTitle,
         authorName: authors.get(review.author_id)?.name ?? "Local customer",
-        authorAvatarPath:
-          authors.get(review.author_id)?.avatarPath ?? null,
+        authorAvatarPath: authors.get(review.author_id)?.avatarPath ?? null,
       },
     ];
   });
@@ -451,9 +450,9 @@ function VerifiedProvidersSection() {
   const [hasEntered, setHasEntered] = useState(false);
   const [entranceComplete, setEntranceComplete] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-  const [hoveredTile, setHoveredTile] = useState<number | null>(null);
-  const [focusedTile, setFocusedTile] = useState<number | null>(null);
-  const [displayedName, setDisplayedName] = useState("");
+  const [activeIndex, setActiveIndex] = useState(3);
+  const [displayedProvider, setDisplayedProvider] =
+    useState<HomeVerifiedProvider | null>(null);
   const [nameVisible, setNameVisible] = useState(true);
 
   useEffect(() => {
@@ -495,31 +494,30 @@ function VerifiedProvidersSection() {
   }, []);
 
   const providers = providersQuery.data ?? [];
+  const activeProvider = providers[activeIndex % Math.max(1, providers.length)];
   const tiles = Array.from({ length: 7 }, (_, index) => ({
     provider: providers[index % Math.max(1, providers.length)],
     index,
     isRepeated: index >= providers.length,
-    distance: Math.abs(index - 3),
+    slot: ((index - activeIndex + 10) % 7) - 3,
   }));
-  const selectedTile = hoveredTile ?? focusedTile ?? 3;
-  const selectedProvider = tiles[selectedTile]?.provider;
 
   useEffect(() => {
-    if (!selectedProvider) return;
-    if (!displayedName || prefersReducedMotion) {
-      setDisplayedName(selectedProvider.displayName);
+    if (!activeProvider) return;
+    if (!displayedProvider || prefersReducedMotion) {
+      setDisplayedProvider(activeProvider);
       setNameVisible(true);
       return;
     }
-    if (displayedName === selectedProvider.displayName) return;
+    if (displayedProvider.id === activeProvider.id) return;
 
     setNameVisible(false);
     const timer = window.setTimeout(() => {
-      setDisplayedName(selectedProvider.displayName);
+      setDisplayedProvider(activeProvider);
       setNameVisible(true);
     }, 120);
     return () => window.clearTimeout(timer);
-  }, [displayedName, prefersReducedMotion, selectedProvider]);
+  }, [activeProvider, displayedProvider, prefersReducedMotion]);
 
   if (
     providersQuery.isError ||
@@ -539,11 +537,32 @@ function VerifiedProvidersSection() {
       hasEntered && !entranceComplete ? "transform, opacity" : "auto",
   });
 
-  const dimensions = (distance: number) => {
-    if (distance === 0) return "size-[104px] md:size-[168px]";
-    if (distance === 1) return "size-[76px] md:size-[128px]";
-    if (distance === 2) return "size-[60px] md:size-[100px]";
-    return "size-[80px]";
+  const tileWidth = (distance: number) =>
+    [
+      "min(16.2vw, 230px)",
+      "min(12.6vw, 180px)",
+      "min(9.9vw, 140px)",
+      "min(8.46vw, 120px)",
+    ][Math.min(distance, 3)];
+  const tileHalfWidth = (distance: number) =>
+    [
+      "min(8.1vw, 115px)",
+      "min(6.3vw, 90px)",
+      "min(4.95vw, 70px)",
+      "min(4.23vw, 60px)",
+    ][Math.min(distance, 3)];
+  const tileOffset = (slot: number) => {
+    if (slot === 0) return "0px";
+    const parts: string[] = [];
+    for (let distance = 0; distance < Math.abs(slot); distance += 1) {
+      parts.push(
+        tileHalfWidth(distance),
+        "min(1.125vw, 16px)",
+        tileHalfWidth(distance + 1),
+      );
+    }
+    const offset = parts.join(" + ");
+    return slot < 0 ? `calc(0px - (${offset}))` : `calc(${offset})`;
   };
 
   return (
@@ -575,92 +594,106 @@ function VerifiedProvidersSection() {
         </p>
 
         <div
-          className="mt-9 flex items-end justify-center -space-x-4 md:-space-x-6"
-          role={providersQuery.isPending ? "status" : undefined}
-          aria-label={providersQuery.isPending ? "Loading verified providers" : undefined}
-        >
-          {providersQuery.isPending
-            ? Array.from({ length: 7 }, (_, index) => {
-                const distance = Math.abs(index - 3);
-                return (
-                  <div
-                    key={index}
-                    aria-hidden="true"
-                    className={`${dimensions(distance)} shrink-0 rounded-[20px] bg-[#E3F7EC] animate-pulse motion-reduce:animate-none ${
-                      distance === 3 ? "hidden md:block" : ""
-                    }`}
-                  />
-                );
-              })
-            : tiles.map(({ provider, index, isRepeated, distance }) => {
-                if (!provider) return null;
-                const isHovered = hoveredTile === index;
-                const isFocused = focusedTile === index;
-                const isHighlighted = isHovered || isFocused;
-                const entranceInProgress = hasEntered && !entranceComplete;
-                const baseOpacity = [1, 0.85, 0.65, 0.45][distance];
-                const initialX = index < 3 ? 40 : index > 3 ? -40 : 0;
-                const delay = 800 + distance * 120;
-                const tileTransition = prefersReducedMotion
-                  ? "none"
-                  : entranceInProgress
-                    ? "transform 700ms cubic-bezier(0.22, 1, 0.36, 1), opacity 700ms cubic-bezier(0.22, 1, 0.36, 1)"
-                    : "transform 300ms cubic-bezier(0.22, 1, 0.36, 1), opacity 300ms cubic-bezier(0.22, 1, 0.36, 1)";
+                      className="relative mx-auto mt-9 w-full"
+                      style={{ height: "min(16.2vw, 230px)" }}
+                      role={providersQuery.isPending ? "status" : undefined}
+                      aria-label={
+                        providersQuery.isPending ? "Loading verified providers" : undefined
+                      }
+                    >
+                      {providersQuery.isPending
+                        ? tiles.map(({ index, slot }) => {
+                            const distance = Math.abs(slot);
+                            return (
+                              <div
+                                key={index}
+                                aria-hidden="true"
+                                className="absolute left-1/2 top-1/2 animate-pulse rounded-2xl bg-[#CFE9DB] motion-reduce:animate-none"
+                                style={{
+                                  width: tileWidth(distance),
+                                  aspectRatio: "1",
+                                  transform: `translate(calc(-50% + ${tileOffset(slot)}), -50%)`,
+                                }}
+                              />
+                            );
+                          })
+                        : tiles.map(({ provider, index, isRepeated, slot }) => {
+                            if (!provider) return null;
+                            const distance = Math.abs(slot);
+                            const entranceInProgress = hasEntered && !entranceComplete;
+                            const opacityByDistance = [1, 0.86, 0.66, 0.44];
+                            const delay = 800 + distance * 120;
+                            const tileTransition = prefersReducedMotion
+                              ? "none"
+                              : entranceInProgress
+                                ? "transform 700ms cubic-bezier(0.22, 1, 0.36, 1), width 700ms cubic-bezier(0.22, 1, 0.36, 1), opacity 700ms cubic-bezier(0.22, 1, 0.36, 1)"
+                                : "transform 500ms cubic-bezier(0.22, 1, 0.36, 1), width 500ms cubic-bezier(0.22, 1, 0.36, 1), opacity 500ms cubic-bezier(0.22, 1, 0.36, 1)";
 
-                return (
-                  <Link
-                    key={`${index}-${provider.id}`}
-                    to={`/providers/${provider.id}`}
-                    aria-label={`${provider.displayName}, verified provider`}
-                    aria-hidden={isRepeated ? true : undefined}
-                    tabIndex={isRepeated ? -1 : 0}
-                    onMouseEnter={() => setHoveredTile(index)}
-                    onMouseLeave={() => setHoveredTile(null)}
-                    onFocus={() => setFocusedTile(index)}
-                    onBlur={() => setFocusedTile(null)}
-                    style={{
-                      opacity: hasEntered
-                        ? isHighlighted
-                          ? 1
-                          : baseOpacity
-                        : 0,
-                      transform: hasEntered
-                        ? `translateX(0) scale(${isHighlighted ? 1.12 : 1})`
-                        : `translateX(${initialX}px) scale(0.7)`,
-                      transition: tileTransition,
-                      transitionDelay: entranceInProgress
-                        ? `${delay}ms`
-                        : "0ms",
-                      willChange: entranceInProgress
-                        ? "transform, opacity"
-                        : "auto",
-                    }}
-                    className={`relative z-0 block shrink-0 overflow-hidden rounded-[20px] bg-[#E3F7EC] shadow-sm outline-none transition-[transform,opacity] focus-visible:ring-2 focus-visible:ring-[#19A463] ${dimensions(distance)} [&_img]:!h-full [&_img]:!w-full [&_img]:!rounded-[20px] [&_span]:!h-full [&_span]:!w-full [&_span]:!rounded-[20px] [&_span]:!text-xl md:[&_span]:!text-3xl ${
-                      distance === 3 ? "hidden md:block" : ""
-                    }`}
-                  >
-                    <Avatar
-                      avatarPath={provider.avatarPath}
-                      name={provider.displayName}
-                      size={distance === 0 ? 168 : distance === 1 ? 128 : distance === 2 ? 100 : 80}
-                    />
-                    {index === 3 && (
-                      <span className="absolute inset-x-1 bottom-1 mx-auto inline-flex w-fit items-center gap-1 rounded-full bg-[#E3F7EC] px-2 py-1 text-[10px] font-semibold text-[#168A55] shadow-sm md:bottom-2 md:text-xs">
-                        <BadgeCheck size={13} aria-hidden="true" />
-                        Verified
-                      </span>
-                    )}
-                  </Link>
-                );
-              })}
-        </div>
+                            return (
+                              <button
+                                key={`${index}-${provider.id}`}
+                                type="button"
+                                aria-label={`${provider.displayName}, verified provider`}
+                                aria-pressed={index === activeIndex}
+                                aria-hidden={isRepeated ? true : undefined}
+                                tabIndex={isRepeated ? -1 : 0}
+                                onClick={() => setActiveIndex(index)}
+                                onFocus={() => setActiveIndex(index)}
+                                style={{
+                                  width: tileWidth(distance),
+                                  aspectRatio: "1",
+                                  opacity: hasEntered ? opacityByDistance[distance] : 0,
+                                  transform: hasEntered
+                                    ? `translate(calc(-50% + ${tileOffset(slot)}), -50%)`
+                                    : `translate(calc(-50% + ${tileOffset(slot)}), -50%) scale(0.7)`,
+                                  transition: tileTransition,
+                                  transitionDelay: entranceInProgress
+                                    ? `${delay}ms`
+                                    : "0ms",
+                                  willChange: entranceInProgress
+                                    ? "transform, width, opacity"
+                                    : "auto",
+                                }}
+                                className="absolute left-1/2 top-1/2 z-0 overflow-hidden rounded-2xl border-0 bg-[#CFE9DB] p-0 shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-[#19A463]"
+                              >
+                                <span className="absolute inset-0 overflow-hidden rounded-2xl [&_img]:!h-full [&_img]:!w-full [&_img]:!rounded-2xl [&_span]:!h-full [&_span]:!w-full [&_span]:!rounded-2xl [&_span]:!bg-[#CFE9DB] [&_span]:!text-[#1F3A2E] [&_span]:!text-[clamp(1rem,4vw,3rem)]">
+                                  <Avatar
+                                    avatarPath={provider.avatarPath}
+                                    name={provider.displayName}
+                                    size={44}
+                                  />
+                                </span>
+                                {slot === 0 && (
+                                  <span
+                                    role="img"
+                                    aria-label="Verified provider"
+                                    className="absolute right-2 top-2 grid size-8 place-items-center rounded-full bg-[#19A463] text-white shadow-md"
+                                  >
+                                    <BadgeCheck size={19} aria-hidden="true" />
+                                  </span>
+                                )}
+                              </button>
+                            );
+                          })}
+                    </div>
 
-        <p
-          aria-live="polite"
-          className="mt-4 min-h-6 text-sm font-semibold text-[#404145] transition-opacity duration-200 motion-reduce:transition-none"
-          style={{ opacity: nameVisible ? 1 : 0 }}
-        >
-          {providersQuery.isPending ? " " : displayedName}
+                    <p
+                      aria-live="polite"
+                      className="mt-4 min-h-6 text-sm font-semibold text-[#404145] transition-opacity duration-200 motion-reduce:transition-none"
+                      style={{ opacity: nameVisible ? 1 : 0 }}
+                    >
+                      {providersQuery.isPending ? (
+                        " "
+                      ) : displayedProvider ? (
+                        <Link
+                          to={`/providers/${displayedProvider.id}`}
+                          className="rounded-sm hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#19A463]"
+                        >
+                          {displayedProvider.displayName}
+                        </Link>
+                      ) : (
+                        " "
+                      )}
         </p>
       </div>
     </section>

@@ -143,7 +143,7 @@ async function loadProviderReviews(
   const { data: profiles, error: profileError } = authorIds.length
     ? await supabase
         .from("profiles_public")
-          .select("id, display_name, avatar_path")
+        .select("id, display_name, avatar_path")
         .in("id", authorIds)
     : { data: [], error: null };
   if (profileError) throw profileError;
