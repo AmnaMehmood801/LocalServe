@@ -158,7 +158,7 @@ async function loadSearchResults(
   if (categoriesResult.error) throw categoriesResult.error;
 
   const profiles = new Map(
-    (profilesResult as SearchProviderProfile[]).map((profile) => [
+    (profilesResult as unknown as SearchProviderProfile[]).map((profile) => [
       profile.id,
       profile,
     ]),

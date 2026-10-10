@@ -232,7 +232,7 @@ async function fetchTopListings(
   if (categoriesResult.error) throw categoriesResult.error;
 
   const profiles = new Map(
-    (profilesResult as HomeProviderProfile[]).map((profile) => [
+    (profilesResult as unknown as HomeProviderProfile[]).map((profile) => [
       profile.id,
       profile,
     ]),
@@ -533,8 +533,7 @@ function VerifiedProvidersSection() {
       ? "none"
       : "transform 600ms cubic-bezier(0.22, 1, 0.36, 1), opacity 600ms cubic-bezier(0.22, 1, 0.36, 1)",
     transitionDelay: hasEntered ? `${delay}ms` : "0ms",
-    willChange:
-      hasEntered && !entranceComplete ? "transform, opacity" : "auto",
+    willChange: hasEntered && !entranceComplete ? "transform, opacity" : "auto",
   });
 
   const tileWidth = (distance: number) =>
@@ -594,106 +593,106 @@ function VerifiedProvidersSection() {
         </p>
 
         <div
-                      className="relative mx-auto mt-9 w-full"
-                      style={{ height: "min(16.2vw, 230px)" }}
-                      role={providersQuery.isPending ? "status" : undefined}
-                      aria-label={
-                        providersQuery.isPending ? "Loading verified providers" : undefined
-                      }
-                    >
-                      {providersQuery.isPending
-                        ? tiles.map(({ index, slot }) => {
-                            const distance = Math.abs(slot);
-                            return (
-                              <div
-                                key={index}
-                                aria-hidden="true"
-                                className="absolute left-1/2 top-1/2 animate-pulse rounded-2xl bg-[#CFE9DB] motion-reduce:animate-none"
-                                style={{
-                                  width: tileWidth(distance),
-                                  aspectRatio: "1",
-                                  transform: `translate(calc(-50% + ${tileOffset(slot)}), -50%)`,
-                                }}
-                              />
-                            );
-                          })
-                        : tiles.map(({ provider, index, isRepeated, slot }) => {
-                            if (!provider) return null;
-                            const distance = Math.abs(slot);
-                            const entranceInProgress = hasEntered && !entranceComplete;
-                            const opacityByDistance = [1, 0.86, 0.66, 0.44];
-                            const delay = 800 + distance * 120;
-                            const tileTransition = prefersReducedMotion
-                              ? "none"
-                              : entranceInProgress
-                                ? "transform 700ms cubic-bezier(0.22, 1, 0.36, 1), width 700ms cubic-bezier(0.22, 1, 0.36, 1), opacity 700ms cubic-bezier(0.22, 1, 0.36, 1)"
-                                : "transform 500ms cubic-bezier(0.22, 1, 0.36, 1), width 500ms cubic-bezier(0.22, 1, 0.36, 1), opacity 500ms cubic-bezier(0.22, 1, 0.36, 1)";
+          className="relative mx-auto mt-9 w-full"
+          style={{ height: "min(16.2vw, 230px)" }}
+          role={providersQuery.isPending ? "status" : undefined}
+          aria-label={
+            providersQuery.isPending ? "Loading verified providers" : undefined
+          }
+        >
+          {providersQuery.isPending
+            ? tiles.map(({ index, slot }) => {
+                const distance = Math.abs(slot);
+                return (
+                  <div
+                    key={index}
+                    aria-hidden="true"
+                    className="absolute left-1/2 top-1/2 animate-pulse rounded-2xl bg-[#CFE9DB] motion-reduce:animate-none"
+                    style={{
+                      width: tileWidth(distance),
+                      aspectRatio: "1",
+                      transform: `translate(calc(-50% + ${tileOffset(slot)}), -50%)`,
+                    }}
+                  />
+                );
+              })
+            : tiles.map(({ provider, index, isRepeated, slot }) => {
+                if (!provider) return null;
+                const distance = Math.abs(slot);
+                const entranceInProgress = hasEntered && !entranceComplete;
+                const opacityByDistance = [1, 0.86, 0.66, 0.44];
+                const delay = 800 + distance * 120;
+                const tileTransition = prefersReducedMotion
+                  ? "none"
+                  : entranceInProgress
+                    ? "transform 700ms cubic-bezier(0.22, 1, 0.36, 1), width 700ms cubic-bezier(0.22, 1, 0.36, 1), opacity 700ms cubic-bezier(0.22, 1, 0.36, 1)"
+                    : "transform 500ms cubic-bezier(0.22, 1, 0.36, 1), width 500ms cubic-bezier(0.22, 1, 0.36, 1), opacity 500ms cubic-bezier(0.22, 1, 0.36, 1)";
 
-                            return (
-                              <button
-                                key={`${index}-${provider.id}`}
-                                type="button"
-                                aria-label={`${provider.displayName}, verified provider`}
-                                aria-pressed={index === activeIndex}
-                                aria-hidden={isRepeated ? true : undefined}
-                                tabIndex={isRepeated ? -1 : 0}
-                                onClick={() => setActiveIndex(index)}
-                                onFocus={() => setActiveIndex(index)}
-                                style={{
-                                  width: tileWidth(distance),
-                                  aspectRatio: "1",
-                                  opacity: hasEntered ? opacityByDistance[distance] : 0,
-                                  transform: hasEntered
-                                    ? `translate(calc(-50% + ${tileOffset(slot)}), -50%)`
-                                    : `translate(calc(-50% + ${tileOffset(slot)}), -50%) scale(0.7)`,
-                                  transition: tileTransition,
-                                  transitionDelay: entranceInProgress
-                                    ? `${delay}ms`
-                                    : "0ms",
-                                  willChange: entranceInProgress
-                                    ? "transform, width, opacity"
-                                    : "auto",
-                                }}
-                                className="absolute left-1/2 top-1/2 z-0 overflow-hidden rounded-2xl border-0 bg-[#CFE9DB] p-0 shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-[#19A463]"
-                              >
-                                <span className="absolute inset-0 overflow-hidden rounded-2xl [&_img]:!h-full [&_img]:!w-full [&_img]:!rounded-2xl [&_span]:!h-full [&_span]:!w-full [&_span]:!rounded-2xl [&_span]:!bg-[#CFE9DB] [&_span]:!text-[#1F3A2E] [&_span]:!text-[clamp(1rem,4vw,3rem)]">
-                                  <Avatar
-                                    avatarPath={provider.avatarPath}
-                                    name={provider.displayName}
-                                    size={44}
-                                  />
-                                </span>
-                                {slot === 0 && (
-                                  <span
-                                    role="img"
-                                    aria-label="Verified provider"
-                                    className="absolute right-2 top-2 grid size-8 place-items-center rounded-full bg-[#19A463] text-white shadow-md"
-                                  >
-                                    <BadgeCheck size={19} aria-hidden="true" />
-                                  </span>
-                                )}
-                              </button>
-                            );
-                          })}
-                    </div>
+                return (
+                  <button
+                    key={`${index}-${provider.id}`}
+                    type="button"
+                    aria-label={`${provider.displayName}, verified provider`}
+                    aria-pressed={index === activeIndex}
+                    aria-hidden={isRepeated ? true : undefined}
+                    tabIndex={isRepeated ? -1 : 0}
+                    onClick={() => setActiveIndex(index)}
+                    onFocus={() => setActiveIndex(index)}
+                    style={{
+                      width: tileWidth(distance),
+                      aspectRatio: "1",
+                      opacity: hasEntered ? opacityByDistance[distance] : 0,
+                      transform: hasEntered
+                        ? `translate(calc(-50% + ${tileOffset(slot)}), -50%)`
+                        : `translate(calc(-50% + ${tileOffset(slot)}), -50%) scale(0.7)`,
+                      transition: tileTransition,
+                      transitionDelay: entranceInProgress
+                        ? `${delay}ms`
+                        : "0ms",
+                      willChange: entranceInProgress
+                        ? "transform, width, opacity"
+                        : "auto",
+                    }}
+                    className="absolute left-1/2 top-1/2 z-0 overflow-hidden rounded-2xl border-0 bg-[#CFE9DB] p-0 shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-[#19A463]"
+                  >
+                    <span className="absolute inset-0 overflow-hidden rounded-2xl [&_img]:!h-full [&_img]:!w-full [&_img]:!rounded-2xl [&_span]:!h-full [&_span]:!w-full [&_span]:!rounded-2xl [&_span]:!bg-[#CFE9DB] [&_span]:!text-[#1F3A2E] [&_span]:!text-[clamp(1rem,4vw,3rem)]">
+                      <Avatar
+                        avatarPath={provider.avatarPath}
+                        name={provider.displayName}
+                        size={44}
+                      />
+                    </span>
+                    {slot === 0 && (
+                      <span
+                        role="img"
+                        aria-label="Verified provider"
+                        className="absolute right-2 top-2 grid size-8 place-items-center rounded-full bg-[#19A463] text-white shadow-md"
+                      >
+                        <BadgeCheck size={19} aria-hidden="true" />
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+        </div>
 
-                    <p
-                      aria-live="polite"
-                      className="mt-4 min-h-6 text-sm font-semibold text-[#404145] transition-opacity duration-200 motion-reduce:transition-none"
-                      style={{ opacity: nameVisible ? 1 : 0 }}
-                    >
-                      {providersQuery.isPending ? (
-                        " "
-                      ) : displayedProvider ? (
-                        <Link
-                          to={`/providers/${displayedProvider.id}`}
-                          className="rounded-sm hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#19A463]"
-                        >
-                          {displayedProvider.displayName}
-                        </Link>
-                      ) : (
-                        " "
-                      )}
+        <p
+          aria-live="polite"
+          className="mt-4 min-h-6 text-sm font-semibold text-[#404145] transition-opacity duration-200 motion-reduce:transition-none"
+          style={{ opacity: nameVisible ? 1 : 0 }}
+        >
+          {providersQuery.isPending ? (
+            " "
+          ) : displayedProvider ? (
+            <Link
+              to={`/providers/${displayedProvider.id}`}
+              className="rounded-sm hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#19A463]"
+            >
+              {displayedProvider.displayName}
+            </Link>
+          ) : (
+            " "
+          )}
         </p>
       </div>
     </section>
@@ -701,8 +700,8 @@ function VerifiedProvidersSection() {
 }
 
 export function HomePage() {
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(() =>
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(
+    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
   );
 
   useEffect(() => {
