@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import type { TFunction } from "i18next";
 import { format } from "date-fns";
 import { Bell } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { toast } from "../../lib/toast";
 
 import { useAuth } from "../../app/AuthContext";
@@ -17,18 +19,20 @@ type NotificationItem = {
   created_at: string;
 };
 
-const notificationTitles: Record<string, string> = {
-  booking_requested: "New booking request",
-  booking_accepted: "Your request was accepted",
-  booking_declined: "Your request was declined",
-  booking_cancelled: "A booking was cancelled",
-  booking_completed: "Your booking was completed",
+const notificationTitleKeys: Record<string, string> = {
+  booking_requested: "notifications.bookingRequested",
+  booking_accepted: "notifications.bookingAccepted",
+  booking_declined: "notifications.bookingDeclined",
+  booking_cancelled: "notifications.bookingCancelled",
+  booking_completed: "notifications.bookingCompleted",
 };
 
-function notificationTitle(notification: NotificationItem) {
+function notificationTitle(notification: NotificationItem, t: TFunction) {
   const title = notification.payload.listing_title;
-  const base = notificationTitles[notification.type] ?? "Booking update";
-  return typeof title === "string" ? `${base}: ${title}` : base;
+  const base = t(notificationTitleKeys[notification.type] ?? "notifications.bookingUpdate");
+  return typeof title === "string"
+    ? t("notifications.titleWithListing", { base, title })
+    : base;
 }
 
 type NotificationBellProps = {
@@ -43,6 +47,7 @@ export function NotificationBell({
   onItemClick,
 }: NotificationBellProps) {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [markingId, setMarkingId] = useState<string | null>(null);
@@ -88,7 +93,7 @@ export function NotificationBell({
       });
       setMarkingId(null);
       if (error) {
-        toast.error("Could not mark this notification as read.");
+        toast.error(t("notifications.markReadError"));
         return;
       }
       await queryClient.invalidateQueries({
@@ -105,9 +110,13 @@ export function NotificationBell({
     <div className="relative" data-header-menu="notifications">
       <button
         type="button"
-        aria-label={`Notifications${unreadCount ? `, ${unreadCount} unread` : ""}`}
+        aria-label={
+          unreadCount
+            ? t("notifications.buttonLabelUnread", { count: unreadCount })
+            : t("notifications.buttonLabel")
+        }
         aria-expanded={open}
-        title="Notifications"
+        title={t("notifications.title")}
         onClick={() => onOpenChange(!open)}
         className="relative grid min-h-11 min-w-11 cursor-pointer list-none place-items-center rounded-xl border border-white/20 hover:bg-white/10"
       >
@@ -125,34 +134,34 @@ export function NotificationBell({
         >
           <div className="sticky top-0 flex items-center justify-between border-b border-slate-100 bg-white px-4 py-3">
             <h2 className="text-base font-semibold text-slate-900">
-              Notifications
+              {t("notifications.title")}
             </h2>
             {unreadCount > 0 && (
               <span className="text-xs text-slate-500">
-                {unreadCount} unread
+                {t("notifications.unreadCount", { count: unreadCount })}
               </span>
             )}
           </div>
           {notificationsQuery.isPending ? (
             <p className="px-4 py-6 text-sm text-slate-500" role="status">
-              Loading notifications...
+              {t("notifications.loading")}
             </p>
           ) : notificationsQuery.isError ? (
             <div className="px-4 py-6" role="alert">
               <p className="text-sm text-slate-500">
-                Notifications couldn’t be loaded.
+                {t("notifications.loadError")}
               </p>
               <button
                 type="button"
                 onClick={() => void notificationsQuery.refetch()}
                 className="mt-3 min-h-10 rounded-lg border border-slate-200 px-3 text-sm font-medium text-slate-900"
               >
-                Try again
+                {t("notifications.tryAgain")}
               </button>
             </div>
           ) : notifications.length === 0 ? (
             <p className="px-4 py-6 text-center text-sm text-slate-500">
-              No notifications yet.
+              {t("notifications.empty")}
             </p>
           ) : (
             <ul>
@@ -170,7 +179,7 @@ export function NotificationBell({
                     className={`min-h-[44px] w-full border-b border-slate-100 px-4 py-3 text-start text-sm text-slate-900 transition hover:bg-slate-50 disabled:opacity-60 ${notification.read_at ? "" : ""}`}
                   >
                     <span className="block font-medium">
-                      {notificationTitle(notification)}
+                      {notificationTitle(notification, t)}
                     </span>
                     <time
                       className="mt-1 block text-xs text-slate-500"
@@ -179,7 +188,9 @@ export function NotificationBell({
                       {format(new Date(notification.created_at), "MMM d, p")}
                     </time>
                     {markingId === notification.id && (
-                      <span className="sr-only">Marking as read...</span>
+                      <span className="sr-only">
+                        {t("notifications.markingRead")}
+                      </span>
                     )}
                   </button>
                 </li>

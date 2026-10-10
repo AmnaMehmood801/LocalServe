@@ -7,6 +7,7 @@ import {
 } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
+import { useTranslation } from "react-i18next";
 import {
   ArrowRight,
   BadgeCheck,
@@ -159,14 +160,14 @@ function getCategoryPhotoSlug(categoryName: string) {
   return normalized === "ac-repair" ? "ac" : normalized;
 }
 
-const categoryBlurbs: Record<string, string> = {
-  electrician: "Wiring, fittings, and everyday electrical repairs.",
-  plumbing: "Help with leaks, taps, drains, and pipe repairs.",
-  ac: "Air conditioning maintenance and repair services.",
-  cleaning: "Local help for a cleaner, more comfortable home.",
-  carpentry: "Furniture repairs, fitting, and woodwork.",
-  tutoring: "One-to-one learning support from local tutors.",
-  "home-repair": "Practical help with everyday household repairs.",
+const categoryBlurbKeys: Record<string, string> = {
+  electrician: "home.trade.blurbs.electrician",
+  plumbing: "home.trade.blurbs.plumbing",
+  ac: "home.trade.blurbs.ac",
+  cleaning: "home.trade.blurbs.cleaning",
+  carpentry: "home.trade.blurbs.carpentry",
+  tutoring: "home.trade.blurbs.tutoring",
+  "home-repair": "home.trade.blurbs.homeRepair",
 };
 
 async function fetchActiveCategories(): Promise<CategoryRow[]> {
@@ -325,8 +326,11 @@ function ReviewCard({
   active?: boolean;
   interactive?: boolean;
 }) {
+  const { t, i18n } = useTranslation();
+
   return (
     <article
+      dir={i18n.dir()}
       style={{
         backgroundColor: theme.backgroundColor,
         color: theme.textColor,
@@ -355,7 +359,9 @@ function ReviewCard({
       >
         <div
           className="mt-10 flex gap-1"
-          aria-label={`${review.rating} out of 5 stars`}
+          aria-label={t("home.reviews.ratingStars", {
+            rating: review.rating,
+          })}
         >
           {Array.from({ length: 5 }, (_, index) => (
             <Star
@@ -377,7 +383,7 @@ function ReviewCard({
               {review.comment.length > 160 ? "…" : ""}
             </p>
           ) : (
-            <p className="text-lg italic">Rated without a comment</p>
+            <p className="text-lg italic">{t("home.reviews.emptyComment")}</p>
           )}
         </div>
         <div
@@ -423,6 +429,7 @@ type HomeVerifiedProvider = {
 };
 
 function VerifiedProvidersSection() {
+  const { t } = useTranslation();
   const providersQuery = useQuery({
     queryKey: ["providers", "home-verified"],
     queryFn: async (): Promise<HomeVerifiedProvider[]> => {
@@ -576,20 +583,20 @@ function VerifiedProvidersSection() {
           style={revealStyle(0)}
           className="text-sm font-semibold text-[#19A463]"
         >
-          Trusted providers
+          {t("home.verified.eyebrow")}
         </p>
         <h2
           id="verified-providers-heading"
           style={revealStyle(100)}
           className="mt-2 text-2xl font-semibold text-[#404145] sm:text-3xl"
         >
-          Verified providers you can trust
+          {t("home.verified.heading")}
         </h2>
         <p
           style={revealStyle(200)}
           className="mt-2 whitespace-nowrap text-sm text-slate-600"
         >
-          Every provider here is checked by LocalServe.
+          {t("home.verified.description")}
         </p>
 
         <div
@@ -597,7 +604,7 @@ function VerifiedProvidersSection() {
           style={{ height: "min(16.2vw, 230px)" }}
           role={providersQuery.isPending ? "status" : undefined}
           aria-label={
-            providersQuery.isPending ? "Loading verified providers" : undefined
+            providersQuery.isPending ? t("home.verified.loading") : undefined
           }
         >
           {providersQuery.isPending
@@ -618,6 +625,10 @@ function VerifiedProvidersSection() {
               })
             : tiles.map(({ provider, index, isRepeated, slot }) => {
                 if (!provider) return null;
+                const providerName =
+                  provider.displayName === "Local provider"
+                    ? t("home.verified.fallbackName")
+                    : provider.displayName;
                 const distance = Math.abs(slot);
                 const entranceInProgress = hasEntered && !entranceComplete;
                 const opacityByDistance = [1, 0.86, 0.66, 0.44];
@@ -632,7 +643,9 @@ function VerifiedProvidersSection() {
                   <button
                     key={`${index}-${provider.id}`}
                     type="button"
-                    aria-label={`${provider.displayName}, verified provider`}
+                    aria-label={t("home.verified.providerButtonLabel", {
+                      name: providerName,
+                    })}
                     aria-pressed={index === activeIndex}
                     aria-hidden={isRepeated ? true : undefined}
                     tabIndex={isRepeated ? -1 : 0}
@@ -658,14 +671,14 @@ function VerifiedProvidersSection() {
                     <span className="absolute inset-0 overflow-hidden rounded-2xl [&_img]:!h-full [&_img]:!w-full [&_img]:!rounded-2xl [&_span]:!h-full [&_span]:!w-full [&_span]:!rounded-2xl [&_span]:!bg-[#CFE9DB] [&_span]:!text-[#1F3A2E] [&_span]:!text-[clamp(1rem,4vw,3rem)]">
                       <Avatar
                         avatarPath={provider.avatarPath}
-                        name={provider.displayName}
+                        name={providerName}
                         size={44}
                       />
                     </span>
                     {slot === 0 && (
                       <span
                         role="img"
-                        aria-label="Verified provider"
+                        aria-label={t("home.verified.providerLabel")}
                         className="absolute right-2 top-2 grid size-8 place-items-center rounded-full bg-[#19A463] text-white shadow-md"
                       >
                         <BadgeCheck size={19} aria-hidden="true" />
@@ -688,7 +701,9 @@ function VerifiedProvidersSection() {
               to={`/providers/${displayedProvider.id}`}
               className="rounded-sm hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#19A463]"
             >
-              {displayedProvider.displayName}
+              {displayedProvider.displayName === "Local provider"
+                ? t("home.verified.fallbackName")
+                : displayedProvider.displayName}
             </Link>
           ) : (
             " "
@@ -700,6 +715,7 @@ function VerifiedProvidersSection() {
 }
 
 export function HomePage() {
+  const { t } = useTranslation();
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(
     () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
   );
@@ -996,7 +1012,7 @@ export function HomePage() {
         <div className="absolute inset-0 overflow-hidden">
           <img
             src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1800&q=82"
-            alt="A home-service professional at work in a bright home"
+            alt={t("home.hero.imageAlt")}
             loading="eager"
             className="absolute inset-0 size-full object-cover object-center"
           />
@@ -1020,21 +1036,20 @@ export function HomePage() {
           <div className="home-hero-enter max-w-4xl">
             <p className="inline-flex min-h-9 items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 text-xs font-semibold text-white backdrop-blur-sm">
               <ShieldCheck size={16} aria-hidden="true" />
-              Local professionals, ready to help
+              {t("home.hero.badge")}
             </p>
             <h1 className="mt-4 max-w-4xl text-4xl font-extrabold leading-[1.02] sm:mt-5 sm:text-6xl lg:text-7xl">
-              Find trusted help
+              {t("home.hero.headlineStart")}
               <span className="block text-[#55D99A]">
-                right here in Samundri.
+                {t("home.hero.headlineHighlight")}
               </span>
             </h1>
             <p className="mt-4 max-w-2xl text-balance text-sm leading-6 text-white/85 sm:mt-5 sm:text-lg sm:leading-7">
-              Compare local services, prices and reviews, then request a time
-              that works for you.
+              {t("home.hero.subtext")}
             </p>
             <p className="mt-2 flex items-center gap-2 text-sm font-medium text-white/80 sm:mt-3">
               <MapPin size={16} className="text-[#55D99A]" aria-hidden="true" />
-              Choose from approved Samundri localities
+              {t("home.hero.locality")}
             </p>
           </div>
           <div className="mt-6 max-w-5xl sm:mt-8">
@@ -1047,20 +1062,21 @@ export function HomePage() {
                   className="mb-1.5 block text-xs font-semibold text-slate-600"
                   htmlFor="home-category"
                 >
-                  Service
+                  {t("home.hero.serviceLabel")}
                 </label>
                 <SelectMenu
                   id="home-category"
                   value={categoryId}
                   onChange={setCategoryId}
                   options={[
-                    { value: "", label: "All services" },
+                    { value: "", label: t("home.hero.allServices") },
                     ...(categoriesQuery.data ?? []).map((category) => ({
                       value: category.id,
                       label: category.name,
                     })),
                   ]}
-                  ariaLabel="Service"
+                  ariaLabel={t("home.hero.serviceLabel")}
+                  placeholder={t("home.hero.selectOption")}
                   className="z-50"
                   buttonClassName="home-search-control border-[#E5E7E5] text-sm text-ink focus:border-[#1DBF73] focus:ring-4 focus:ring-[#1DBF73]/15"
                 />
@@ -1070,7 +1086,7 @@ export function HomePage() {
                   className="mb-1.5 block text-xs font-semibold text-slate-600"
                   htmlFor="home-keyword"
                 >
-                  What do you need?
+                  {t("home.hero.needLabel")}
                 </label>
                 <div className="relative">
                   <Search
@@ -1082,7 +1098,7 @@ export function HomePage() {
                     id="home-keyword"
                     value={keyword}
                     onChange={(event) => setKeyword(event.target.value)}
-                    placeholder="Try plumbing, tutoring..."
+                    placeholder={t("home.hero.searchPlaceholder")}
                     className="home-search-control min-h-12 w-full rounded-lg border border-[#E5E7E5] bg-white pl-10 pr-3 text-sm text-ink outline-none transition placeholder:text-slate-600 focus:border-[#1DBF73] focus:ring-4 focus:ring-[#1DBF73]/15"
                   />
                 </div>
@@ -1092,7 +1108,7 @@ export function HomePage() {
                   className="mb-1.5 block text-xs font-semibold text-slate-600"
                   htmlFor="home-area"
                 >
-                  Samundri area
+                  {t("home.hero.areaLabel")}
                 </label>
                 <SelectMenu
                   id="home-area"
@@ -1103,7 +1119,8 @@ export function HomePage() {
                     label: area.name,
                     group: getAreaGroup(area.slug),
                   }))}
-                  ariaLabel="Samundri area"
+                  ariaLabel={t("home.hero.areaLabel")}
+                  placeholder={t("home.hero.selectOption")}
                   className="z-50"
                   buttonClassName="home-search-control border-[#E5E7E5] text-sm text-ink focus:border-[#1DBF73] focus:ring-4 focus:ring-[#1DBF73]/15"
                 />
@@ -1112,7 +1129,7 @@ export function HomePage() {
                 type="submit"
                 className="col-span-1 inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-[#1DBF73] px-4 font-bold text-white shadow-sm transition duration-200 hover:bg-[#19A463] hover:brightness-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#1DBF73]/35 active:scale-[0.98] lg:mb-0.5 lg:px-6"
               >
-                Find a Service
+                {t("home.hero.findService")}
                 <ArrowRight size={17} aria-hidden="true" />
               </button>
             </form>
@@ -1120,10 +1137,10 @@ export function HomePage() {
             <div className="mt-3 flex flex-col gap-2 sm:mt-4 sm:flex-row sm:items-center sm:justify-between">
               <div
                 className="flex flex-wrap items-center gap-2"
-                aria-label="Popular searches"
+                aria-label={t("home.hero.popularSearches")}
               >
                 <span className="mr-1 text-xs font-medium text-slate-300">
-                  Popular:
+                  {t("home.hero.popularLabel")}
                 </span>
                 {[
                   "Generator wiring",
@@ -1142,12 +1159,12 @@ export function HomePage() {
                 ))}
               </div>
               <p className="text-sm text-slate-300">
-                Offering a service?{" "}
+                {t("home.hero.offeringService")} {" "}
                 <Link
                   to="/register?role=provider"
                   className="inline-flex min-h-11 items-center rounded-sm font-bold text-[#55D99A] underline underline-offset-4 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#55D99A]"
                 >
-                  Join as a provider
+                  {t("home.hero.joinProvider")}
                 </Link>
               </p>
             </div>
@@ -1159,20 +1176,20 @@ export function HomePage() {
         <div className="flex items-end justify-between gap-4">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#168A55]">
-              Browse by trade
+              {t("home.trade.eyebrow")}
             </p>
             <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
-              Explore trusted services
+              {t("home.trade.heading")}
             </h2>
             <p className="mt-2 text-sm text-slate-600">
-              Find the right local professional for the job.
+              {t("home.trade.description")}
             </p>
           </div>
           <Link
             to={`/search?areaId=${encodeURIComponent(selectedAreaId)}`}
             className="hidden min-h-11 items-center gap-2 text-sm font-bold text-[#168A55] transition hover:text-[#19A463] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1DBF73] sm:inline-flex"
           >
-            Browse all <ArrowRight size={16} aria-hidden="true" />
+            {t("home.trade.browseAll")} <ArrowRight size={16} aria-hidden="true" />
           </Link>
         </div>
 
@@ -1182,7 +1199,7 @@ export function HomePage() {
           <div
             className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5"
             role="status"
-            aria-label="Loading categories"
+            aria-label={t("home.trade.loadingCategories")}
           >
             {Array.from({ length: 5 }, (_, index) => (
               <div
@@ -1199,7 +1216,7 @@ export function HomePage() {
             role="alert"
           >
             <p className="text-sm text-slate-600">
-              Services could not be loaded.
+              {t("home.trade.loadError")}
             </p>
             <button
               type="button"
@@ -1209,12 +1226,12 @@ export function HomePage() {
               }}
               className="mt-3 min-h-10 rounded-lg border border-ink/20 px-4 text-sm font-medium"
             >
-              Try again
+              {t("home.trade.tryAgain")}
             </button>
           </div>
         ) : featuredCategories.length === 0 ? (
           <p className="mt-6 rounded-xl bg-white p-5 text-sm text-slate-600">
-            No services are listed in Samundri yet.
+            {t("home.trade.empty")}
           </p>
         ) : (
           <div className="home-reveal mt-6 grid items-stretch gap-3 sm:grid-cols-2 lg:grid-cols-5">
@@ -1232,7 +1249,9 @@ export function HomePage() {
                         categoryPhotos[category.slug] ??
                         categoryPhotos["home-repair"]
                       }
-                      alt={`${category.name} service at work`}
+                      alt={t("home.trade.categoryImageAlt", {
+                        category: category.name,
+                      })}
                       loading="lazy"
                       decoding="async"
                       className="size-full object-cover transition duration-300 group-hover:scale-[1.04]"
@@ -1246,12 +1265,15 @@ export function HomePage() {
                       {category.name}
                     </h3>
                     <p className="mt-1 line-clamp-2 min-h-10 text-sm leading-5 text-slate-600">
-                      {categoryBlurbs[category.slug] ??
-                        "Explore local services and compare providers."}
+                      {t(
+                        categoryBlurbKeys[category.slug] ??
+                          "home.trade.genericBlurb",
+                      )}
                     </p>
                     <p className="mt-auto flex items-center justify-between pt-2 text-xs text-slate-600">
-                      {category.listingCount}{" "}
-                      {category.listingCount === 1 ? "listing" : "listings"}
+                      {t("home.trade.listingCount", {
+                        count: category.listingCount,
+                      })}
                       <ArrowRight
                         size={15}
                         className="text-[#168A55] transition group-hover:translate-x-1"
@@ -1271,22 +1293,28 @@ export function HomePage() {
           <div className="flex items-end justify-between gap-4">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#168A55]">
-                {hasRatedListing ? "Chosen for your area" : "IN YOUR AREA"}
+                {hasRatedListing
+                  ? t("home.topRated.chosenEyebrow")
+                  : t("home.topRated.areaEyebrow")}
               </p>
               <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
                 {hasRatedListing
-                  ? `Top rated in ${selectedArea?.name ?? "Samundri"}`
-                  : `Services in ${selectedArea?.name ?? "Samundri"}`}
+                  ? t("home.topRated.ratedTitle", {
+                      area: selectedArea?.name ?? "Samundri",
+                    })
+                  : t("home.topRated.servicesTitle", {
+                      area: selectedArea?.name ?? "Samundri",
+                    })}
               </h2>
               <p className="mt-2 text-sm text-slate-600">
-                Compare real services and customer ratings.
+                {t("home.topRated.description")}
               </p>
             </div>
             <Link
               to={`/search?areaId=${encodeURIComponent(selectedAreaId)}&sort=rating`}
               className="hidden min-h-11 items-center gap-2 text-sm font-bold text-[#168A55] transition hover:text-[#19A463] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1DBF73] sm:inline-flex"
             >
-              View all <ArrowRight size={16} aria-hidden="true" />
+              {t("home.topRated.viewAll")} <ArrowRight size={16} aria-hidden="true" />
             </Link>
           </div>
 
@@ -1296,7 +1324,7 @@ export function HomePage() {
             <div
               className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
               role="status"
-              aria-label="Loading top rated providers"
+              aria-label={t("home.topRated.loading")}
             >
               {Array.from({ length: 4 }, (_, index) => (
                 <div
@@ -1311,14 +1339,14 @@ export function HomePage() {
               role="alert"
             >
               <p className="text-sm text-slate-600">
-                {areasError ?? "Top rated services could not be loaded."}
+                {areasError ?? t("home.topRated.loadError")}
               </p>
               <button
                 type="button"
                 onClick={() => void listingsQuery.refetch()}
                 className="mt-3 min-h-10 rounded-lg border border-ink/20 px-4 text-sm font-medium"
               >
-                Try again
+                {t("home.topRated.tryAgain")}
               </button>
             </div>
           ) : selectedAreaId && listingsQuery.data?.length ? (
@@ -1340,10 +1368,12 @@ export function HomePage() {
           ) : (
             <div className="mt-7 rounded-2xl border border-cream-100 bg-cream-50 px-5 py-8 text-center">
               <p className="font-semibold text-ink">
-                No providers in {selectedArea?.name ?? "this area"} yet.
+                {t("home.topRated.noProviders", {
+                  area: selectedArea?.name ?? t("home.topRated.fallbackArea"),
+                })}
               </p>
               <p className="mt-1 text-sm text-slate-600">
-                Try another locality to explore available services.
+                {t("home.topRated.tryAnotherArea")}
               </p>
             </div>
           )}
@@ -1351,7 +1381,7 @@ export function HomePage() {
             to={`/search?areaId=${encodeURIComponent(selectedAreaId)}&sort=rating`}
             className="mt-5 inline-flex min-h-11 items-center text-sm font-bold text-[#168A55] underline sm:hidden"
           >
-            View all services
+            {t("home.topRated.viewAllServices")}
           </Link>
         </div>
       </section>
@@ -1364,48 +1394,48 @@ export function HomePage() {
       >
         <div className="home-reveal min-w-0">
           <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#19A463]">
-            WHY CHOOSE US
+            {t("home.why.eyebrow")}
           </p>
           <h2
             id="why-choose-us-heading"
             className="mt-2 text-2xl font-semibold tracking-tight text-[#404145] sm:text-3xl"
           >
-            Help that feels <em className="font-semibold italic text-[#19A463]">close to home</em>
+            {t("home.why.headingStart")} <em className="font-semibold italic text-[#19A463]">{t("home.why.headingHighlight")}</em>
           </h2>
           <div className="mt-6 grid min-w-0 gap-3 lg:grid-cols-3 lg:grid-rows-2">
             <article className="flex min-w-0 flex-col justify-between gap-8 rounded-2xl bg-[#1F6F4F] p-5 text-white sm:p-6 lg:row-span-2">
               <MapPin size={20} aria-hidden="true" />
               <div className="min-w-0">
-                <h3 className="text-lg font-semibold">Local to Samundri</h3>
+                <h3 className="text-lg font-semibold">{t("home.why.localTitle")}</h3>
                 <p className="mt-2 text-sm leading-6 text-white/85">
-                  Providers from local areas. Neighbours you can trust.
+                  {t("home.why.localDescription")}
                 </p>
               </div>
             </article>
             <article className="flex min-w-0 items-start gap-4 rounded-2xl bg-[#E3F7EC] p-5 text-[#1F3A2E] sm:p-6 lg:col-span-2">
               <ArrowRight size={20} className="mt-0.5 shrink-0 text-[#19A463]" aria-hidden="true" />
               <div className="min-w-0">
-                <h3 className="font-semibold">Quick booking</h3>
+                <h3 className="font-semibold">{t("home.why.quickTitle")}</h3>
                 <p className="mt-1 text-sm leading-6">
-                  Choose a date and send your request in a minute.
+                  {t("home.why.quickDescription")}
                 </p>
               </div>
             </article>
             <article className="flex min-w-0 items-start gap-4 rounded-2xl bg-[#CFE9DB] p-5 text-[#1F3A2E] sm:p-6">
               <BadgeCheck size={20} className="mt-0.5 shrink-0 text-[#19A463]" aria-hidden="true" />
               <div className="min-w-0">
-                <h3 className="font-semibold">Clear updates</h3>
+                <h3 className="font-semibold">{t("home.why.updatesTitle")}</h3>
                 <p className="mt-1 text-sm leading-6">
-                  Accepted or declined, you always know.
+                  {t("home.why.updatesDescription")}
                 </p>
               </div>
             </article>
             <article className="flex min-w-0 items-start gap-4 rounded-2xl bg-[#E6E9EC] p-5 text-[#2B2E33] sm:p-6">
               <House size={20} className="mt-0.5 shrink-0 text-[#19A463]" aria-hidden="true" />
               <div className="min-w-0">
-                <h3 className="font-semibold">One account</h3>
+                <h3 className="font-semibold">{t("home.why.accountTitle")}</h3>
                 <p className="mt-1 text-sm leading-6">
-                  Book or offer services with one account.
+                  {t("home.why.accountDescription")}
                 </p>
               </div>
             </article>
@@ -1419,27 +1449,27 @@ export function HomePage() {
       >
         <div className="shell-container">
           <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#55D99A]">
-            Simple by design
+            {t("home.simple.eyebrow")}
           </p>
           <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
-            Good help, without the guesswork.
+            {t("home.simple.heading")}
           </h2>
           <div className="home-reveal mt-7 grid gap-4 sm:grid-cols-3">
             {[
               [
                 "01",
-                "Choose a service",
-                "Compare listings, prices and ratings in your Samundri area.",
+                "home.simple.chooseService",
+                "home.simple.chooseServiceDescription",
               ],
               [
                 "02",
-                "Request a time",
-                "Send a booking request with your time, address and notes.",
+                "home.simple.requestTime",
+                "home.simple.requestTimeDescription",
               ],
               [
                 "03",
-                "Get it done",
-                "The provider accepts or declines. When the job is done, leave a review.",
+                "home.simple.getItDone",
+                "home.simple.getItDoneDescription",
               ],
             ].map(([number, title, description]) => (
               <article
@@ -1449,9 +1479,9 @@ export function HomePage() {
                 <span className="grid size-10 place-items-center rounded-full bg-[#1DBF73]/20 text-sm font-bold text-[#55D99A]">
                   {number}
                 </span>
-                <h3 className="mt-5 font-semibold">{title}</h3>
+                <h3 className="mt-5 font-semibold">{t(title)}</h3>
                 <p className="mt-2 text-sm leading-6 text-slate-300">
-                  {description}
+                  {t(description)}
                 </p>
               </article>
             ))}
@@ -1462,7 +1492,7 @@ export function HomePage() {
       {reviewsQuery.isPending ? (
         <section
           className="shell-container py-10 md:py-14"
-          aria-label="Loading recent reviews"
+          aria-label={t("home.reviews.loading")}
           role="status"
         >
           <div className="h-7 w-48 animate-pulse rounded bg-cream-100" />
@@ -1476,25 +1506,25 @@ export function HomePage() {
           </div>
         </section>
       ) : reviewsQuery.isError ? (
-        <section className="shell-container py-8" aria-label="Recent reviews">
+        <section className="shell-container py-8" aria-label={t("home.reviews.sectionLabel")}>
           <div
             className="rounded-xl border border-rose-600/20 bg-white p-5"
             role="alert"
           >
-            <h2 className="font-semibold">Recent reviews are unavailable.</h2>
+            <h2 className="font-semibold">{t("home.reviews.unavailable")}</h2>
             <button
               type="button"
               onClick={() => void reviewsQuery.refetch()}
               className="mt-3 min-h-10 rounded-lg border border-ink/20 px-4 text-sm font-medium"
             >
-              Try again
+              {t("home.reviews.tryAgain")}
             </button>
           </div>
         </section>
       ) : reviewsQuery.data?.length ? (
         <section
           className="home-review-section shell-container py-10 md:py-14"
-          aria-label="Recent reviews"
+          aria-label={t("home.reviews.sectionLabel")}
           onMouseEnter={() => setReviewHovered(true)}
           onMouseLeave={() => setReviewHovered(false)}
           onFocusCapture={() => setReviewFocused(true)}
@@ -1505,9 +1535,9 @@ export function HomePage() {
           }}
         >
           <div className="text-center">
-            <p className="text-sm text-slate-500">Happy customers</p>
+            <p className="text-sm text-slate-500">{t("home.reviews.happyCustomers")}</p>
             <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">
-              Loved by our customers
+              {t("home.reviews.heading")}
             </h2>
           </div>
 
@@ -1517,10 +1547,10 @@ export function HomePage() {
             </div>
           ) : (
             <>
-              <div className="mx-auto mt-8 grid w-full max-w-[1120px] grid-cols-2 items-center gap-x-4 gap-y-4 sm:grid-cols-[40px_minmax(0,1fr)_40px] sm:gap-4">
+              <div dir="ltr" className="mx-auto mt-8 grid w-full max-w-[1120px] grid-cols-2 items-center gap-x-4 gap-y-4 sm:grid-cols-[40px_minmax(0,1fr)_40px] sm:gap-4">
                 <button
                   type="button"
-                  aria-label="Previous review"
+                  aria-label={t("home.reviews.previous")}
                   onClick={() => {
                     if (reviewResetInProgressRef.current) return;
                     setActiveReviewIndex((current) => current - 1);
@@ -1532,10 +1562,12 @@ export function HomePage() {
 
                 <div
                   ref={reviewViewportRef}
+                  dir="ltr"
                   className="-mx-4 col-span-2 row-start-1 h-[260px] min-w-0 w-[calc(100%+2rem)] overflow-hidden sm:mx-0 sm:col-span-1 sm:col-start-2 sm:h-[320px] sm:w-full"
                 >
                   <div
                     ref={reviewTrackRef}
+                    dir="ltr"
                     onTransitionEnd={handleReviewTrackTransitionEnd}
                     className={`flex h-full w-max items-center gap-4 will-change-transform sm:gap-6 ${
                       reviewTrackTransition
@@ -1586,7 +1618,7 @@ export function HomePage() {
 
                 <button
                   type="button"
-                  aria-label="Next review"
+                  aria-label={t("home.reviews.next")}
                   onClick={() => {
                     if (reviewResetInProgressRef.current) return;
                     setActiveReviewIndex((current) => current + 1);
@@ -1599,7 +1631,7 @@ export function HomePage() {
               <div
                 className="mt-5 flex items-center justify-center gap-2"
                 role="group"
-                aria-label="Review pages"
+                aria-label={t("home.reviews.pages")}
               >
                 {loadedReviews.map((review, index) => {
                   const isActive =
@@ -1612,7 +1644,9 @@ export function HomePage() {
                       className={`h-2.5 rounded-full transition-[width,background-color] duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1DBF73] focus-visible:ring-offset-2 motion-reduce:transition-none ${
                         isActive ? "w-8 bg-[#19A463]" : "w-2.5 bg-slate-300"
                       }`}
-                      aria-label={`Go to review ${index + 1}`}
+                      aria-label={t("home.reviews.goToReview", {
+                        number: index + 1,
+                      })}
                       aria-current={isActive ? "true" : undefined}
                     />
                   );
@@ -1625,16 +1659,16 @@ export function HomePage() {
       <section className="shell-container py-8 md:py-12">
         <div className="home-reveal rounded-3xl bg-[#1F6F4F] px-5 py-9 text-center text-white sm:px-8 sm:py-11">
           <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-            Ready to <em className="font-semibold">book</em> a pro?
+            {t("home.cta.headingStart")} <em className="font-semibold">{t("home.cta.headingHighlight")}</em> {t("home.cta.headingEnd")}
           </h2>
           <p className="mt-2 text-sm text-white/85 sm:text-base">
-            Join your neighbours on LocalServe today.
+            {t("home.cta.description")}
           </p>
           <Link
             to="/register"
             className="mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#1DBF73] px-5 text-sm font-bold text-white transition-colors hover:bg-[#19A463] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/40"
           >
-            Get started <ArrowRight size={16} aria-hidden="true" />
+            {t("home.cta.getStarted")} <ArrowRight size={16} aria-hidden="true" />
           </Link>
         </div>
       </section>

@@ -16,14 +16,9 @@ import { NotificationBell } from "./NotificationBell";
 import { useLanguage } from "../../i18n/useLanguage";
 
 const languageOptions = [
-  { value: "en", label: "English" },
-  { value: "ur", label: "اردو" },
+  { value: "en", labelKey: "header.languageEnglish" },
+  { value: "ur", labelKey: "header.languageUrdu" },
 ] as const;
-
-const languageButtonLabels = {
-  en: "EN",
-  ur: "اردو",
-} as const;
 
 export function Header() {
   const { areas, selectedAreaId, setSelectedAreaId, loading, error } =
@@ -97,10 +92,10 @@ export function Header() {
   async function handleSignOut() {
     try {
       await signOut();
-      toast.success("You are signed out.");
+      toast.success(t("header.signedOut"));
       navigate("/");
     } catch {
-      toast.error("Could not sign out. Please try again.");
+      toast.error(t("header.signOutError"));
     }
   }
 
@@ -109,7 +104,7 @@ export function Header() {
       <div className="shell-container flex h-16 w-full flex-nowrap items-center gap-1 px-4 min-[400px]:gap-2 lg:grid lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-x-8 xl:max-w-7xl">
         <Link
           to={homePath}
-          aria-label="LocalServe home"
+          aria-label={t("header.homeAriaLabel")}
           className="flex min-w-0 shrink-0 items-center gap-3 lg:col-start-1 lg:row-start-1"
         >
           <Logo />
@@ -120,7 +115,7 @@ export function Header() {
 
         <nav
           className={`hidden min-w-0 items-center gap-2 lg:col-start-2 lg:row-start-1 lg:flex lg:justify-self-center ${primaryNavLayout}`}
-          aria-label="Primary navigation"
+          aria-label={t("header.primaryNavigation")}
         >
           <NavLink
             to={homePath}
@@ -178,12 +173,12 @@ export function Header() {
 
         <nav
           className={`ml-auto flex shrink-0 items-center gap-1 text-sm min-[400px]:gap-2 lg:col-start-3 lg:row-start-1 lg:ml-0 lg:min-w-0 lg:justify-end lg:justify-self-end lg:whitespace-nowrap ${language === "en" ? "lg:gap-3" : "lg:gap-1"}`}
-          aria-label="Main navigation"
+          aria-label={t("header.mainNavigation")}
         >
           <div className="relative shrink-0" data-header-menu="language">
             <button
               type="button"
-              aria-label="Language"
+              aria-label={t("header.language")}
               aria-haspopup="menu"
               aria-expanded={openMenu === "language"}
               onClick={() =>
@@ -191,13 +186,13 @@ export function Header() {
               }
               className="flex min-h-10 shrink-0 items-center gap-1 whitespace-nowrap rounded-lg px-2 text-sm font-semibold text-white hover:bg-white/10"
             >
-              {languageButtonLabels[language]}
+              {t("header.languageButton")}
               <ChevronDown size={14} aria-hidden="true" />
             </button>
             {openMenu === "language" && (
               <div
                 role="menu"
-                aria-label="Language"
+                aria-label={t("header.language")}
                 className="absolute right-0 z-30 mt-2 w-40 rounded-xl border border-white/20 bg-[#252724] p-1 text-white shadow-lg"
               >
                 {languageOptions.map((option) => (
@@ -212,7 +207,7 @@ export function Header() {
                     }}
                     className="flex min-h-10 w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm hover:bg-white/10"
                   >
-                    {option.label}
+                    {t(option.labelKey)}
                     {language === option.value && (
                       <Check size={16} aria-hidden="true" />
                     )}
@@ -254,14 +249,16 @@ export function Header() {
 
           <div className="hidden items-center gap-3 lg:flex">
             {authLoading ? (
-              <span className="text-slate-400" role="status">
-                Checking session...
+                <span className="text-slate-400" role="status">
+                {t("header.checkingSession")}
               </span>
             ) : user ? (
               <div className="relative" data-header-menu="profile">
                 <button
                   type="button"
-                  aria-label={`${displayName ?? user.email ?? "Account"} menu`}
+                  aria-label={t("header.accountMenu", {
+                    name: displayName ?? user.email ?? t("header.account"),
+                  })}
                   aria-expanded={openMenu === "profile"}
                   onClick={() =>
                     setOpenMenu(openMenu === "profile" ? null : "profile")
@@ -270,7 +267,7 @@ export function Header() {
                 >
                   <Avatar
                     avatarPath={avatarPath}
-                    name={displayName ?? user.email ?? "Account"}
+                    name={displayName ?? user.email ?? t("header.account")}
                     size={36}
                   />
                 </button>
@@ -291,14 +288,14 @@ export function Header() {
                       to="/account"
                       className="block rounded-lg px-3 py-2 text-sm hover:bg-cream-50"
                     >
-                      Account
+                      {t("header.account")}
                     </Link>
                     {roles.includes("customer") && (
                       <Link
                         to="/bookings"
                         className="block rounded-lg px-3 py-2 text-sm hover:bg-cream-50"
                       >
-                        My bookings
+                        {t("header.myBookings")}
                       </Link>
                     )}
                     {roles.includes("provider") && (
@@ -307,19 +304,19 @@ export function Header() {
                           to="/provider"
                           className="block rounded-lg px-3 py-2 text-sm hover:bg-cream-50"
                         >
-                          Provider hub
+                          {t("header.providerHub")}
                         </Link>
                         <Link
                           to="/provider/listings"
                           className="block rounded-lg px-3 py-2 text-sm hover:bg-cream-50"
                         >
-                          My listings
+                          {t("header.myListings")}
                         </Link>
                         <Link
                           to="/provider/requests"
                           className="block rounded-lg px-3 py-2 text-sm hover:bg-cream-50"
                         >
-                          Requests
+                          {t("header.requests")}
                         </Link>
                       </>
                     )}
@@ -328,7 +325,7 @@ export function Header() {
                         to="/admin"
                         className="block rounded-lg px-3 py-2 text-sm hover:bg-cream-50"
                       >
-                        Admin
+                        {t("header.admin")}
                       </Link>
                     )}
                     <button
@@ -336,7 +333,7 @@ export function Header() {
                       onClick={handleSignOut}
                       className="mt-1 min-h-10 w-full rounded-lg px-3 text-left text-sm text-rose-600 hover:bg-cream-50"
                     >
-                      Log out
+                      {t("header.logOut")}
                     </button>
                   </div>
                 )}
@@ -364,7 +361,7 @@ export function Header() {
           >
             <button
               type="button"
-              aria-label="Open navigation menu"
+              aria-label={t("header.openNavigationMenu")}
               aria-expanded={openMenu === "mobile"}
               onClick={() =>
                 setOpenMenu(openMenu === "mobile" ? null : "mobile")
@@ -446,7 +443,7 @@ export function Header() {
                         }}
                         className={`min-h-9 rounded-lg px-2 text-xs ${language === option.value ? "bg-[#1F6F4F] font-semibold text-white" : "text-white hover:bg-white/10"}`}
                       >
-                        {option.label}
+                        {t(option.labelKey)}
                       </button>
                     ))}
                   </div>
@@ -465,14 +462,14 @@ export function Header() {
                       to="/account"
                       className="block rounded-lg px-3 py-2 text-sm hover:bg-white/10"
                     >
-                      Account
+                      {t("header.account")}
                     </Link>
                     {roles.includes("customer") && (
                       <Link
                         to="/bookings"
                         className="block rounded-lg px-3 py-2 text-sm hover:bg-white/10"
                       >
-                        My bookings
+                        {t("header.myBookings")}
                       </Link>
                     )}
                     {roles.includes("provider") && (
@@ -481,19 +478,19 @@ export function Header() {
                           to="/provider"
                           className="block rounded-lg px-3 py-2 text-sm hover:bg-white/10"
                         >
-                          Provider hub
+                          {t("header.providerHub")}
                         </Link>
                         <Link
                           to="/provider/listings"
                           className="block rounded-lg px-3 py-2 text-sm hover:bg-white/10"
                         >
-                          My listings
+                          {t("header.myListings")}
                         </Link>
                         <Link
                           to="/provider/requests"
                           className="block rounded-lg px-3 py-2 text-sm hover:bg-white/10"
                         >
-                          Requests
+                          {t("header.requests")}
                         </Link>
                       </>
                     )}
@@ -502,7 +499,7 @@ export function Header() {
                         to="/admin"
                         className="block rounded-lg px-3 py-2 text-sm hover:bg-cream-50"
                       >
-                        Admin
+                        {t("header.admin")}
                       </Link>
                     )}
                     <button
@@ -510,7 +507,7 @@ export function Header() {
                       onClick={handleSignOut}
                       className="mt-1 min-h-10 w-full rounded-lg px-3 text-left text-sm text-white hover:bg-white/10"
                     >
-                      Log out
+                      {t("header.logOut")}
                     </button>
                   </>
                 ) : (

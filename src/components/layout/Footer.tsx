@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
 import { supabase } from "../../lib/supabase";
@@ -7,6 +8,7 @@ import { Logo } from "../Logo";
 type CategoryLink = { id: string; name: string };
 
 export function Footer() {
+  const { t } = useTranslation();
   const [categories, setCategories] = useState<CategoryLink[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -42,40 +44,39 @@ export function Footer() {
             <h2 className="font-semibold">LocalServe</h2>
           </div>
           <p className="mt-2 max-w-xs text-sm text-slate-400">
-            Find trusted professionals in Samundri. Compare services, then
-            request a time that works.
+            {t("footer.description")}
           </p>
         </section>
-        <nav aria-label="Product links">
-          <h2 className="font-semibold">Product</h2>
+        <nav aria-label={t("footer.productLinks")}>
+          <h2 className="font-semibold">{t("footer.product")}</h2>
           <ul className="mt-3 space-y-2 text-sm text-slate-300">
             <li>
               <Link className="hover:text-white" to="/">
-                Home
+                {t("footer.home")}
               </Link>
             </li>
             <li>
               <Link className="hover:text-white" to="/search">
-                Search
+                {t("footer.search")}
               </Link>
             </li>
             <li>
               <Link className="hover:text-white" to="/#how-it-works">
-                How it works
+                {t("footer.howItWorks")}
               </Link>
             </li>
           </ul>
         </nav>
         <div className="grid grid-cols-2 gap-6">
-          <nav aria-label="Popular categories">
-            <h2 className="font-semibold">Services</h2>
+          <nav aria-label={t("footer.popularCategories")}>
+            <h2 className="font-semibold">{t("footer.services")}</h2>
             {loading ? (
               <p className="mt-3 text-sm text-slate-400" role="status">
-                Loading...
+                {t("footer.loading")}
               </p>
             ) : error ? (
               <p className="mt-3 text-sm text-slate-400" role="status">
-                Categories unavailable.
+                {t("footer.categoriesUnavailable")}
               </p>
             ) : categories.length ? (
               <ul className="mt-3 space-y-2 text-sm text-slate-300">
@@ -92,21 +93,21 @@ export function Footer() {
               </ul>
             ) : (
               <p className="mt-3 text-sm text-slate-400">
-                No categories available.
+                {t("footer.noCategories")}
               </p>
             )}
           </nav>
-          <nav aria-label="Support links">
-            <h2 className="font-semibold">Support</h2>
+          <nav aria-label={t("footer.supportLinks")}>
+            <h2 className="font-semibold">{t("footer.support")}</h2>
             <ul className="mt-3 space-y-2 text-sm text-slate-300">
               <li>
                 <Link className="hover:text-white" to="/privacy">
-                  Privacy
+                  {t("footer.privacy")}
                 </Link>
               </li>
               <li>
                 <Link className="hover:text-white" to="/terms">
-                  Terms
+                  {t("footer.terms")}
                 </Link>
               </li>
             </ul>
@@ -115,7 +116,7 @@ export function Footer() {
       </div>
       <div className="border-t border-white/10">
         <p className="shell-container py-4 text-xs text-slate-400">
-          &copy; {new Date().getFullYear()} LocalServe · Prices in PKR
+          {t("footer.copyright", { year: new Date().getFullYear() })}
         </p>
       </div>
     </footer>
