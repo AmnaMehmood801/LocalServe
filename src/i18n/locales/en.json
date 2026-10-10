@@ -7,6 +7,32 @@
     "logIn": "Log in",
     "signUp": "Sign up"
   },
+  "about": {
+    "eyebrow": "ABOUT LOCALSERVE",
+    "titleStart": "Built for",
+    "titleHighlight": "our neighbourhood",
+    "subtitle": "Trusted local help in Samundri, in one place.",
+    "photoLabel": "Local service photography",
+    "photoStripAlt": "Technician repairing an outdoor air-conditioning unit",
+    "storyPhotoAlt": "Local professional servicing an air-conditioning unit",
+    "storyEyebrow": "WHY WE EXIST",
+    "storyTitleStart": "Local help, in",
+    "storyTitleHighlight": "one place",
+    "storyParagraph": "Finding a good electrician, tutor or plumber should not depend on who you happen to know. LocalServe brings trusted local providers into one place, so you can compare services and reviews, request a booking, agree the price directly, and leave a review when the work is done.",
+    "principlesTitleStart": "What we",
+    "principlesTitleHighlight": "stand for",
+    "verifiedTitle": "Verified providers",
+    "verifiedDescription": "Reviewed by our team before they get the badge.",
+    "reviewsTitle": "Honest reviews",
+    "reviewsDescription": "Only customers with a completed booking can leave a review.",
+    "pricingTitle": "Direct pricing",
+    "pricingDescription": "You agree the price directly with the provider. No payments through the site.",
+    "ctaTitleStart": "Ready to",
+    "ctaTitleHighlight": "get started?",
+    "ctaDescription": "Find help near you, or offer your own service.",
+    "findService": "Find a service",
+    "becomeProvider": "Become a provider"
+  },
   "language": {
     "name": "English"
   },
@@ -179,5 +205,67 @@
       "description": "Join your neighbours on LocalServe today.",
       "getStarted": "Get started"
     }
+  },
+  "faq": {
+    "helpCentre": "Help centre",
+    "titleStart": "Frequently asked",
+    "titleHighlight": "questions",
+    "subtitle": "Quick answers about booking, prices and providers on LocalServe.",
+    "searchLabel": "Search a question",
+    "searchPlaceholder": "Search a question",
+    "categoriesLabel": "FAQ categories",
+    "categories": {
+      "all": "All",
+      "booking": "Booking",
+      "payments": "Payments",
+      "providers": "Providers",
+      "account": "Account"
+    },
+    "questionsLabel": "Questions",
+    "items": {
+      "book-service": {
+        "question": "How do I book a service?",
+        "answer": "Search by service and area, open a listing, and send a booking request with your preferred date and time. The provider then accepts or declines."
+      },
+      "account-to-book": {
+        "question": "Do I need an account to book?",
+        "answer": "Yes. You can browse listings without an account, but you need a free account to send a booking request."
+      },
+      "cancel-request": {
+        "question": "Can I cancel a request?",
+        "answer": "Yes. You can cancel from your booking page while the request is still open. Once a job is completed it cannot be cancelled."
+      },
+      "provider-declines": {
+        "question": "What if a provider declines?",
+        "answer": "Nothing is charged. You can go back to search and send a request to another provider."
+      },
+      "payment": {
+        "question": "How do I pay?",
+        "answer": "LocalServe does not process payments. You agree the price and payment method directly with the provider."
+      },
+      "verified": {
+        "question": "What does verified mean?",
+        "answer": "A Verified badge means our team has reviewed the provider's profile."
+      },
+      "become-provider": {
+        "question": "How do I become a provider?",
+        "answer": "Create an account, choose to offer services, then add a listing with your service, area and price."
+      },
+      "areas-covered": {
+        "question": "Which areas do you cover?",
+        "answer": "LocalServe currently serves Samundri. Pick your area from the area menu at the top of the site."
+      },
+      "leave-review": {
+        "question": "Can I leave a review?",
+        "answer": "Yes. After a booking is completed, the customer can rate and review the provider."
+      },
+      "forgot-password": {
+        "question": "I forgot my password.",
+        "answer": "On the login page choose \"Forgot password?\", enter your email and follow the link we send you."
+      }
+    },
+    "empty": "No questions match your search.",
+    "ctaTitle": "Still have a question?",
+    "ctaDescription": "Can't find your answer here? Ask us and we'll get back to you."
   }
 }

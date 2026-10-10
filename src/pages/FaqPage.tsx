@@ -1,101 +1,43 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ChevronDown, Search } from "lucide-react";
 
-type FaqCategory = "Booking" | "Payments" | "Providers" | "Account";
+type FaqCategory = "booking" | "payments" | "providers" | "account";
 type FaqItem = {
   id: string;
   category: FaqCategory;
-  question: string;
-  answer: string;
 };
 
 const faqItems: FaqItem[] = [
-  {
-    id: "book-service",
-    category: "Booking",
-    question: "How do I book a service?",
-    answer:
-      "Search by service and area, open a listing, and send a booking request with your preferred date and time. The provider then accepts or declines.",
-  },
-  {
-    id: "account-to-book",
-    category: "Account",
-    question: "Do I need an account to book?",
-    answer:
-      "Yes. You can browse listings without an account, but you need a free account to send a booking request.",
-  },
-  {
-    id: "cancel-request",
-    category: "Booking",
-    question: "Can I cancel a request?",
-    answer:
-      "Yes. You can cancel from your booking page while the request is still open. Once a job is completed it cannot be cancelled.",
-  },
-  {
-    id: "provider-declines",
-    category: "Booking",
-    question: "What if a provider declines?",
-    answer:
-      "Nothing is charged. You can go back to search and send a request to another provider.",
-  },
-  {
-    id: "payment",
-    category: "Payments",
-    question: "How do I pay?",
-    answer:
-      "LocalServe does not process payments. You agree the price and payment method directly with the provider.",
-  },
-  {
-    id: "verified",
-    category: "Providers",
-    question: "What does verified mean?",
-    answer:
-      "A Verified badge means our team has reviewed the provider's profile.",
-  },
-  {
-    id: "become-provider",
-    category: "Providers",
-    question: "How do I become a provider?",
-    answer:
-      "Create an account, choose to offer services, then add a listing with your service, area and price.",
-  },
-  {
-    id: "areas-covered",
-    category: "Providers",
-    question: "Which areas do you cover?",
-    answer:
-      "LocalServe currently serves Samundri. Pick your area from the area menu at the top of the site.",
-  },
-  {
-    id: "leave-review",
-    category: "Booking",
-    question: "Can I leave a review?",
-    answer:
-      "Yes. After a booking is completed, the customer can rate and review the provider.",
-  },
-  {
-    id: "forgot-password",
-    category: "Account",
-    question: "I forgot my password.",
-    answer:
-      'On the login page choose "Forgot password?", enter your email and follow the link we send you.',
-  },
+  { id: "book-service", category: "booking" },
+  { id: "account-to-book", category: "account" },
+  { id: "cancel-request", category: "booking" },
+  { id: "provider-declines", category: "booking" },
+  { id: "payment", category: "payments" },
+  { id: "verified", category: "providers" },
+  { id: "become-provider", category: "providers" },
+  { id: "areas-covered", category: "providers" },
+  { id: "leave-review", category: "booking" },
+  { id: "forgot-password", category: "account" },
 ];
 
-const categories = ["All", "Booking", "Payments", "Providers", "Account"] as const;
+const categories = ["all", "booking", "payments", "providers", "account"] as const;
 type CategoryFilter = (typeof categories)[number];
 
 export function FaqPage() {
+  const { t } = useTranslation();
   const [searchText, setSearchText] = useState("");
-  const [activeCategory, setActiveCategory] = useState<CategoryFilter>("All");
+  const [activeCategory, setActiveCategory] = useState<CategoryFilter>("all");
   const [openItemId, setOpenItemId] = useState(faqItems[0].id);
   const normalizedSearch = searchText.trim().toLowerCase();
   const filteredItems = faqItems.filter((item) => {
-    const matchesCategory =
-      activeCategory === "All" || item.category === activeCategory;
+    const question = t(`faq.items.${item.id}.question`);
+    const answer = t(`faq.items.${item.id}.answer`);
+    const category = t(`faq.categories.${item.category}`);
+    const matchesCategory = activeCategory === "all" || item.category === activeCategory;
     const matchesSearch =
       !normalizedSearch ||
-      `${item.question} ${item.answer} ${item.category}`
+      `${question} ${answer} ${category}`
         .toLowerCase()
         .includes(normalizedSearch);
     return matchesCategory && matchesSearch;
@@ -106,19 +48,19 @@ export function FaqPage() {
       <div className="shell-container mx-auto min-w-0 max-w-4xl">
         <header>
           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#168A55]">
-            Help centre
+            {t("faq.helpCentre")}
           </p>
           <h1 className="mt-2 text-3xl font-bold leading-tight text-[#404145] sm:text-4xl">
-            Frequently asked <span className="text-[#19A463]">questions</span>
+            {t("faq.titleStart")} <span className="text-[#19A463]">{t("faq.titleHighlight")}</span>
           </h1>
           <p className="mt-3 text-sm leading-6 text-slate-600 sm:text-base">
-            Quick answers about booking, prices and providers on LocalServe.
+            {t("faq.subtitle")}
           </p>
         </header>
 
         <div className="mt-7">
           <label htmlFor="faq-search" className="sr-only">
-            Search a question
+            {t("faq.searchLabel")}
           </label>
           <div className="relative">
             <Search
@@ -131,13 +73,13 @@ export function FaqPage() {
               type="search"
               value={searchText}
               onChange={(event) => setSearchText(event.target.value)}
-              placeholder="Search a question"
+              placeholder={t("faq.searchPlaceholder")}
               className="h-12 w-full min-w-0 rounded-xl border border-slate-200 bg-white ps-11 pe-4 text-sm text-[#404145] placeholder:text-slate-500 outline-none focus:border-[#19A463] focus:ring-2 focus:ring-[#1DBF73]/20"
             />
           </div>
         </div>
 
-        <div className="mt-4 flex min-w-0 flex-wrap gap-2" aria-label="FAQ categories">
+        <div className="mt-4 flex min-w-0 flex-wrap gap-2" aria-label={t("faq.categoriesLabel")}>
           {categories.map((category) => {
             const isActive = activeCategory === category;
             return (
@@ -152,21 +94,23 @@ export function FaqPage() {
                     : "border-slate-200 bg-white text-[#404145] hover:border-[#19A463] hover:bg-[#E3F7EC]"
                 }`}
               >
-                {category}
+                {t(`faq.categories.${category}`)}
               </button>
             );
           })}
         </div>
 
-        <section className="mt-5 min-w-0 space-y-3" aria-label="Questions">
+        <section className="mt-5 min-w-0 space-y-3" aria-label={t("faq.questionsLabel")}>
           {filteredItems.length === 0 ? (
             <p className="rounded-xl border border-slate-200 bg-white p-5 text-sm text-slate-600">
-              No questions match your search.
+              {t("faq.empty")}
             </p>
           ) : (
             filteredItems.map((item) => {
               const isOpen = openItemId === item.id;
               const answerId = `faq-answer-${item.id}`;
+              const question = t(`faq.items.${item.id}.question`);
+              const answer = t(`faq.items.${item.id}.answer`);
               return (
                 <article
                   key={item.id}
@@ -182,7 +126,7 @@ export function FaqPage() {
                       }
                       className="flex min-h-14 w-full min-w-0 items-center justify-between gap-4 px-4 py-4 text-start text-sm font-semibold text-[#404145] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#19A463] sm:px-5 sm:text-base"
                     >
-                      <span className="min-w-0">{item.question}</span>
+                      <span className="min-w-0">{question}</span>
                       <ChevronDown
                         size={18}
                         aria-hidden="true"
@@ -201,7 +145,7 @@ export function FaqPage() {
                   >
                     <div className="min-h-0 overflow-hidden">
                       <p className="border-t border-slate-200 px-4 pb-5 pt-4 text-sm leading-6 text-slate-600 sm:px-5">
-                        {item.answer}
+                        {answer}
                       </p>
                     </div>
                   </div>
@@ -212,9 +156,9 @@ export function FaqPage() {
         </section>
 
         <section className="mt-8 rounded-2xl bg-[#19A463] px-5 py-6 text-white sm:px-7 sm:py-7">
-          <h2 className="text-lg font-semibold">Still have a question?</h2>
+          <h2 className="text-lg font-semibold">{t("faq.ctaTitle")}</h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-white/90">
-            Can't find your answer here? Ask us and we'll get back to you.
+            {t("faq.ctaDescription")}
           </p>
           {/* The question form will go here in the next task. */}
         </section>
