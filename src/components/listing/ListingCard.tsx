@@ -46,7 +46,7 @@ export function ListingCard({
           className="pointer-events-none absolute inset-0 bg-gradient-to-t from-navy-950/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
         />
         {listing.providerVerified && (
-          <span className="absolute left-3 top-3 inline-flex min-h-7 items-center gap-1.5 rounded-full border border-white/70 bg-white/95 px-2.5 text-xs font-semibold text-teal-700 shadow-sm backdrop-blur">
+          <span className="absolute start-3 top-3 inline-flex min-h-7 items-center gap-1.5 rounded-full border border-white/70 bg-white/95 px-2.5 text-xs font-semibold text-teal-700 shadow-sm backdrop-blur">
             <span
               className="size-1.5 rounded-full bg-teal-600"
               aria-hidden="true"
@@ -54,7 +54,7 @@ export function ListingCard({
             Verified
           </span>
         )}
-        <span className="absolute bottom-3 right-3 grid size-9 place-items-center rounded-full bg-white/95 text-ink shadow-sm transition duration-300 group-hover:bg-teal-600 group-hover:text-white">
+        <span className="absolute bottom-3 end-3 grid size-9 place-items-center rounded-full bg-white/95 text-ink shadow-sm transition duration-300 group-hover:bg-teal-600 group-hover:text-white">
           <ArrowUpRight size={17} aria-hidden="true" />
         </span>
       </Link>
@@ -115,7 +115,7 @@ export function ListingCard({
           {new Intl.NumberFormat("en-PK", { maximumFractionDigits: 0 }).format(
             Number(listing.price_amount),
           )}
-          <span className="ml-1 font-normal text-slate-600">
+          <span className="ms-1 font-normal text-slate-600">
             {listing.pricing_type === "hourly" ? " / hr" : " fixed"}
           </span>
         </p>
