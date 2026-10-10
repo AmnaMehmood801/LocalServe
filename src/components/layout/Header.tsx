@@ -18,13 +18,11 @@ import { useLanguage } from "../../i18n/useLanguage";
 const languageOptions = [
   { value: "en", label: "English" },
   { value: "ur", label: "اردو" },
-  { value: "ur-Latn", label: "Roman Urdu" },
 ] as const;
 
 const languageButtonLabels = {
   en: "EN",
   ur: "اردو",
-  "ur-Latn": "RU",
 } as const;
 
 export function Header() {
@@ -33,6 +31,14 @@ export function Header() {
   const { user, displayName, roles, loading: authLoading, signOut } = useAuth();
   const { t } = useTranslation();
   const { language, setLanguage } = useLanguage();
+  const primaryNavLayout =
+    language === "en"
+      ? "lg:gap-4 xl:gap-6 xl:-translate-x-8 min-[1400px]:-translate-x-16 2xl:-translate-x-24 max-[1100px]:!gap-0"
+      : "lg:gap-0";
+  const areaSelectLayout =
+    language === "en"
+      ? "max-[399px]:max-w-[140px] min-[1024px]:max-[1100px]:max-w-[6rem] min-[1101px]:max-[1279.98px]:max-w-[7rem] xl:max-w-[10rem] min-[1600px]:max-w-[12rem] [&>button]:w-auto [&>button]:max-w-full [&>button]:shrink-0 [&>button]:whitespace-nowrap min-[1024px]:max-[1100px]:[&>button]:!min-w-[6rem] min-[1101px]:max-[1279.98px]:[&>button]:!min-w-[7rem] xl:[&>button]:!min-w-[10rem]"
+      : "max-[399px]:max-w-[140px] min-[1024px]:max-[1100px]:!max-w-[3rem] min-[1101px]:max-[1279.98px]:max-w-[7rem] xl:max-w-[8rem] [&>button]:w-auto [&>button]:max-w-full [&>button]:shrink-0 [&>button]:whitespace-nowrap min-[1024px]:max-[1100px]:[&>button]:!min-w-[3rem] min-[1101px]:max-[1279.98px]:[&>button]:!min-w-[7rem] xl:[&>button]:!min-w-[8rem]";
   const navigate = useNavigate();
   const location = useLocation();
   const homePath =
@@ -113,7 +119,7 @@ export function Header() {
         </Link>
 
         <nav
-          className="hidden min-w-0 items-center gap-2 lg:col-start-2 lg:row-start-1 lg:flex lg:justify-self-center lg:gap-4 xl:gap-6 xl:-translate-x-8 min-[1400px]:-translate-x-16 2xl:-translate-x-24 max-[1100px]:!gap-0"
+          className={`hidden min-w-0 items-center gap-2 lg:col-start-2 lg:row-start-1 lg:flex lg:justify-self-center ${primaryNavLayout}`}
           aria-label="Primary navigation"
         >
           <NavLink
@@ -171,7 +177,7 @@ export function Header() {
         </nav>
 
         <nav
-          className="ml-auto flex shrink-0 items-center gap-1 text-sm min-[400px]:gap-2 lg:col-start-3 lg:row-start-1 lg:ml-0 lg:min-w-0 lg:justify-end lg:justify-self-end lg:gap-3 lg:whitespace-nowrap"
+          className={`ml-auto flex shrink-0 items-center gap-1 text-sm min-[400px]:gap-2 lg:col-start-3 lg:row-start-1 lg:ml-0 lg:min-w-0 lg:justify-end lg:justify-self-end lg:whitespace-nowrap ${language === "en" ? "lg:gap-3" : "lg:gap-1"}`}
           aria-label="Main navigation"
         >
           <div className="relative shrink-0" data-header-menu="language">
@@ -227,7 +233,7 @@ export function Header() {
                 label: area.name,
                 group: getAreaGroup(area.slug),
               }))}
-              className={`max-[399px]:max-w-[140px] min-[1024px]:max-[1100px]:max-w-[6rem] min-[1101px]:max-[1279.98px]:max-w-[7rem] xl:max-w-[10rem] min-[1600px]:max-w-[12rem] [&>button]:w-auto [&>button]:max-w-full [&>button]:shrink-0 [&>button]:whitespace-nowrap min-[1024px]:max-[1100px]:[&>button]:!min-w-[6rem] min-[1101px]:max-[1279.98px]:[&>button]:!min-w-[7rem] xl:[&>button]:!min-w-[10rem] max-[399px]:[&>button]:px-2 max-[399px]:[&>button]:pr-2 [&_[role=listbox]]:!border-white/20 [&_[role=listbox]]:!bg-[#252724] [&_[role=listbox]_button]:!bg-transparent [&_[role=listbox]_button]:!text-white [&_[role=listbox]_button:hover]:!bg-white/10 [&_[role=listbox]_button[aria-selected=true]]:!bg-[#1F6F4F] [&_[role=listbox]_button_span]:!text-white ${loading || areas.length === 0 ? "opacity-60" : ""}`}
+              className={`${areaSelectLayout} max-[399px]:[&>button]:px-2 max-[399px]:[&>button]:pr-2 [&_[role=listbox]]:!border-white/20 [&_[role=listbox]]:!bg-[#252724] [&_[role=listbox]_button]:!bg-transparent [&_[role=listbox]_button]:!text-white [&_[role=listbox]_button:hover]:!bg-white/10 [&_[role=listbox]_button[aria-selected=true]]:!bg-[#1F6F4F] [&_[role=listbox]_button_span]:!text-white ${loading || areas.length === 0 ? "opacity-60" : ""}`}
             />
           </div>
           {error && (
@@ -339,13 +345,13 @@ export function Header() {
               <>
                 <Link
                   to="/login"
-                  className="min-h-11 shrink-0 whitespace-nowrap rounded-xl px-3 py-2.5 text-white hover:bg-white/10"
+                  className={`min-h-11 shrink-0 whitespace-nowrap rounded-xl px-3 py-2.5 text-white hover:bg-white/10 ${language === "en" ? "" : "max-[1100px]:!px-1"}`}
                 >
                   {t("nav.logIn")}
                 </Link>
                 <Link
                   to="/register"
-                  className="min-h-11 shrink-0 whitespace-nowrap rounded-lg bg-[#1DBF73] px-4 py-2.5 font-bold text-white hover:bg-[#19A463] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1DBF73]"
+                  className={`min-h-11 shrink-0 whitespace-nowrap rounded-lg bg-[#1DBF73] px-4 py-2.5 font-bold text-white hover:bg-[#19A463] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1DBF73] ${language === "en" ? "" : "max-[1100px]:!px-1"}`}
                 >
                   {t("nav.signUp")}
                 </Link>
