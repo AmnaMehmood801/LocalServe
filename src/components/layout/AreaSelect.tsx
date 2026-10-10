@@ -198,9 +198,9 @@ export function AreaSelect({
         aria-label="Select area"
         onClick={() => (open ? setOpen(false) : openMenu())}
         onKeyDown={handleButtonKeyDown}
-        className="flex min-h-[40px] items-center justify-between gap-2 rounded-xl border border-white/20 bg-white/5 px-3 py-1.5 pr-8 text-sm text-white outline-none transition-colors hover:border-[#1DBF73] hover:bg-white/10 focus:border-[#1DBF73] focus:outline-none focus:!ring-2 focus:!ring-[#1DBF73]/30 aria-expanded:border-[#1DBF73] aria-expanded:!ring-2 aria-expanded:!ring-[#1DBF73]/30"
+        className="flex w-auto min-h-[40px] max-w-full shrink-0 items-center justify-between gap-2 whitespace-nowrap rounded-xl border border-white/20 bg-white/5 px-3 py-1.5 text-sm text-white outline-none transition-colors hover:border-[#1DBF73] hover:bg-white/10 focus:border-[#1DBF73] focus:outline-none focus:!ring-2 focus:!ring-[#1DBF73]/30 aria-expanded:border-[#1DBF73] aria-expanded:!ring-2 aria-expanded:!ring-[#1DBF73]/30 lg:min-w-[9rem] xl:min-w-[11rem]"
       >
-        <span className="truncate max-w-[110px] sm:max-w-[180px]">
+        <span className="min-w-0 max-w-[12rem] truncate max-[399px]:max-w-[100px]">
           {selectedOption?.label ?? "Select area"}
         </span>
         <ChevronDown size={14} aria-hidden="true" className="shrink-0" />

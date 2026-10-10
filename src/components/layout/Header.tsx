@@ -85,7 +85,7 @@ export function Header() {
 
   return (
     <header ref={headerRef} className="bg-[#252724] text-white">
-      <div className="shell-container flex h-16 w-full flex-nowrap items-center gap-1 px-4 min-[400px]:gap-2 lg:grid lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
+      <div className="shell-container flex h-16 w-full flex-nowrap items-center gap-1 px-4 min-[400px]:gap-2 lg:grid lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-x-8 xl:max-w-7xl">
         <Link
           to={homePath}
           aria-label="LocalServe home"
@@ -98,14 +98,14 @@ export function Header() {
         </Link>
 
         <nav
-          className="hidden items-center gap-1 lg:col-start-2 lg:row-start-1 lg:flex lg:justify-self-center"
+          className="hidden min-w-0 items-center gap-2 lg:col-start-2 lg:row-start-1 lg:flex lg:justify-self-center lg:gap-4 xl:gap-6 xl:-translate-x-8 min-[1400px]:-translate-x-16 2xl:-translate-x-24 max-[1100px]:!gap-0"
           aria-label="Primary navigation"
         >
           <NavLink
             to={homePath}
             end
             className={({ isActive }) =>
-              `relative flex min-h-10 items-center rounded-lg px-3 py-2 text-sm font-medium text-white ${isActive ? "bg-white/10" : "hover:bg-white/10"}`
+              `relative flex min-h-10 items-center whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium text-white ${isActive ? "bg-white/10" : "hover:bg-white/10"}`
             }
           >
             {({ isActive }) => (
@@ -119,14 +119,29 @@ export function Header() {
           </NavLink>
           <Link
             to="/#services"
-            className="flex min-h-10 items-center rounded-lg px-3 py-2 text-sm font-medium text-white hover:bg-white/10"
+            className="flex min-h-10 items-center whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium text-white hover:bg-white/10"
           >
             Our services
           </Link>
           <NavLink
+            to="/about"
+            className={({ isActive }) =>
+              `relative flex min-h-10 items-center whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium text-white ${isActive ? "bg-white/10" : "hover:bg-white/10"}`
+            }
+          >
+            {({ isActive }) => (
+              <>
+                About
+                {isActive && (
+                  <span className="absolute bottom-1 left-1/2 size-1 -translate-x-1/2 rounded-full bg-[#1DBF73]" />
+                )}
+              </>
+            )}
+          </NavLink>
+          <NavLink
             to="/faq"
             className={({ isActive }) =>
-              `relative flex min-h-10 items-center rounded-lg px-3 py-2 text-sm font-medium text-white ${isActive ? "bg-white/10" : "hover:bg-white/10"}`
+              `relative flex min-h-10 items-center whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium text-white ${isActive ? "bg-white/10" : "hover:bg-white/10"}`
             }
           >
             {({ isActive }) => (
@@ -141,7 +156,7 @@ export function Header() {
         </nav>
 
         <nav
-          className="ml-auto flex shrink-0 items-center gap-1 text-sm min-[400px]:gap-2 lg:col-start-3 lg:row-start-1 lg:ml-0 lg:justify-self-end"
+          className="ml-auto flex shrink-0 items-center gap-1 text-sm min-[400px]:gap-2 lg:col-start-3 lg:row-start-1 lg:ml-0 lg:min-w-0 lg:justify-end lg:justify-self-end lg:gap-3 lg:whitespace-nowrap"
           aria-label="Main navigation"
         >
           <div className="relative shrink-0" data-header-menu="language">
@@ -153,7 +168,7 @@ export function Header() {
               onClick={() =>
                 setOpenMenu(openMenu === "language" ? null : "language")
               }
-              className="flex min-h-10 items-center gap-1 rounded-lg px-2 text-sm font-semibold text-white hover:bg-white/10"
+              className="flex min-h-10 shrink-0 items-center gap-1 whitespace-nowrap rounded-lg px-2 text-sm font-semibold text-white hover:bg-white/10"
             >
               EN
               <ChevronDown size={14} aria-hidden="true" />
@@ -197,7 +212,7 @@ export function Header() {
                 label: area.name,
                 group: getAreaGroup(area.slug),
               }))}
-              className={`max-[399px]:max-w-[140px] [&>button]:w-full max-[399px]:[&>button]:px-2 max-[399px]:[&>button]:pr-2 [&_[role=listbox]]:!border-white/20 [&_[role=listbox]]:!bg-[#252724] [&_[role=listbox]_button]:!bg-transparent [&_[role=listbox]_button]:!text-white [&_[role=listbox]_button:hover]:!bg-white/10 [&_[role=listbox]_button[aria-selected=true]]:!bg-[#1F6F4F] [&_[role=listbox]_button_span]:!text-white ${loading || areas.length === 0 ? "opacity-60" : ""}`}
+              className={`max-[399px]:max-w-[140px] min-[1024px]:max-[1100px]:max-w-[6rem] min-[1101px]:max-[1279.98px]:max-w-[7rem] xl:max-w-[10rem] min-[1600px]:max-w-[12rem] [&>button]:w-auto [&>button]:max-w-full [&>button]:shrink-0 [&>button]:whitespace-nowrap min-[1024px]:max-[1100px]:[&>button]:!min-w-[6rem] min-[1101px]:max-[1279.98px]:[&>button]:!min-w-[7rem] xl:[&>button]:!min-w-[10rem] max-[399px]:[&>button]:px-2 max-[399px]:[&>button]:pr-2 [&_[role=listbox]]:!border-white/20 [&_[role=listbox]]:!bg-[#252724] [&_[role=listbox]_button]:!bg-transparent [&_[role=listbox]_button]:!text-white [&_[role=listbox]_button:hover]:!bg-white/10 [&_[role=listbox]_button[aria-selected=true]]:!bg-[#1F6F4F] [&_[role=listbox]_button_span]:!text-white ${loading || areas.length === 0 ? "opacity-60" : ""}`}
             />
           </div>
           {error && (
@@ -309,13 +324,13 @@ export function Header() {
               <>
                 <Link
                   to="/login"
-                  className="min-h-11 rounded-xl px-3 py-2.5 text-white hover:bg-white/10"
+                  className="min-h-11 shrink-0 whitespace-nowrap rounded-xl px-3 py-2.5 text-white hover:bg-white/10"
                 >
                   Log in
                 </Link>
                 <Link
                   to="/register"
-                  className="min-h-11 rounded-lg bg-[#1DBF73] px-4 py-2.5 font-bold text-white hover:bg-[#19A463] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1DBF73]"
+                  className="min-h-11 shrink-0 whitespace-nowrap rounded-lg bg-[#1DBF73] px-4 py-2.5 font-bold text-white hover:bg-[#19A463] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1DBF73]"
                 >
                   Sign up
                 </Link>
@@ -364,6 +379,21 @@ export function Header() {
                 >
                   Our services
                 </Link>
+                <NavLink
+                  to="/about"
+                  className={({ isActive }) =>
+                    `relative block rounded-lg px-3 py-2 text-sm ${isActive ? "bg-white/10 font-medium" : "hover:bg-white/10"}`
+                  }
+                >
+                  {({ isActive }) => (
+                    <>
+                      About
+                      {isActive && (
+                        <span className="absolute right-3 top-1/2 size-1.5 -translate-y-1/2 rounded-full bg-[#1DBF73]" />
+                      )}
+                    </>
+                  )}
+                </NavLink>
                 <NavLink
                   to="/faq"
                   className={({ isActive }) =>
