@@ -701,11 +701,23 @@ function VerifiedProvidersSection() {
 }
 
 export function HomePage() {
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(() =>
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
+
   useEffect(() => {
     document.title = "LocalServe — Trusted local services";
     return () => {
       document.title = "LocalServe";
     };
+  }, []);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const updatePreference = (event: MediaQueryListEvent) =>
+      setPrefersReducedMotion(event.matches);
+    mediaQuery.addEventListener("change", updatePreference);
+    return () => mediaQuery.removeEventListener("change", updatePreference);
   }, []);
 
   const {
@@ -989,6 +1001,19 @@ export function HomePage() {
             loading="eager"
             className="absolute inset-0 size-full object-cover object-center"
           />
+          {!prefersReducedMotion && (
+            <video
+              src="/hero.mp4"
+              poster="https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1800&q=82"
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="metadata"
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+            />
+          )}
           <div className="absolute inset-0 bg-gradient-to-r from-[#171A18]/90 via-[#171A18]/65 to-[#171A18]/25" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#171A18]/80 via-transparent to-[#171A18]/10" />
         </div>
