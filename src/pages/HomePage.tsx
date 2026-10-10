@@ -1356,6 +1356,63 @@ export function HomePage() {
         </div>
       </section>
 
+      <VerifiedProvidersSection />
+
+      <section
+        aria-labelledby="why-choose-us-heading"
+        className="home-market-section shell-container py-10 md:py-14"
+      >
+        <div className="home-reveal min-w-0">
+          <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#19A463]">
+            WHY CHOOSE US
+          </p>
+          <h2
+            id="why-choose-us-heading"
+            className="mt-2 text-2xl font-semibold tracking-tight text-[#404145] sm:text-3xl"
+          >
+            Help that feels <em className="font-semibold italic text-[#19A463]">close to home</em>
+          </h2>
+          <div className="mt-6 grid min-w-0 gap-3 lg:grid-cols-3 lg:grid-rows-2">
+            <article className="flex min-w-0 flex-col justify-between gap-8 rounded-2xl bg-[#1F6F4F] p-5 text-white sm:p-6 lg:row-span-2">
+              <MapPin size={20} aria-hidden="true" />
+              <div className="min-w-0">
+                <h3 className="text-lg font-semibold">Local to Samundri</h3>
+                <p className="mt-2 text-sm leading-6 text-white/85">
+                  Providers from local areas. Neighbours you can trust.
+                </p>
+              </div>
+            </article>
+            <article className="flex min-w-0 items-start gap-4 rounded-2xl bg-[#E3F7EC] p-5 text-[#1F3A2E] sm:p-6 lg:col-span-2">
+              <ArrowRight size={20} className="mt-0.5 shrink-0 text-[#19A463]" aria-hidden="true" />
+              <div className="min-w-0">
+                <h3 className="font-semibold">Quick booking</h3>
+                <p className="mt-1 text-sm leading-6">
+                  Choose a date and send your request in a minute.
+                </p>
+              </div>
+            </article>
+            <article className="flex min-w-0 items-start gap-4 rounded-2xl bg-[#CFE9DB] p-5 text-[#1F3A2E] sm:p-6">
+              <BadgeCheck size={20} className="mt-0.5 shrink-0 text-[#19A463]" aria-hidden="true" />
+              <div className="min-w-0">
+                <h3 className="font-semibold">Clear updates</h3>
+                <p className="mt-1 text-sm leading-6">
+                  Accepted or declined, you always know.
+                </p>
+              </div>
+            </article>
+            <article className="flex min-w-0 items-start gap-4 rounded-2xl bg-[#E6E9EC] p-5 text-[#2B2E33] sm:p-6">
+              <House size={20} className="mt-0.5 shrink-0 text-[#19A463]" aria-hidden="true" />
+              <div className="min-w-0">
+                <h3 className="font-semibold">One account</h3>
+                <p className="mt-1 text-sm leading-6">
+                  Book or offer services with one account.
+                </p>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
       <section
         id="how-it-works"
         className="relative isolate overflow-hidden bg-[#252724] py-10 text-white md:py-14"
@@ -1565,7 +1622,22 @@ export function HomePage() {
           )}
         </section>
       ) : null}
-      <VerifiedProvidersSection />
+      <section className="shell-container py-8 md:py-12">
+        <div className="home-reveal rounded-3xl bg-[#1F6F4F] px-5 py-9 text-center text-white sm:px-8 sm:py-11">
+          <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            Ready to <em className="font-semibold">book</em> a pro?
+          </h2>
+          <p className="mt-2 text-sm text-white/85 sm:text-base">
+            Join your neighbours on LocalServe today.
+          </p>
+          <Link
+            to="/register"
+            className="mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#1DBF73] px-5 text-sm font-bold text-white transition-colors hover:bg-[#19A463] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/40"
+          >
+            Get started <ArrowRight size={16} aria-hidden="true" />
+          </Link>
+        </div>
+      </section>
     </div>
   );
 }
