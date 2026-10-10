@@ -7,6 +7,7 @@ import { PublicLayout } from "../layouts/PublicLayout";
 import { AccountPage } from "../pages/AccountPage";
 import { BookingDetailPage } from "../pages/BookingDetailPage";
 import { CustomerBookingsPage } from "../pages/CustomerBookingsPage";
+import { FaqPage } from "../pages/FaqPage";
 import { ListingDetailPage } from "../pages/ListingDetailPage";
 import { LoginPage } from "../pages/LoginPage";
 import { MemberHomePage } from "../pages/MemberHomePage";
@@ -91,6 +92,7 @@ const router = createBrowserRouter([
       { path: "/providers/:id", element: <PublicProviderPage /> },
       { path: "/privacy", element: <PrivacyPage /> },
       { path: "/terms", element: <TermsPage /> },
+      { path: "/faq", element: <FaqPage /> },
       {
         element: <GuestOnlyRoute />,
         children: [
