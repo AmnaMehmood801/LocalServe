@@ -1,4 +1,5 @@
 import { ArrowUpRight, MapPin, Star } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
 import { Avatar } from "../Avatar";
@@ -27,11 +28,21 @@ export function ListingCard({
   avatarPath?: string | null;
   fallbackImageUrl?: string;
 }) {
+  const { t } = useTranslation();
+  const providerName =
+    listing.providerName === "Provider details unavailable"
+      ? t("listing.card.providerUnavailable")
+      : listing.providerName;
+  const categoryName =
+    listing.categoryName === "Local service"
+      ? t("listing.card.categoryUnavailable")
+      : listing.categoryName;
+
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-cream-100 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-teal-600/25 hover:shadow-lg">
       <Link
         to={`/listings/${listing.id}`}
-        aria-label={`View ${listing.title}`}
+        aria-label={t("listing.card.viewItem", { title: listing.title })}
         className="relative block aspect-[4/3] overflow-hidden bg-cream-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-teal-600/40"
       >
         <ListingCover
@@ -51,7 +62,7 @@ export function ListingCard({
               className="size-1.5 rounded-full bg-teal-600"
               aria-hidden="true"
             />
-            Verified
+            {t("listing.card.verified")}
           </span>
         )}
         <span className="absolute bottom-3 end-3 grid size-9 place-items-center rounded-full bg-white/95 text-ink shadow-sm transition duration-300 group-hover:bg-teal-600 group-hover:text-white">
@@ -61,7 +72,7 @@ export function ListingCard({
       <div className="flex flex-1 flex-col p-4 sm:p-5">
         <p className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
           <MapPin size={13} aria-hidden="true" />
-          {listing.categoryName} · Samundri
+          {categoryName} · Samundri
         </p>
         <h2 className="mt-2 line-clamp-2 text-base font-semibold leading-6 tracking-tight text-ink sm:min-h-12">
           <Link
@@ -74,14 +85,14 @@ export function ListingCard({
         <div className="mt-2 inline-flex min-w-0 max-w-full items-center gap-2 self-start">
           <Avatar
             avatarPath={avatarPath}
-            name={listing.providerName}
+            name={providerName}
             size={24}
           />
           <Link
             to={`/providers/${listing.provider_id}`}
             className="inline-flex min-h-8 max-w-full items-center truncate rounded-sm text-sm text-slate-600 transition hover:text-teal-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600"
           >
-            {listing.providerName}
+            {providerName}
           </Link>
         </div>
         <div className="mt-3 flex min-h-5 items-center justify-between gap-3">
@@ -89,8 +100,11 @@ export function ListingCard({
             className="inline-flex items-center gap-1.5 text-sm font-medium text-ink"
             aria-label={
               listing.rating_count > 0
-                ? `${Number(listing.rating_avg).toFixed(1)} out of 5 from ${listing.rating_count} reviews`
-                : "No reviews yet"
+                ? t("listing.card.ratingWithCount", {
+                    rating: Number(listing.rating_avg).toFixed(1),
+                    count: listing.rating_count,
+                  })
+                : t("listing.card.noReviews")
             }
           >
             {listing.rating_count > 0 ? (
@@ -106,7 +120,7 @@ export function ListingCard({
                 </span>
               </>
             ) : (
-              <span className="text-slate-600">New</span>
+              <span className="text-slate-600">{t("listing.card.new")}</span>
             )}
           </p>
         </div>
@@ -116,7 +130,11 @@ export function ListingCard({
             Number(listing.price_amount),
           )}
           <span className="ms-1 font-normal text-slate-600">
-            {listing.pricing_type === "hourly" ? " / hr" : " fixed"}
+            {t(
+              listing.pricing_type === "hourly"
+                ? "listing.card.perHour"
+                : "listing.card.fixed",
+            )}
           </span>
         </p>
         <div className="mt-auto flex gap-2 pt-4">
@@ -124,13 +142,13 @@ export function ListingCard({
             to={`/listings/${listing.id}/request`}
             className="inline-flex h-10 flex-[1.3] items-center justify-center whitespace-nowrap rounded-xl bg-teal-600 px-3 text-center text-sm font-semibold text-white transition hover:bg-teal-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-600/25"
           >
-            Book now
+            {t("listing.card.bookNow")}
           </Link>
           <Link
             to={`/listings/${listing.id}`}
             className="inline-flex h-10 flex-1 items-center justify-center rounded-xl border border-cream-100 px-3 text-sm font-semibold text-ink transition hover:border-teal-600/30 hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-600/15"
           >
-            View
+            {t("listing.card.view")}
           </Link>
         </div>
       </div>

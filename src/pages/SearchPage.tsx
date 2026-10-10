@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { SlidersHorizontal } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 
@@ -186,6 +187,7 @@ async function loadSearchResults(
 }
 
 export function SearchPage() {
+  const { t } = useTranslation();
   const {
     areas,
     selectedAreaId,
@@ -301,11 +303,16 @@ export function SearchPage() {
     const categoryName = categoriesQuery.data?.find(
       (category) => category.id === categoryId,
     )?.name;
-    document.title = `${categoryName ? `${categoryName} in ` : "Services in "}${areaName} · LocalServe`;
+    document.title = categoryName
+      ? t("search.pageTitleWithCategory", {
+          category: categoryName,
+          area: areaName,
+        })
+      : t("search.pageTitle", { area: areaName });
     return () => {
       document.title = "LocalServe";
     };
-  }, [categoriesQuery.data, categoryId, selectedArea?.name]);
+  }, [categoriesQuery.data, categoryId, selectedArea?.name, t]);
 
   function updateParams(next: Record<string, string>, resetPage = true) {
     const params = new URLSearchParams(searchParams);
@@ -353,17 +360,15 @@ export function SearchPage() {
     <div className="shell-container py-8 md:py-10">
       <header className="mb-7 border-b border-cream-100 pb-5">
         <p className="text-xs font-semibold uppercase text-slate-600">
-          Samundri services
+          {t("search.eyebrow")}
         </p>
         <h1 className="mt-2 text-3xl font-semibold">
-          Services in {selectedArea?.name ?? "Samundri"}
+          {t("search.heading", { area: selectedArea?.name ?? "Samundri" })}
         </h1>
         <p className="mt-2 text-sm text-slate-600">
           {resultsQuery.data
-            ? resultsQuery.data.count === 1
-              ? "1 service found"
-              : `${resultsQuery.data.count} services found`
-            : "Find and compare local providers."}
+            ? t("search.servicesFound", { count: resultsQuery.data.count })
+            : t("search.description")}
         </p>
       </header>
 
@@ -375,7 +380,9 @@ export function SearchPage() {
         className="mb-4 flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white text-sm font-medium text-ink hover:bg-cream-50 lg:hidden"
       >
         <SlidersHorizontal size={16} aria-hidden="true" />
-        Filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}
+        {activeFilterCount > 0
+          ? t("search.filtersWithCount", { count: activeFilterCount })
+          : t("search.filters")}
       </button>
 
       <div className="grid gap-8 lg:grid-cols-[240px_minmax(0,1fr)]">
@@ -389,7 +396,7 @@ export function SearchPage() {
               htmlFor="search-area"
               className="mb-1 block text-sm font-medium"
             >
-              Samundri area
+              {t("search.area")}
             </label>
             <SelectMenu
               id="search-area"
@@ -403,7 +410,7 @@ export function SearchPage() {
                 label: area.name,
                 group: getAreaGroup(area.slug),
               }))}
-              ariaLabel="Samundri area"
+              ariaLabel={t("search.area")}
               size="sm"
               className="w-full"
             />
@@ -413,20 +420,20 @@ export function SearchPage() {
               htmlFor="search-category"
               className="mb-1 block text-sm font-medium"
             >
-              Category
+              {t("search.category")}
             </label>
             <SelectMenu
               id="search-category"
               value={categoryId}
               onChange={(value) => updateParams({ categoryId: value })}
               options={[
-                { value: "", label: "All services" },
+                { value: "", label: t("search.allServices") },
                 ...(categoriesQuery.data ?? []).map((category) => ({
                   value: category.id,
                   label: category.name,
                 })),
               ]}
-              ariaLabel="Category"
+              ariaLabel={t("search.category")}
               size="sm"
               className="w-full"
             />
@@ -436,7 +443,7 @@ export function SearchPage() {
               htmlFor="search-query"
               className="mb-1 block text-sm font-medium"
             >
-              Keyword
+              {t("search.keyword")}
             </label>
             <input
               id="search-query"
@@ -450,50 +457,50 @@ export function SearchPage() {
               htmlFor="search-rating"
               className="mb-1 block text-sm font-medium"
             >
-              Minimum rating
+              {t("search.minimumRating")}
             </label>
             <SelectMenu
               id="search-rating"
               value={draftMinRating}
               onChange={setDraftMinRating}
               options={[
-                { value: "", label: "Any rating" },
-                { value: "3", label: "3+ stars" },
-                { value: "4", label: "4+ stars" },
-                { value: "4.5", label: "4.5+ stars" },
+                { value: "", label: t("search.anyRating") },
+                { value: "3", label: t("search.threeStars") },
+                { value: "4", label: t("search.fourStars") },
+                { value: "4.5", label: t("search.fourAndHalfStars") },
               ]}
-              ariaLabel="Minimum rating"
+              ariaLabel={t("search.minimumRating")}
               size="sm"
               className="w-full"
             />
           </div>
           <fieldset className="mb-4">
             <legend className="mb-1 text-sm font-medium">
-              Price range (Rs.)
+              {t("search.priceRange")}
             </legend>
             <div className="grid grid-cols-2 gap-2">
               <label className="sr-only" htmlFor="price-min">
-                Minimum price
+                {t("search.minimumPrice")}
               </label>
               <input
                 id="price-min"
                 type="number"
                 min="0"
                 inputMode="decimal"
-                placeholder="Min"
+                placeholder={t("search.min")}
                 value={draftMinPrice}
                 onChange={(event) => setDraftMinPrice(event.target.value)}
                 className="h-10 min-w-0 rounded-lg border border-slate-400/50 px-2 text-sm outline-none focus:ring-2 focus:ring-teal-600"
               />
               <label className="sr-only" htmlFor="price-max">
-                Maximum price
+                {t("search.maximumPrice")}
               </label>
               <input
                 id="price-max"
                 type="number"
                 min="0"
                 inputMode="decimal"
-                placeholder="Max"
+                placeholder={t("search.max")}
                 value={draftMaxPrice}
                 onChange={(event) => setDraftMaxPrice(event.target.value)}
                 className="h-10 min-w-0 rounded-lg border border-slate-400/50 px-2 text-sm outline-none focus:ring-2 focus:ring-teal-600"
@@ -504,7 +511,7 @@ export function SearchPage() {
             type="submit"
             className="min-h-11 w-full rounded-xl bg-teal-600 px-4 text-sm font-medium text-white hover:bg-teal-700"
           >
-            Apply filters
+            {t("search.applyFilters")}
           </button>
           {hasActiveFilters && (
             <button
@@ -512,32 +519,30 @@ export function SearchPage() {
               onClick={clearFilters}
               className="mt-2 h-10 w-full border-0 bg-transparent text-center text-sm font-medium text-slate-600 hover:text-[#168A55]"
             >
-              Clear filters
+              {t("search.clearFilters")}
             </button>
           )}
         </form>
 
-        <section aria-label="Search results">
+        <section aria-label={t("search.resultsLabel")}>
           <div className="mb-4 flex items-center justify-between gap-3">
             <p className="text-sm text-slate-600">
               {resultsQuery.data
-                ? resultsQuery.data.count === 1
-                  ? "1 result"
-                  : `${resultsQuery.data.count} results`
-                : "Results"}
+                ? t("search.result", { count: resultsQuery.data.count })
+                : t("search.resultsFallback")}
             </p>
             <label className="flex items-center gap-2 text-sm font-medium">
-              <span className="text-slate-600">Sort</span>
+              <span className="text-slate-600">{t("search.sort")}</span>
               <SelectMenu
                 value={sort}
                 onChange={(value) => updateParams({ sort: value })}
                 options={[
-                  { value: "rating", label: "Highest rated" },
-                  { value: "price_asc", label: "Price: low to high" },
-                  { value: "price_desc", label: "Price: high to low" },
-                  { value: "newest", label: "Newest" },
+                  { value: "rating", label: t("search.highestRated") },
+                  { value: "price_asc", label: t("search.priceLowToHigh") },
+                  { value: "price_desc", label: t("search.priceHighToLow") },
+                  { value: "newest", label: t("search.newest") },
                 ]}
-                ariaLabel="Sort order"
+                ariaLabel={t("search.sortOrder")}
                 size="sm"
                 className="w-auto min-w-[11rem]"
               />
@@ -550,7 +555,7 @@ export function SearchPage() {
             <div
               className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
               role="status"
-              aria-label="Loading search results"
+              aria-label={t("search.loadingResults")}
             >
               {Array.from({ length: 6 }, (_, index) => (
                 <div
@@ -568,7 +573,7 @@ export function SearchPage() {
               role="alert"
             >
               <p className="text-sm text-slate-600">
-                {areasError ?? "Services could not be loaded."}
+                {areasError ?? t("search.loadError")}
               </p>
               <button
                 type="button"
@@ -579,12 +584,12 @@ export function SearchPage() {
                 }}
                 className="mt-3 min-h-10 rounded-lg border border-ink/20 px-4 text-sm font-medium"
               >
-                Try again
+                {t("search.tryAgain")}
               </button>
             </div>
           ) : !areaId ? (
             <p className="rounded-xl bg-white p-5 text-sm text-slate-600">
-              Samundri areas are not available right now.
+              {t("search.areasUnavailable")}
             </p>
           ) : resultsQuery.data?.listings.length ? (
             <>
@@ -601,7 +606,7 @@ export function SearchPage() {
               </div>
               {totalPages > 1 && (
                 <nav
-                  aria-label="Search result pages"
+                  aria-label={t("search.resultPages")}
                   className="mt-7 flex items-center justify-center gap-4"
                 >
                   <button
@@ -612,10 +617,10 @@ export function SearchPage() {
                     }
                     className="min-h-11 rounded-lg border border-ink/20 bg-white px-4 text-sm disabled:opacity-50"
                   >
-                    Previous
+                    {t("search.previous")}
                   </button>
                   <span className="text-sm text-slate-600">
-                    Page {page} of {totalPages}
+                    {t("search.pageOf", { page, totalPages })}
                   </span>
                   <button
                     type="button"
@@ -625,14 +630,14 @@ export function SearchPage() {
                     }
                     className="min-h-11 rounded-lg border border-ink/20 bg-white px-4 text-sm disabled:opacity-50"
                   >
-                    Next
+                    {t("search.next")}
                   </button>
                 </nav>
               )}
             </>
           ) : (
             <p className="rounded-xl bg-white p-5 text-sm text-slate-600">
-              No services match. Try another category or area.
+              {t("search.empty")}
             </p>
           )}
         </section>
