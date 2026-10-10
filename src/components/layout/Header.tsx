@@ -84,7 +84,7 @@ export function Header() {
   }
 
   return (
-    <header ref={headerRef} className="bg-[#404145] text-white">
+    <header ref={headerRef} className="bg-[#252724] text-white">
       <div className="shell-container flex h-16 w-full flex-nowrap items-center gap-1 px-4 min-[400px]:gap-2 lg:grid lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
         <Link
           to={homePath}
@@ -162,7 +162,7 @@ export function Header() {
               <div
                 role="menu"
                 aria-label="Language"
-                className="absolute right-0 z-30 mt-2 w-40 rounded-xl border border-cream-100 bg-white p-1 text-ink shadow-lg"
+                className="absolute right-0 z-30 mt-2 w-40 rounded-xl border border-white/20 bg-[#252724] p-1 text-white shadow-lg"
               >
                 {["English", "اردو", "Roman Urdu"].map((option) => (
                   <button
@@ -174,7 +174,7 @@ export function Header() {
                       setLanguage(option);
                       setOpenMenu(null);
                     }}
-                    className="flex min-h-10 w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm hover:bg-cream-50"
+                    className="flex min-h-10 w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm hover:bg-white/10"
                   >
                     {option}
                     {language === option && (
@@ -197,7 +197,7 @@ export function Header() {
                 label: area.name,
                 group: getAreaGroup(area.slug),
               }))}
-              className={`max-[399px]:max-w-[140px] [&>button]:w-full max-[399px]:[&>button]:px-2 max-[399px]:[&>button]:pr-2 ${loading || areas.length === 0 ? "opacity-60" : ""}`}
+              className={`max-[399px]:max-w-[140px] [&>button]:w-full max-[399px]:[&>button]:px-2 max-[399px]:[&>button]:pr-2 [&_[role=listbox]]:!border-white/20 [&_[role=listbox]]:!bg-[#252724] [&_[role=listbox]_button]:!bg-transparent [&_[role=listbox]_button]:!text-white [&_[role=listbox]_button:hover]:!bg-white/10 [&_[role=listbox]_button[aria-selected=true]]:!bg-[#1F6F4F] [&_[role=listbox]_button_span]:!text-white ${loading || areas.length === 0 ? "opacity-60" : ""}`}
             />
           </div>
           {error && (
@@ -340,13 +340,13 @@ export function Header() {
             {openMenu === "mobile" && (
               <div
                 onClick={() => setOpenMenu(null)}
-                className="absolute right-0 top-full z-20 mt-2 w-56 rounded-xl border border-cream-100 bg-white p-2 text-ink shadow-lg"
+                className="absolute right-0 top-full z-20 mt-2 w-56 rounded-xl border border-white/20 bg-[#252724] p-2 text-white shadow-lg"
               >
                 <NavLink
                   to={homePath}
                   end
                   className={({ isActive }) =>
-                    `relative block rounded-lg px-3 py-2 text-sm ${isActive ? "bg-cream-50 font-medium" : "hover:bg-cream-50"}`
+                    `relative block rounded-lg px-3 py-2 text-sm ${isActive ? "bg-white/10 font-medium" : "hover:bg-white/10"}`
                   }
                 >
                   {({ isActive }) => (
@@ -360,14 +360,14 @@ export function Header() {
                 </NavLink>
                 <Link
                   to="/#services"
-                  className="block rounded-lg px-3 py-2 text-sm hover:bg-cream-50"
+                  className="block rounded-lg px-3 py-2 text-sm hover:bg-white/10"
                 >
                   Our services
                 </Link>
                 <NavLink
                   to="/faq"
                   className={({ isActive }) =>
-                    `relative block rounded-lg px-3 py-2 text-sm ${isActive ? "bg-cream-50 font-medium" : "hover:bg-cream-50"}`
+                    `relative block rounded-lg px-3 py-2 text-sm ${isActive ? "bg-white/10 font-medium" : "hover:bg-white/10"}`
                   }
                 >
                   {({ isActive }) => (
@@ -379,8 +379,8 @@ export function Header() {
                     </>
                   )}
                 </NavLink>
-                <div className="mt-1 border-t border-slate-100 px-3 pt-2">
-                  <p className="mb-1 text-xs font-medium text-slate-500">
+                <div className="mt-1 border-t border-white/20 px-3 pt-2">
+                  <p className="mb-1 text-xs font-medium text-white">
                     Language
                   </p>
                   <div className="flex flex-wrap gap-1">
@@ -393,7 +393,7 @@ export function Header() {
                           setLanguage(option);
                           setOpenMenu(null);
                         }}
-                        className={`min-h-9 rounded-lg px-2 text-xs ${language === option ? "bg-[#F0FAF4] font-semibold text-ink" : "text-slate-600 hover:bg-cream-50"}`}
+                        className={`min-h-9 rounded-lg px-2 text-xs ${language === option ? "bg-[#1F6F4F] font-semibold text-white" : "text-white hover:bg-white/10"}`}
                       >
                         {option}
                       </button>
@@ -402,24 +402,24 @@ export function Header() {
                 </div>
                 {user ? (
                   <>
-                    <p className="truncate px-3 py-2 text-xs text-slate-600">
+                    <p className="truncate px-3 py-2 text-xs text-white">
                       {displayName ?? user.email}
                     </p>
                     {roles.length > 0 && (
-                      <p className="px-3 pb-2 text-xs capitalize text-slate-600">
+                      <p className="px-3 pb-2 text-xs capitalize text-white">
                         {roles.join(" · ")}
                       </p>
                     )}
                     <Link
                       to="/account"
-                      className="block rounded-lg px-3 py-2 text-sm hover:bg-cream-50"
+                      className="block rounded-lg px-3 py-2 text-sm hover:bg-white/10"
                     >
                       Account
                     </Link>
                     {roles.includes("customer") && (
                       <Link
                         to="/bookings"
-                        className="block rounded-lg px-3 py-2 text-sm hover:bg-cream-50"
+                        className="block rounded-lg px-3 py-2 text-sm hover:bg-white/10"
                       >
                         My bookings
                       </Link>
@@ -428,19 +428,19 @@ export function Header() {
                       <>
                         <Link
                           to="/provider"
-                          className="block rounded-lg px-3 py-2 text-sm hover:bg-cream-50"
+                          className="block rounded-lg px-3 py-2 text-sm hover:bg-white/10"
                         >
                           Provider hub
                         </Link>
                         <Link
                           to="/provider/listings"
-                          className="block rounded-lg px-3 py-2 text-sm hover:bg-cream-50"
+                          className="block rounded-lg px-3 py-2 text-sm hover:bg-white/10"
                         >
                           My listings
                         </Link>
                         <Link
                           to="/provider/requests"
-                          className="block rounded-lg px-3 py-2 text-sm hover:bg-cream-50"
+                          className="block rounded-lg px-3 py-2 text-sm hover:bg-white/10"
                         >
                           Requests
                         </Link>
@@ -457,7 +457,7 @@ export function Header() {
                     <button
                       type="button"
                       onClick={handleSignOut}
-                      className="mt-1 min-h-10 w-full rounded-lg px-3 text-left text-sm text-rose-600 hover:bg-cream-50"
+                      className="mt-1 min-h-10 w-full rounded-lg px-3 text-left text-sm text-white hover:bg-white/10"
                     >
                       Log out
                     </button>
@@ -465,13 +465,13 @@ export function Header() {
                 ) : (
                   <>
                     <Link
-                      className="block rounded-lg px-3 py-2 text-sm hover:bg-cream-50"
+                      className="block rounded-lg px-3 py-2 text-sm hover:bg-white/10"
                       to="/login"
                     >
                       Log in
                     </Link>
                     <Link
-                      className="block rounded-lg px-3 py-2 text-sm hover:bg-cream-50"
+                      className="block rounded-lg px-3 py-2 text-sm hover:bg-white/10"
                       to="/register"
                     >
                       Sign up
