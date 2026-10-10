@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "../../lib/toast";
-import { Menu } from "lucide-react";
+import { Check, ChevronDown, Menu } from "lucide-react";
 
 import { useAreas } from "../../app/AreaContext";
 import { useAuth } from "../../app/AuthContext";
@@ -29,8 +29,9 @@ export function Header() {
           : "/home";
   const headerRef = useRef<HTMLElement>(null);
   const [openMenu, setOpenMenu] = useState<
-    "area" | "notifications" | "profile" | "mobile" | null
+    "area" | "language" | "notifications" | "profile" | "mobile" | null
   >(null);
+  const [language, setLanguage] = useState("English");
   const { data: avatarPath = null } = useQuery({
     queryKey: ["profile-avatar", user?.id],
     enabled: Boolean(user?.id),
@@ -84,11 +85,11 @@ export function Header() {
 
   return (
     <header ref={headerRef} className="bg-[#404145] text-white">
-      <div className="shell-container flex h-16 w-full flex-nowrap items-center gap-2 px-4">
+      <div className="shell-container flex h-16 w-full flex-nowrap items-center gap-1 px-4 min-[400px]:gap-2 lg:grid lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
         <Link
           to={homePath}
           aria-label="LocalServe home"
-          className="flex min-w-0 shrink-0 items-center gap-3"
+          className="flex min-w-0 shrink-0 items-center gap-3 lg:col-start-1 lg:row-start-1"
         >
           <Logo />
           <span className="hidden min-[400px]:inline text-lg font-semibold">
@@ -97,7 +98,7 @@ export function Header() {
         </Link>
 
         <nav
-          className="hidden items-center gap-1 lg:flex"
+          className="hidden items-center gap-1 lg:col-start-2 lg:row-start-1 lg:flex lg:justify-self-center"
           aria-label="Primary navigation"
         >
           <NavLink
@@ -116,44 +117,74 @@ export function Header() {
               </>
             )}
           </NavLink>
+          <Link
+            to="/#services"
+            className="flex min-h-10 items-center rounded-lg px-3 py-2 text-sm font-medium text-white hover:bg-white/10"
+          >
+            Our services
+          </Link>
           <NavLink
-            to="/search"
+            to="/faq"
             className={({ isActive }) =>
               `relative flex min-h-10 items-center rounded-lg px-3 py-2 text-sm font-medium text-white ${isActive ? "bg-white/10" : "hover:bg-white/10"}`
             }
           >
             {({ isActive }) => (
               <>
-                Find services
+                FAQ
                 {isActive && (
                   <span className="absolute bottom-1 left-1/2 size-1 -translate-x-1/2 rounded-full bg-[#1DBF73]" />
                 )}
               </>
             )}
           </NavLink>
-          {roles.includes("provider") && (
-            <NavLink
-              to="/provider/requests"
-              className={({ isActive }) =>
-                `relative flex min-h-10 items-center rounded-lg px-3 py-2 text-sm font-medium text-white ${isActive ? "bg-white/10" : "hover:bg-white/10"}`
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  Requests
-                  {isActive && (
-                    <span className="absolute bottom-1 left-1/2 size-1 -translate-x-1/2 rounded-full bg-[#1DBF73]" />
-                  )}
-                </>
-              )}
-            </NavLink>
-          )}
         </nav>
 
         <nav
-          className="ml-auto flex items-center gap-2 shrink-0 text-sm"
+          className="ml-auto flex shrink-0 items-center gap-1 text-sm min-[400px]:gap-2 lg:col-start-3 lg:row-start-1 lg:ml-0 lg:justify-self-end"
           aria-label="Main navigation"
         >
+          <div className="relative shrink-0" data-header-menu="language">
+            <button
+              type="button"
+              aria-label="Language"
+              aria-haspopup="menu"
+              aria-expanded={openMenu === "language"}
+              onClick={() =>
+                setOpenMenu(openMenu === "language" ? null : "language")
+              }
+              className="flex min-h-10 items-center gap-1 rounded-lg px-2 text-sm font-semibold text-white hover:bg-white/10"
+            >
+              EN
+              <ChevronDown size={14} aria-hidden="true" />
+            </button>
+            {openMenu === "language" && (
+              <div
+                role="menu"
+                aria-label="Language"
+                className="absolute right-0 z-30 mt-2 w-40 rounded-xl border border-cream-100 bg-white p-1 text-ink shadow-lg"
+              >
+                {["English", "اردو", "Roman Urdu"].map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    role="menuitemradio"
+                    aria-checked={language === option}
+                    onClick={() => {
+                      setLanguage(option);
+                      setOpenMenu(null);
+                    }}
+                    className="flex min-h-10 w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm hover:bg-cream-50"
+                  >
+                    {option}
+                    {language === option && (
+                      <Check size={16} aria-hidden="true" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <div className="relative shrink-0" data-header-menu="area">
             <AreaSelect
               value={selectedAreaId}
@@ -166,7 +197,7 @@ export function Header() {
                 label: area.name,
                 group: getAreaGroup(area.slug),
               }))}
-              className={loading || areas.length === 0 ? "opacity-60" : ""}
+              className={`max-[399px]:max-w-[140px] [&>button]:w-full max-[399px]:[&>button]:px-2 max-[399px]:[&>button]:pr-2 ${loading || areas.length === 0 ? "opacity-60" : ""}`}
             />
           </div>
           {error && (
@@ -311,18 +342,64 @@ export function Header() {
                 onClick={() => setOpenMenu(null)}
                 className="absolute right-0 top-full z-20 mt-2 w-56 rounded-xl border border-cream-100 bg-white p-2 text-ink shadow-lg"
               >
-                <Link
+                <NavLink
                   to={homePath}
-                  className="block rounded-lg px-3 py-2 text-sm hover:bg-cream-50"
+                  end
+                  className={({ isActive }) =>
+                    `relative block rounded-lg px-3 py-2 text-sm ${isActive ? "bg-cream-50 font-medium" : "hover:bg-cream-50"}`
+                  }
                 >
-                  Home
-                </Link>
+                  {({ isActive }) => (
+                    <>
+                      Home
+                      {isActive && (
+                        <span className="absolute right-3 top-1/2 size-1.5 -translate-y-1/2 rounded-full bg-[#1DBF73]" />
+                      )}
+                    </>
+                  )}
+                </NavLink>
                 <Link
-                  to="/search"
+                  to="/#services"
                   className="block rounded-lg px-3 py-2 text-sm hover:bg-cream-50"
                 >
-                  Find services
+                  Our services
                 </Link>
+                <NavLink
+                  to="/faq"
+                  className={({ isActive }) =>
+                    `relative block rounded-lg px-3 py-2 text-sm ${isActive ? "bg-cream-50 font-medium" : "hover:bg-cream-50"}`
+                  }
+                >
+                  {({ isActive }) => (
+                    <>
+                      FAQ
+                      {isActive && (
+                        <span className="absolute right-3 top-1/2 size-1.5 -translate-y-1/2 rounded-full bg-[#1DBF73]" />
+                      )}
+                    </>
+                  )}
+                </NavLink>
+                <div className="mt-1 border-t border-slate-100 px-3 pt-2">
+                  <p className="mb-1 text-xs font-medium text-slate-500">
+                    Language
+                  </p>
+                  <div className="flex flex-wrap gap-1">
+                    {["English", "اردو", "Roman Urdu"].map((option) => (
+                      <button
+                        key={option}
+                        type="button"
+                        aria-pressed={language === option}
+                        onClick={() => {
+                          setLanguage(option);
+                          setOpenMenu(null);
+                        }}
+                        className={`min-h-9 rounded-lg px-2 text-xs ${language === option ? "bg-[#F0FAF4] font-semibold text-ink" : "text-slate-600 hover:bg-cream-50"}`}
+                      >
+                        {option}
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 {user ? (
                   <>
                     <p className="truncate px-3 py-2 text-xs text-slate-600">
