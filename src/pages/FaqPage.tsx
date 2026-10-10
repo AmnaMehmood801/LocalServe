@@ -124,7 +124,7 @@ export function FaqPage() {
             <Search
               size={18}
               aria-hidden="true"
-              className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"
+              className="pointer-events-none absolute start-4 top-1/2 -translate-y-1/2 text-slate-500"
             />
             <input
               id="faq-search"
@@ -132,7 +132,7 @@ export function FaqPage() {
               value={searchText}
               onChange={(event) => setSearchText(event.target.value)}
               placeholder="Search a question"
-              className="h-12 w-full min-w-0 rounded-xl border border-slate-200 bg-white pl-11 pr-4 text-sm text-[#404145] placeholder:text-slate-500 outline-none focus:border-[#19A463] focus:ring-2 focus:ring-[#1DBF73]/20"
+              className="h-12 w-full min-w-0 rounded-xl border border-slate-200 bg-white ps-11 pe-4 text-sm text-[#404145] placeholder:text-slate-500 outline-none focus:border-[#19A463] focus:ring-2 focus:ring-[#1DBF73]/20"
             />
           </div>
         </div>
@@ -180,7 +180,7 @@ export function FaqPage() {
                       onClick={() =>
                         setOpenItemId(isOpen ? "" : item.id)
                       }
-                      className="flex min-h-14 w-full min-w-0 items-center justify-between gap-4 px-4 py-4 text-left text-sm font-semibold text-[#404145] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#19A463] sm:px-5 sm:text-base"
+                      className="flex min-h-14 w-full min-w-0 items-center justify-between gap-4 px-4 py-4 text-start text-sm font-semibold text-[#404145] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#19A463] sm:px-5 sm:text-base"
                     >
                       <span className="min-w-0">{item.question}</span>
                       <ChevronDown

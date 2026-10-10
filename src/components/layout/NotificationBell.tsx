@@ -113,7 +113,7 @@ export function NotificationBell({
       >
         <Bell size={19} aria-hidden="true" />
         {unreadCount > 0 && (
-          <span className="absolute -right-1 -top-1 grid min-h-5 min-w-5 place-items-center rounded-full bg-rose-600 px-1 text-[10px] font-semibold text-white">
+          <span className="absolute -end-1 -top-1 grid min-h-5 min-w-5 place-items-center rounded-full bg-rose-600 px-1 text-[10px] font-semibold text-white">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
@@ -121,7 +121,7 @@ export function NotificationBell({
       {open && (
         <div
           onClick={onItemClick}
-          className="absolute right-0 top-full z-50 mt-2 w-[calc(100vw-2rem)] max-w-sm overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg max-h-[70vh]"
+          className="absolute end-0 top-full z-50 mt-2 w-[calc(100vw-2rem)] max-w-sm overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg max-h-[70vh]"
         >
           <div className="sticky top-0 flex items-center justify-between border-b border-slate-100 bg-white px-4 py-3">
             <h2 className="text-base font-semibold text-slate-900">
@@ -167,7 +167,7 @@ export function NotificationBell({
                     type="button"
                     disabled={markingId === notification.id}
                     onClick={() => void openNotification(notification)}
-                    className={`min-h-[44px] w-full border-b border-slate-100 px-4 py-3 text-left text-sm text-slate-900 transition hover:bg-slate-50 disabled:opacity-60 ${notification.read_at ? "" : ""}`}
+                    className={`min-h-[44px] w-full border-b border-slate-100 px-4 py-3 text-start text-sm text-slate-900 transition hover:bg-slate-50 disabled:opacity-60 ${notification.read_at ? "" : ""}`}
                   >
                     <span className="block font-medium">
                       {notificationTitle(notification)}

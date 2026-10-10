@@ -168,7 +168,7 @@ export function AboutPage() {
         </section>
 
         <Reveal className="mt-8 min-w-0 sm:mt-10">
-          <section className="flex min-w-0 flex-col items-center gap-5 rounded-3xl bg-[#1F6F4F] px-5 py-7 text-center text-white sm:px-8 sm:py-9 md:flex-row md:justify-between md:gap-8 md:text-left">
+          <section className="flex min-w-0 flex-col items-center gap-5 rounded-3xl bg-[#1F6F4F] px-5 py-7 text-center text-white sm:px-8 sm:py-9 md:flex-row md:justify-between md:gap-8 md:text-start">
             <div className="min-w-0">
               <h2 className="text-2xl font-bold leading-tight sm:text-3xl">
                 Ready to <em className="font-bold italic">get started?</em>

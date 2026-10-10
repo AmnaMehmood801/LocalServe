@@ -575,7 +575,7 @@ export function ProviderListingFormPage() {
             type="file"
             accept="image/jpeg,image/png,image/webp"
             onChange={onCoverChange}
-            className="block min-h-11 w-full text-sm text-slate-600 file:mr-3 file:h-10 file:cursor-pointer file:rounded-lg file:border-0 file:bg-[#E3F7EC] file:px-4 file:text-sm file:font-medium file:text-[#168A55] hover:file:bg-[#D3F0E1]"
+            className="block min-h-11 w-full text-sm text-slate-600 file:me-3 file:h-10 file:cursor-pointer file:rounded-lg file:border-0 file:bg-[#E3F7EC] file:px-4 file:text-sm file:font-medium file:text-[#168A55] hover:file:bg-[#D3F0E1]"
           />
           <p className="mt-1 text-xs text-slate-500">
             Clear photo of your work or tools. 16:9 works best.

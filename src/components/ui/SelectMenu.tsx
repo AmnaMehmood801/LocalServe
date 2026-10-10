@@ -204,7 +204,7 @@ export function SelectMenu({
         aria-label={ariaLabel}
         onClick={() => (open ? setOpen(false) : openMenu())}
         onKeyDown={handleButtonKeyDown}
-        className={`flex ${size === "sm" ? "h-10 px-3 text-sm" : "min-h-12 px-3 py-1.5 pr-10 text-base"} w-full items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white text-left outline-none transition-colors hover:border-[#1DBF73] focus:border-[#1DBF73] focus:outline-none focus:!ring-2 focus:!ring-[#1DBF73]/30 aria-expanded:border-[#1DBF73] aria-expanded:!ring-2 aria-expanded:!ring-[#1DBF73]/30 ${buttonClassName}`}
+        className={`flex ${size === "sm" ? "h-10 px-3 text-sm" : "min-h-12 px-3 py-1.5 pe-10 text-base"} w-full items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white text-start outline-none transition-colors hover:border-[#1DBF73] focus:border-[#1DBF73] focus:outline-none focus:!ring-2 focus:!ring-[#1DBF73]/30 aria-expanded:border-[#1DBF73] aria-expanded:!ring-2 aria-expanded:!ring-[#1DBF73]/30 ${buttonClassName}`}
       >
         <span className="truncate">{selectedOption?.label ?? placeholder}</span>
         <ChevronDown
@@ -218,7 +218,7 @@ export function SelectMenu({
         <div
           role="listbox"
           aria-label={`${ariaLabel} options`}
-          className="absolute left-0 top-full z-50 mt-2 max-h-80 w-full min-w-full overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg"
+          className="absolute start-0 top-full z-50 mt-2 max-h-80 w-full min-w-full overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg"
         >
           {visibleRows.map((row, index) => {
             const isHighlighted = index === highlightIndex;
@@ -237,14 +237,14 @@ export function SelectMenu({
                   aria-label={`${row.group}, ${row.count} areas`}
                   onClick={() => activateRow(index)}
                   onKeyDown={(event) => handleRowKeyDown(event, index)}
-                  className={`flex min-h-9 w-full cursor-pointer items-center justify-between gap-3 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide transition-colors duration-150 ${
+                  className={`flex min-h-9 w-full cursor-pointer items-center justify-between gap-3 px-3 py-2 text-start text-xs font-semibold uppercase tracking-wide transition-colors duration-150 ${
                     isHighlighted
                       ? "bg-[#F0FAF4] text-slate-900"
                       : "bg-white text-slate-600 hover:bg-[#F0FAF4]"
                   }`}
                 >
                   <span className="truncate">{row.group}</span>
-                  <span className="ml-auto shrink-0 text-xs font-medium normal-case tracking-normal text-slate-500">
+                  <span className="ms-auto shrink-0 text-xs font-medium normal-case tracking-normal text-slate-500">
                     {row.count}
                   </span>
                   <ChevronDown
@@ -270,7 +270,7 @@ export function SelectMenu({
                 aria-selected={isSelected}
                 onClick={() => handleSelect(option.value)}
                 onKeyDown={(event) => handleRowKeyDown(event, index)}
-                className={`flex ${option.group ? "min-h-[34px] px-3 py-1.5 text-sm" : size === "sm" ? "px-3 py-2 text-sm" : "min-h-[44px] px-4 text-base"} w-full cursor-pointer items-center justify-between gap-3 text-left transition-colors duration-150 ${
+                className={`flex ${option.group ? "min-h-[34px] px-3 py-1.5 text-sm" : size === "sm" ? "px-3 py-2 text-sm" : "min-h-[44px] px-4 text-base"} w-full cursor-pointer items-center justify-between gap-3 text-start transition-colors duration-150 ${
                   isSelected
                     ? "bg-[#E3F7EC] font-medium text-[#168A55] hover:bg-[#D3F0DF]"
                     : isHighlighted

@@ -328,7 +328,7 @@ export function BookingDetailPage() {
               booking.snapshot_price_amount,
               booking.snapshot_currency,
             )}
-            <span className="ml-1 font-normal text-slate-600">
+            <span className="ms-1 font-normal text-slate-600">
               {booking.snapshot_pricing_type === "hourly" ? "/ hr" : "fixed"}
             </span>
           </dd>

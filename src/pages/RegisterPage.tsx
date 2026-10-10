@@ -201,13 +201,13 @@ export function RegisterPage() {
                 placeholder="Create a password"
                 {...register("password")}
                 aria-invalid={Boolean(errors.password)}
-                className="min-h-11 w-full rounded-lg border border-slate-400/50 bg-white px-3 pr-12 outline-none focus:ring-2 focus:ring-[#1DBF73]"
+                className="min-h-11 w-full rounded-lg border border-slate-400/50 bg-white px-3 pe-12 outline-none focus:ring-2 focus:ring-[#1DBF73]"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((visible) => !visible)}
                 aria-label={showPassword ? "Hide password" : "Show password"}
-                className="absolute inset-y-0 right-0 flex min-h-11 min-w-10 items-center justify-center rounded-r-lg text-slate-600 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#1DBF73]"
+                className="absolute inset-y-0 end-0 flex min-h-11 min-w-10 items-center justify-center rounded-e-lg text-slate-600 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#1DBF73]"
               >
                 {showPassword ? (
                   <EyeOff aria-hidden="true" size={18} />
@@ -249,7 +249,7 @@ export function RegisterPage() {
                     ariaLabel="Samundri area"
                     placeholder="Select an area"
                     size="md"
-                    buttonClassName="!h-10 !min-h-0 !px-3 !py-0 !pr-10 !text-sm disabled:opacity-60"
+                    buttonClassName="!h-10 !min-h-0 !px-3 !py-0 !pe-10 !text-sm disabled:opacity-60"
                   />
                 )}
               />

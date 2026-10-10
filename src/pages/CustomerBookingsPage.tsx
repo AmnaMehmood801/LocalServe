@@ -176,7 +176,7 @@ export function CustomerBookingsPage() {
                 </p>
                 <ChevronRight
                   size={18}
-                  className="shrink-0 text-slate-400"
+                  className="shrink-0 text-slate-400 rtl:rotate-180"
                   aria-hidden="true"
                 />
               </div>

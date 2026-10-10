@@ -277,7 +277,7 @@ export function Header() {
                 {openMenu === "profile" && (
                   <div
                     onClick={() => setOpenMenu(null)}
-                    className="absolute right-0 z-20 mt-2 w-52 rounded-xl border border-cream-100 bg-white p-2 text-ink shadow-lg"
+                    className="absolute end-0 z-20 mt-2 w-52 rounded-xl border border-cream-100 bg-white p-2 text-ink shadow-lg"
                   >
                     <p className="truncate px-3 py-2 text-xs text-slate-600">
                       {user.email}

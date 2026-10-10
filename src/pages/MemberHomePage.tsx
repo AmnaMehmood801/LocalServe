@@ -15,7 +15,7 @@ type MemberHomeSectionProps = {
 
 function WelcomeBand({ avatarPath, displayName }: MemberHomeSectionProps) {
   return (
-    <div className="flex flex-col items-center gap-4 bg-[#E3F7EC] px-6 py-8 text-center sm:flex-row sm:text-left">
+    <div className="flex flex-col items-center gap-4 bg-[#E3F7EC] px-6 py-8 text-center sm:flex-row sm:text-start">
       <Avatar avatarPath={avatarPath} name={displayName} size={80} />
       <h1 className="text-2xl font-semibold text-[#404145]">
         Welcome back, {displayName}
