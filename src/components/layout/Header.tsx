@@ -19,6 +19,14 @@ export function Header() {
   const { user, displayName, roles, loading: authLoading, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const homePath =
+    !user || authLoading
+      ? "/"
+      : roles.includes("admin")
+        ? "/admin"
+        : roles.includes("provider")
+          ? "/provider/requests"
+          : "/home";
   const headerRef = useRef<HTMLElement>(null);
   const [openMenu, setOpenMenu] = useState<
     "area" | "notifications" | "profile" | "mobile" | null
@@ -78,7 +86,7 @@ export function Header() {
     <header ref={headerRef} className="bg-[#404145] text-white">
       <div className="shell-container flex h-16 w-full flex-nowrap items-center gap-2 px-4">
         <Link
-          to="/"
+          to={homePath}
           aria-label="LocalServe home"
           className="flex min-w-0 shrink-0 items-center gap-3"
         >
@@ -93,7 +101,7 @@ export function Header() {
           aria-label="Primary navigation"
         >
           <NavLink
-            to="/"
+            to={homePath}
             end
             className={({ isActive }) =>
               `relative flex min-h-10 items-center rounded-lg px-3 py-2 text-sm font-medium text-white ${isActive ? "bg-white/10" : "hover:bg-white/10"}`
@@ -304,7 +312,7 @@ export function Header() {
                 className="absolute right-0 top-full z-20 mt-2 w-56 rounded-xl border border-cream-100 bg-white p-2 text-ink shadow-lg"
               >
                 <Link
-                  to="/"
+                  to={homePath}
                   className="block rounded-lg px-3 py-2 text-sm hover:bg-cream-50"
                 >
                   Home

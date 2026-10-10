@@ -1,9 +1,9 @@
 import { lazy, Suspense } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
+import { RootGate } from "../components/RootGate";
 import { GuestOnlyRoute, ProtectedRoute } from "./ProtectedRoute";
 import { PublicLayout } from "../layouts/PublicLayout";
-import { HomePage } from "../pages/HomePage";
 import { AccountPage } from "../pages/AccountPage";
 import { BookingDetailPage } from "../pages/BookingDetailPage";
 import { CustomerBookingsPage } from "../pages/CustomerBookingsPage";
@@ -85,7 +85,7 @@ const router = createBrowserRouter([
   {
     element: <PublicLayout />,
     children: [
-      { path: "/", element: <HomePage /> },
+      { path: "/", element: <RootGate /> },
       { path: "/search", element: <SearchPage /> },
       { path: "/listings/:id", element: <ListingDetailPage /> },
       { path: "/providers/:id", element: <PublicProviderPage /> },

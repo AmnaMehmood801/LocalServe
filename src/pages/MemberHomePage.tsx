@@ -247,24 +247,6 @@ function CustomerHome({ avatarPath, displayName }: MemberHomeSectionProps) {
   );
 }
 
-function ProviderHome({ avatarPath, displayName }: MemberHomeSectionProps) {
-  return (
-    <main className="shell-container py-8">
-      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-        <WelcomeBand avatarPath={avatarPath} displayName={displayName} />
-        <div className="p-6">
-          <Link
-            to="/provider"
-            className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[#1DBF73] px-5 text-sm font-semibold text-white transition hover:bg-[#19A463] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#1DBF73]/25"
-          >
-            Provider workspace
-          </Link>
-        </div>
-      </section>
-    </main>
-  );
-}
-
 export function MemberHomePage() {
   const { user, profile, displayName, roles, loading } = useAuth();
   const { data: avatarPath = null } = useQuery({
@@ -292,14 +274,13 @@ export function MemberHomePage() {
   }
 
   if (roles.includes("admin")) return <Navigate to="/admin" replace />;
+  if (roles.includes("provider")) {
+    return <Navigate to="/provider/requests" replace />;
+  }
 
   const name =
     displayName?.trim() || profile?.display_name?.trim() || "Member";
   const memberProps = { avatarPath, displayName: name };
 
-  return roles.includes("provider") ? (
-    <ProviderHome {...memberProps} />
-  ) : (
-    <CustomerHome {...memberProps} />
-  );
+  return <CustomerHome {...memberProps} />;
 }
