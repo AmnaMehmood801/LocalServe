@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "../../lib/toast";
 import { Check, ChevronDown, Menu } from "lucide-react";
@@ -12,11 +13,26 @@ import { Avatar } from "../Avatar";
 import { Logo } from "../Logo";
 import { AreaSelect } from "./AreaSelect";
 import { NotificationBell } from "./NotificationBell";
+import { useLanguage } from "../../i18n/useLanguage";
+
+const languageOptions = [
+  { value: "en", label: "English" },
+  { value: "ur", label: "اردو" },
+  { value: "ur-Latn", label: "Roman Urdu" },
+] as const;
+
+const languageButtonLabels = {
+  en: "EN",
+  ur: "اردو",
+  "ur-Latn": "RU",
+} as const;
 
 export function Header() {
   const { areas, selectedAreaId, setSelectedAreaId, loading, error } =
     useAreas();
   const { user, displayName, roles, loading: authLoading, signOut } = useAuth();
+  const { t } = useTranslation();
+  const { language, setLanguage } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
   const homePath =
@@ -31,7 +47,6 @@ export function Header() {
   const [openMenu, setOpenMenu] = useState<
     "area" | "language" | "notifications" | "profile" | "mobile" | null
   >(null);
-  const [language, setLanguage] = useState("English");
   const { data: avatarPath = null } = useQuery({
     queryKey: ["profile-avatar", user?.id],
     enabled: Boolean(user?.id),
@@ -110,7 +125,7 @@ export function Header() {
           >
             {({ isActive }) => (
               <>
-                Home
+                {t("nav.home")}
                 {isActive && (
                   <span className="absolute bottom-1 left-1/2 size-1 -translate-x-1/2 rounded-full bg-[#1DBF73]" />
                 )}
@@ -121,7 +136,7 @@ export function Header() {
             to="/#services"
             className="flex min-h-10 items-center whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium text-white hover:bg-white/10"
           >
-            Our services
+            {t("nav.ourServices")}
           </Link>
           <NavLink
             to="/about"
@@ -131,7 +146,7 @@ export function Header() {
           >
             {({ isActive }) => (
               <>
-                About
+                {t("nav.about")}
                 {isActive && (
                   <span className="absolute bottom-1 left-1/2 size-1 -translate-x-1/2 rounded-full bg-[#1DBF73]" />
                 )}
@@ -146,7 +161,7 @@ export function Header() {
           >
             {({ isActive }) => (
               <>
-                FAQ
+                {t("nav.faq")}
                 {isActive && (
                   <span className="absolute bottom-1 left-1/2 size-1 -translate-x-1/2 rounded-full bg-[#1DBF73]" />
                 )}
@@ -170,7 +185,7 @@ export function Header() {
               }
               className="flex min-h-10 shrink-0 items-center gap-1 whitespace-nowrap rounded-lg px-2 text-sm font-semibold text-white hover:bg-white/10"
             >
-              EN
+              {languageButtonLabels[language]}
               <ChevronDown size={14} aria-hidden="true" />
             </button>
             {openMenu === "language" && (
@@ -179,20 +194,20 @@ export function Header() {
                 aria-label="Language"
                 className="absolute right-0 z-30 mt-2 w-40 rounded-xl border border-white/20 bg-[#252724] p-1 text-white shadow-lg"
               >
-                {["English", "اردو", "Roman Urdu"].map((option) => (
+                {languageOptions.map((option) => (
                   <button
-                    key={option}
+                    key={option.value}
                     type="button"
                     role="menuitemradio"
-                    aria-checked={language === option}
+                    aria-checked={language === option.value}
                     onClick={() => {
-                      setLanguage(option);
+                      setLanguage(option.value);
                       setOpenMenu(null);
                     }}
                     className="flex min-h-10 w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm hover:bg-white/10"
                   >
-                    {option}
-                    {language === option && (
+                    {option.label}
+                    {language === option.value && (
                       <Check size={16} aria-hidden="true" />
                     )}
                   </button>
@@ -326,13 +341,13 @@ export function Header() {
                   to="/login"
                   className="min-h-11 shrink-0 whitespace-nowrap rounded-xl px-3 py-2.5 text-white hover:bg-white/10"
                 >
-                  Log in
+                  {t("nav.logIn")}
                 </Link>
                 <Link
                   to="/register"
                   className="min-h-11 shrink-0 whitespace-nowrap rounded-lg bg-[#1DBF73] px-4 py-2.5 font-bold text-white hover:bg-[#19A463] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1DBF73]"
                 >
-                  Sign up
+                  {t("nav.signUp")}
                 </Link>
               </>
             )}
@@ -366,7 +381,7 @@ export function Header() {
                 >
                   {({ isActive }) => (
                     <>
-                      Home
+                      {t("nav.home")}
                       {isActive && (
                         <span className="absolute right-3 top-1/2 size-1.5 -translate-y-1/2 rounded-full bg-[#1DBF73]" />
                       )}
@@ -377,7 +392,7 @@ export function Header() {
                   to="/#services"
                   className="block rounded-lg px-3 py-2 text-sm hover:bg-white/10"
                 >
-                  Our services
+                  {t("nav.ourServices")}
                 </Link>
                 <NavLink
                   to="/about"
@@ -387,7 +402,7 @@ export function Header() {
                 >
                   {({ isActive }) => (
                     <>
-                      About
+                      {t("nav.about")}
                       {isActive && (
                         <span className="absolute right-3 top-1/2 size-1.5 -translate-y-1/2 rounded-full bg-[#1DBF73]" />
                       )}
@@ -402,7 +417,7 @@ export function Header() {
                 >
                   {({ isActive }) => (
                     <>
-                      FAQ
+                      {t("nav.faq")}
                       {isActive && (
                         <span className="absolute right-3 top-1/2 size-1.5 -translate-y-1/2 rounded-full bg-[#1DBF73]" />
                       )}
@@ -414,18 +429,18 @@ export function Header() {
                     Language
                   </p>
                   <div className="flex flex-wrap gap-1">
-                    {["English", "اردو", "Roman Urdu"].map((option) => (
+                    {languageOptions.map((option) => (
                       <button
-                        key={option}
+                        key={option.value}
                         type="button"
-                        aria-pressed={language === option}
+                        aria-pressed={language === option.value}
                         onClick={() => {
-                          setLanguage(option);
+                          setLanguage(option.value);
                           setOpenMenu(null);
                         }}
-                        className={`min-h-9 rounded-lg px-2 text-xs ${language === option ? "bg-[#1F6F4F] font-semibold text-white" : "text-white hover:bg-white/10"}`}
+                        className={`min-h-9 rounded-lg px-2 text-xs ${language === option.value ? "bg-[#1F6F4F] font-semibold text-white" : "text-white hover:bg-white/10"}`}
                       >
-                        {option}
+                        {option.label}
                       </button>
                     ))}
                   </div>
@@ -498,13 +513,13 @@ export function Header() {
                       className="block rounded-lg px-3 py-2 text-sm hover:bg-white/10"
                       to="/login"
                     >
-                      Log in
+                      {t("nav.logIn")}
                     </Link>
                     <Link
                       className="block rounded-lg px-3 py-2 text-sm hover:bg-white/10"
                       to="/register"
                     >
-                      Sign up
+                      {t("nav.signUp")}
                     </Link>
                   </>
                 )}

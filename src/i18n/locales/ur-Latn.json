@@ -1,0 +1,13 @@
+{
+  "nav": {
+    "home": "Home",
+    "ourServices": "Hamari khidmat",
+    "about": "Hamare baare mein",
+    "faq": "Aam sawalat",
+    "logIn": "Log in",
+    "signUp": "Sign up"
+  },
+  "language": {
+    "name": "Roman Urdu"
+  }
+}

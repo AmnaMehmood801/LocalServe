@@ -1,0 +1,13 @@
+{
+  "nav": {
+    "home": "Home",
+    "ourServices": "Our services",
+    "about": "About",
+    "faq": "FAQ",
+    "logIn": "Log in",
+    "signUp": "Sign up"
+  },
+  "language": {
+    "name": "English"
+  }
+}
