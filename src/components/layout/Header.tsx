@@ -133,12 +133,22 @@ export function Header() {
               </>
             )}
           </NavLink>
-          <Link
-            to={user ? "/search" : "/#services"}
-            className="flex min-h-10 items-center whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium text-white hover:bg-white/10"
+          <NavLink
+            to="/search"
+            end
+            className={({ isActive }) =>
+              `relative flex min-h-10 items-center whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium text-white ${isActive ? "bg-white/10" : "hover:bg-white/10"}`
+            }
           >
-            {t("nav.ourServices")}
-          </Link>
+            {({ isActive }) => (
+              <>
+                {t("nav.ourServices")}
+                {isActive && (
+                  <span className="absolute bottom-1 left-1/2 size-1 -translate-x-1/2 rounded-full bg-[#1DBF73]" />
+                )}
+              </>
+            )}
+          </NavLink>
           <NavLink
             to="/about"
             className={({ isActive }) =>
@@ -391,12 +401,22 @@ export function Header() {
                     </>
                   )}
                 </NavLink>
-                <Link
-                  to={user ? "/search" : "/#services"}
-                  className="block rounded-lg px-3 py-2 text-sm hover:bg-white/10"
+                <NavLink
+                  to="/search"
+                  end
+                  className={({ isActive }) =>
+                    `relative block rounded-lg px-3 py-2 text-sm ${isActive ? "bg-white/10 font-medium" : "hover:bg-white/10"}`
+                  }
                 >
-                  {t("nav.ourServices")}
-                </Link>
+                  {({ isActive }) => (
+                    <>
+                      {t("nav.ourServices")}
+                      {isActive && (
+                        <span className="absolute right-3 top-1/2 size-1.5 -translate-y-1/2 rounded-full bg-[#1DBF73]" />
+                      )}
+                    </>
+                  )}
+                </NavLink>
                 <NavLink
                   to="/about"
                   className={({ isActive }) =>
