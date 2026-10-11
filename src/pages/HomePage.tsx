@@ -1172,7 +1172,10 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="home-market-section shell-container py-10 md:py-14">
+      <section
+        id="services"
+        className="home-market-section shell-container py-10 md:py-14"
+      >
         <div className="flex items-end justify-between gap-4">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#168A55]">
