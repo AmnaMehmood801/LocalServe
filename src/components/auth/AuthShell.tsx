@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Check } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Logo } from "../Logo";
 
 type AuthShellProps = {
@@ -9,12 +10,13 @@ type AuthShellProps = {
 };
 
 const highlights = [
-  "Verified local providers",
-  "Simple booking requests",
-  "Reviews from real customers",
+  "auth.shell.verifiedProviders",
+  "auth.shell.bookingRequests",
+  "auth.shell.customerReviews",
 ];
 
 export function AuthShell({ title, subtitle, children }: AuthShellProps) {
+  const { t } = useTranslation();
   return (
     <section className="shell-container flex min-h-[70vh] items-center justify-center py-6">
       <div className="grid w-full max-w-5xl overflow-hidden rounded-2xl bg-white shadow-xl lg:min-h-[600px] lg:grid-cols-2">
@@ -34,7 +36,7 @@ export function AuthShell({ title, subtitle, children }: AuthShellProps) {
             <Logo />
             <div className="my-auto">
               <h2 className="max-w-sm text-3xl font-semibold leading-tight">
-                Find trusted help in Samundri
+                {t("auth.shell.headline")}
               </h2>
               <ul className="mt-8 space-y-5">
                 {highlights.map((highlight) => (
@@ -44,7 +46,7 @@ export function AuthShell({ title, subtitle, children }: AuthShellProps) {
                       className="h-5 w-5 shrink-0 text-[#55D99A]"
                       strokeWidth={3}
                     />
-                    <span>{highlight}</span>
+                    <span>{t(highlight)}</span>
                   </li>
                 ))}
               </ul>

@@ -418,5 +418,84 @@
       "recentReviews_other": "کل {{count}} ریویوز میں سے تازہ ترین 10 دکھائے جا رہے ہیں۔",
       "noReviewFeedback": "مکمل سروسز کے بعد صارفین کی رائے یہاں دکھائی جائے گی۔"
     }
+  },
+  "auth": {
+    "login": {
+      "title": "اپنے اکاؤنٹ میں لاگ اِن کریں",
+      "subtitle": "LocalServe پر آپ کو دوبارہ خوش آمدید",
+      "signInError": "لاگ اِن نہیں ہو سکا۔ اپنا ای میل اور پاس ورڈ چیک کریں۔",
+      "signInSuccess": "آپ کو دوبارہ خوش آمدید۔",
+      "emailLabel": "ای میل",
+      "passwordLabel": "پاس ورڈ",
+      "passwordPlaceholder": "اپنا پاس ورڈ درج کریں",
+      "hidePassword": "پاس ورڈ چھپائیں",
+      "showPassword": "پاس ورڈ دکھائیں",
+      "forgotPasswordLink": "پاس ورڈ بھول گئے؟",
+      "submitting": "لاگ اِن ہو رہا ہے...",
+      "submit": "لاگ اِن",
+      "newToLocalServe": "LocalServe پر نئے ہیں؟",
+      "createAccountLink": "اکاؤنٹ بنائیں"
+    },
+    "register": {
+      "rateLimitError": "Supabase سائن اپ کی درخواستیں محدود کر رہا ہے۔ دوبارہ کوشش کرنے سے پہلے انتظار کریں۔",
+      "accountSetupError": "Supabase اکاؤنٹ سیٹ اپ مکمل نہیں کر سکا۔ ڈیٹابیس ٹرگر کی خرابی کے لیے Auth سروس کے لاگز دیکھیں۔",
+      "signupFailed": "سائن اپ ناکام ہوا ({{status}}): {{detail}}",
+      "signupErrorFallback": "اکاؤنٹ نہیں بن سکا۔ براہِ کرم دوبارہ کوشش کریں۔",
+      "accountReady": "آپ کا اکاؤنٹ تیار ہے۔",
+      "connectionError": "اکاؤنٹ بنانے کے لیے Supabase سے رابطہ نہیں ہو سکا۔ دوبارہ کوشش سے پہلے اپنا انٹرنیٹ کنکشن چیک کریں۔",
+      "title": "اپنا اکاؤنٹ بنائیں",
+      "subtitle": "ایک منٹ میں LocalServe سے جڑیں",
+      "checkEmail": "اپنا ای میل چیک کریں",
+      "confirmationMessage": "اکاؤنٹ بنانے کا عمل مکمل کرنے کے لیے {{email}} پر بھیجے گئے تصدیقی لنک کو کھولیں۔",
+      "displayName": "ظاہری نام",
+      "displayNamePlaceholder": "مثلاً عائشہ خان",
+      "emailLabel": "ای میل",
+      "passwordLabel": "پاس ورڈ",
+      "passwordPlaceholder": "پاس ورڈ بنائیں",
+      "hidePassword": "پاس ورڈ چھپائیں",
+      "showPassword": "پاس ورڈ دکھائیں",
+      "areaLabel": "Samundri کا علاقہ",
+      "areaPlaceholder": "علاقہ منتخب کریں",
+      "loadingAreas": "Samundri کے علاقے لوڈ ہو رہے ہیں...",
+      "noAreas": "ابھی کوئی فعال Samundri علاقہ دستیاب نہیں۔",
+      "roleLegend": "میں کیا کرنا چاہتا ہوں؟",
+      "customerRole": "سروس تلاش کریں",
+      "customerRoleHelp": "قابلِ اعتماد مقامی مدد بک کریں",
+      "providerRole": "سروسز فراہم کریں",
+      "providerRoleHelp": "اپنی سروسز درج کریں اور درخواستیں حاصل کریں",
+      "submitting": "اکاؤنٹ بنایا جا رہا ہے...",
+      "submit": "سائن اپ",
+      "haveAccount": "کیا آپ کا پہلے سے اکاؤنٹ ہے؟",
+      "logInLink": "لاگ اِن کریں"
+    },
+    "forgot": {
+      "sendError": "ری سیٹ لنک نہیں بھیجا جا سکا۔ براہِ کرم دوبارہ کوشش کریں۔",
+      "backToLogin": "لاگ اِن پر واپس جائیں",
+      "title": "اپنا پاس ورڈ ری سیٹ کریں",
+      "sentMessage": "اگر اس ای میل پر اکاؤنٹ موجود ہے تو ری سیٹ لنک بھیج دیا گیا ہے۔ اپنا اِن باکس اور اسپیم فولڈر چیک کریں۔",
+      "instructions": "اپنا ای میل درج کریں، ہم آپ کو پاس ورڈ ری سیٹ کرنے کا لنک بھیجیں گے۔",
+      "emailLabel": "ای میل",
+      "submitting": "بھیجا جا رہا ہے...",
+      "submit": "ری سیٹ لنک بھیجیں"
+    },
+    "reset": {
+      "updateError": "پاس ورڈ اپ ڈیٹ نہیں ہو سکا۔",
+      "updateSuccess": "پاس ورڈ کامیابی سے اپ ڈیٹ ہو گیا۔",
+      "backToLogin": "لاگ اِن پر واپس جائیں",
+      "resetTitle": "پاس ورڈ ری سیٹ کریں",
+      "invalidLink": "یہ ری سیٹ لنک غلط ہے یا اس کی میعاد ختم ہو چکی ہے۔",
+      "requestNewLink": "نیا ری سیٹ لنک بھیجنے کی درخواست کریں",
+      "createTitle": "نیا پاس ورڈ بنائیں",
+      "instructions": "اپنے اکاؤنٹ کے لیے نیا پاس ورڈ منتخب کریں۔",
+      "newPasswordLabel": "نیا پاس ورڈ",
+      "confirmPasswordLabel": "پاس ورڈ کی تصدیق کریں",
+      "submit": "پاس ورڈ اپ ڈیٹ کریں"
+    },
+    "shell": {
+      "headline": "Samundri میں قابلِ اعتماد مدد تلاش کریں",
+      "verifiedProviders": "تصدیق شدہ مقامی فراہم کنندگان",
+      "bookingRequests": "آسان بکنگ کی درخواستیں",
+      "customerReviews": "حقیقی صارفین کے ریویوز"
+    }
   }
 }

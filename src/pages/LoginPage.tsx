@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -27,6 +28,7 @@ function getSafeNext(value: string | null) {
 }
 
 export function LoginPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const [submitting, setSubmitting] = useState(false);
@@ -42,10 +44,10 @@ export function LoginPage() {
     const { error } = await supabase.auth.signInWithPassword(values);
     setSubmitting(false);
     if (error) {
-      toast.error("Could not sign in. Check your email and password.");
+      toast.error(t("auth.login.signInError"));
       return;
     }
-    toast.success("Welcome back.");
+    toast.success(t("auth.login.signInSuccess"));
     navigate(getSafeNext(new URLSearchParams(location.search).get("next")), {
       replace: true,
     });
@@ -53,8 +55,8 @@ export function LoginPage() {
 
   return (
     <AuthShell
-      title="Sign in to your account"
-      subtitle="Welcome back to LocalServe"
+      title={t("auth.login.title")}
+      subtitle={t("auth.login.subtitle")}
     >
       <form
         className="mt-7 space-y-4"
@@ -66,7 +68,7 @@ export function LoginPage() {
             className="mb-1 block text-sm font-medium"
             htmlFor="login-email"
           >
-            Email
+            {t("auth.login.emailLabel")}
           </label>
           <input
             id="login-email"
@@ -86,14 +88,14 @@ export function LoginPage() {
             className="mb-1 block text-sm font-medium"
             htmlFor="login-password"
           >
-            Password
+            {t("auth.login.passwordLabel")}
           </label>
           <div className="relative">
             <input
               id="login-password"
               type={showPassword ? "text" : "password"}
               autoComplete="current-password"
-              placeholder="Your password"
+              placeholder={t("auth.login.passwordPlaceholder")}
               {...register("password")}
               aria-invalid={Boolean(errors.password)}
               className="min-h-11 w-full rounded-lg border border-slate-400/50 bg-white px-3 pe-12 outline-none focus:ring-2 focus:ring-[#1DBF73]"
@@ -101,7 +103,11 @@ export function LoginPage() {
             <button
               type="button"
               onClick={() => setShowPassword((visible) => !visible)}
-              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-label={
+                showPassword
+                  ? t("auth.login.hidePassword")
+                  : t("auth.login.showPassword")
+              }
               className="absolute inset-y-0 end-0 flex min-h-11 min-w-10 items-center justify-center rounded-e-lg text-slate-600 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#1DBF73]"
             >
               {showPassword ? (
@@ -117,7 +123,7 @@ export function LoginPage() {
               style={{ color: "#168A55" }}
               to="/forgot-password"
             >
-              Forgot password?
+              {t("auth.login.forgotPasswordLink")}
             </Link>
           </div>
           {errors.password && (
@@ -131,13 +137,13 @@ export function LoginPage() {
           disabled={submitting}
           className="min-h-11 w-full rounded-xl bg-[#1DBF73] px-5 font-medium text-white hover:bg-[#19A463] disabled:cursor-wait disabled:opacity-60"
         >
-          {submitting ? "Signing in..." : "Log in"}
+          {submitting ? t("auth.login.submitting") : t("auth.login.submit")}
         </button>
       </form>
       <p className="mt-6 text-center text-sm text-slate-600">
-        New to LocalServe?{" "}
+        {t("auth.login.newToLocalServe")}{" "}
         <Link className="font-medium text-teal-700 underline" to="/register">
-          Create an account
+          {t("auth.login.createAccountLink")}
         </Link>
       </p>
     </AuthShell>

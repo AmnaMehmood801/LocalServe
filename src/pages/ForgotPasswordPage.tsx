@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -15,6 +16,7 @@ const forgotPasswordSchema = z.object({
 type ForgotPasswordValues = z.infer<typeof forgotPasswordSchema>;
 
 export function ForgotPasswordPage() {
+  const { t } = useTranslation();
   const [submitting, setSubmitting] = useState(false);
   const [sent, setSent] = useState(false);
   const {
@@ -33,7 +35,7 @@ export function ForgotPasswordPage() {
     setSubmitting(false);
 
     if (error) {
-      toast.error("Could not send reset link. Please try again.");
+      toast.error(t("auth.forgot.sendError"));
       return;
     }
 
@@ -43,23 +45,27 @@ export function ForgotPasswordPage() {
   return (
     <section className="shell-container flex min-h-[70vh] items-center justify-center py-12">
       <div className="w-full max-w-md">
-        <BackButton fallback="/login" label="Back to login" className="mb-4" />
+        <BackButton
+          fallback="/login"
+          label={t("auth.forgot.backToLogin")}
+          className="mb-4"
+        />
         <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-sm sm:p-8">
           <p className="text-sm font-semibold text-teal-700">
             LocalServe · Samundri
           </p>
-          <h1 className="mt-2 text-2xl font-semibold">Reset your password</h1>
+          <h1 className="mt-2 text-2xl font-semibold">
+            {t("auth.forgot.title")}
+          </h1>
 
           {sent ? (
             <p className="mt-4 text-sm text-slate-600">
-              If an account exists for this email, a reset link has been sent.
-              Check your inbox and spam folder.
+              {t("auth.forgot.sentMessage")}
             </p>
           ) : (
             <>
               <p className="mt-2 text-sm text-slate-600">
-                Enter your email address and we&apos;ll send a password reset
-                link.
+                {t("auth.forgot.instructions")}
               </p>
 
               <form
@@ -72,7 +78,7 @@ export function ForgotPasswordPage() {
                     className="mb-1 block text-sm font-medium"
                     htmlFor="forgot-email"
                   >
-                    Email
+                    {t("auth.forgot.emailLabel")}
                   </label>
                   <input
                     id="forgot-email"
@@ -94,7 +100,9 @@ export function ForgotPasswordPage() {
                   disabled={submitting}
                   className="min-h-11 w-full rounded-xl bg-teal-600 px-5 font-medium text-white hover:bg-teal-700 disabled:cursor-wait disabled:opacity-60"
                 >
-                  {submitting ? "Sending..." : "Send reset link"}
+                  {submitting
+                    ? t("auth.forgot.submitting")
+                    : t("auth.forgot.submit")}
                 </button>
               </form>
             </>
@@ -102,7 +110,7 @@ export function ForgotPasswordPage() {
 
           <p className="mt-6 text-center text-sm text-slate-600">
             <Link className="font-medium text-teal-700 underline" to="/login">
-              Back to login
+              {t("auth.forgot.backToLogin")}
             </Link>
           </p>
         </div>

@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import type { TFunction } from "i18next";
+import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -29,23 +31,24 @@ function getSignupErrorMessage(error: {
   message: string;
   status?: number;
   code?: string;
-}) {
+}, t: TFunction) {
   const detail = error.message.trim();
   if (error.status === 429 || /too many requests|rate limit/i.test(detail)) {
-    return "Supabase is rate-limiting signups. Wait before trying again.";
+    return t("auth.register.rateLimitError");
   }
   if (error.code === "weak_password" || /password/i.test(detail)) {
     return detail;
   }
   if (detail.toLowerCase().includes("database error saving new user")) {
-    return "Supabase could not finish account setup. Check the Auth service logs for the database trigger error.";
+    return t("auth.register.accountSetupError");
   }
   return error.status
-    ? `Sign-up failed (${error.status}): ${detail}`
-    : detail || "Could not create your account. Please try again.";
+    ? t("auth.register.signupFailed", { status: error.status, detail })
+    : detail || t("auth.register.signupErrorFallback");
 }
 
 export function RegisterPage() {
+  const { t } = useTranslation();
   const {
     areas,
     selectedAreaId,
@@ -92,20 +95,20 @@ export function RegisterPage() {
         },
       });
       if (error) {
-        const message = getSignupErrorMessage(error);
+        const message = getSignupErrorMessage(error, t);
         setSignupError(message);
         toast.error(message);
         return;
       }
       if (data.session) {
-        toast.success("Your account is ready.");
+        toast.success(t("auth.register.accountReady"));
         navigate("/", { replace: true });
       } else {
         setConfirmationEmail(values.email);
       }
     } catch {
       const message =
-        "Could not reach Supabase to create your account. Check your connection before retrying.";
+        t("auth.register.connectionError");
       setSignupError(message);
       toast.error(message);
     } finally {
@@ -115,18 +118,19 @@ export function RegisterPage() {
 
   return (
     <AuthShell
-      title="Create your account"
-      subtitle="Join LocalServe in a minute"
+      title={t("auth.register.title")}
+      subtitle={t("auth.register.subtitle")}
     >
       {confirmationEmail ? (
         <div
           className="mt-7 rounded-xl border border-teal-600/20 bg-teal-50 p-4"
           role="status"
         >
-          <h2 className="font-semibold">Check your email</h2>
+          <h2 className="font-semibold">{t("auth.register.checkEmail")}</h2>
           <p className="mt-1 text-sm text-slate-600">
-            Follow the confirmation link sent to {confirmationEmail} to finish
-            creating your account.
+            {t("auth.register.confirmationMessage", {
+              email: confirmationEmail,
+            })}
           </p>
         </div>
       ) : (
@@ -148,12 +152,12 @@ export function RegisterPage() {
               className="mb-1 block text-sm font-medium"
               htmlFor="register-name"
             >
-              Display name
+              {t("auth.register.displayName")}
             </label>
             <input
               id="register-name"
               autoComplete="name"
-              placeholder="e.g. Ayesha Khan"
+              placeholder={t("auth.register.displayNamePlaceholder")}
               {...register("display_name")}
               aria-invalid={Boolean(errors.display_name)}
               className="min-h-11 w-full rounded-lg border border-slate-400/50 bg-white px-3 outline-none focus:ring-2 focus:ring-[#1DBF73]"
@@ -169,7 +173,7 @@ export function RegisterPage() {
               className="mb-1 block text-sm font-medium"
               htmlFor="register-email"
             >
-              Email
+              {t("auth.register.emailLabel")}
             </label>
             <input
               id="register-email"
@@ -191,14 +195,14 @@ export function RegisterPage() {
               className="mb-1 block text-sm font-medium"
               htmlFor="register-password"
             >
-              Password
+              {t("auth.register.passwordLabel")}
             </label>
             <div className="relative">
               <input
                 id="register-password"
                 type={showPassword ? "text" : "password"}
                 autoComplete="new-password"
-                placeholder="Create a password"
+                placeholder={t("auth.register.passwordPlaceholder")}
                 {...register("password")}
                 aria-invalid={Boolean(errors.password)}
                 className="min-h-11 w-full rounded-lg border border-slate-400/50 bg-white px-3 pe-12 outline-none focus:ring-2 focus:ring-[#1DBF73]"
@@ -206,7 +210,11 @@ export function RegisterPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword((visible) => !visible)}
-                aria-label={showPassword ? "Hide password" : "Show password"}
+                aria-label={
+                  showPassword
+                    ? t("auth.register.hidePassword")
+                    : t("auth.register.showPassword")
+                }
                 className="absolute inset-y-0 end-0 flex min-h-11 min-w-10 items-center justify-center rounded-e-lg text-slate-600 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#1DBF73]"
               >
                 {showPassword ? (
@@ -227,7 +235,7 @@ export function RegisterPage() {
               className="mb-1 block text-sm font-medium"
               htmlFor="register-area"
             >
-              Samundri area
+              {t("auth.register.areaLabel")}
             </label>
             <fieldset
               disabled={areasLoading || areas.length === 0}
@@ -246,8 +254,8 @@ export function RegisterPage() {
                       label: area.name,
                       group: getAreaGroup(area.slug),
                     }))}
-                    ariaLabel="Samundri area"
-                    placeholder="Select an area"
+                    ariaLabel={t("auth.register.areaLabel")}
+                    placeholder={t("auth.register.areaPlaceholder")}
                     size="md"
                     buttonClassName="!h-10 !min-h-0 !px-3 !py-0 !pe-10 !text-sm disabled:opacity-60"
                   />
@@ -256,7 +264,7 @@ export function RegisterPage() {
             </fieldset>
             {areasLoading && (
               <p className="mt-1 text-sm text-slate-600" role="status">
-                Loading Samundri areas...
+                {t("auth.register.loadingAreas")}
               </p>
             )}
             {areasError && (
@@ -266,7 +274,7 @@ export function RegisterPage() {
             )}
             {!areasLoading && !areasError && areas.length === 0 && (
               <p className="mt-1 text-sm text-slate-600" role="status">
-                No active Samundri areas are available yet.
+                {t("auth.register.noAreas")}
               </p>
             )}
             {errors.area_id && (
@@ -276,7 +284,9 @@ export function RegisterPage() {
             )}
           </div>
           <fieldset>
-            <legend className="mb-2 text-sm font-medium">I want to</legend>
+            <legend className="mb-2 text-sm font-medium">
+              {t("auth.register.roleLegend")}
+            </legend>
             <div className="grid grid-cols-2 gap-3">
               <label className="flex min-h-11 cursor-pointer items-start gap-2 rounded-lg border border-slate-400/50 px-3 py-2 text-sm has-[:checked]:border-teal-600 has-[:checked]:bg-teal-50">
                 <input
@@ -286,9 +296,9 @@ export function RegisterPage() {
                   className="mt-0.5 accent-[#1DBF73]"
                 />
                 <span>
-                  Find a service
+                  {t("auth.register.customerRole")}
                   <span className="mt-0.5 block text-xs text-slate-500">
-                    Book trusted local help
+                    {t("auth.register.customerRoleHelp")}
                   </span>
                 </span>
               </label>
@@ -300,9 +310,9 @@ export function RegisterPage() {
                   className="mt-0.5 accent-[#1DBF73]"
                 />
                 <span>
-                  Offer services
+                  {t("auth.register.providerRole")}
                   <span className="mt-0.5 block text-xs text-slate-500">
-                    List your services and get requests
+                    {t("auth.register.providerRoleHelp")}
                   </span>
                 </span>
               </label>
@@ -318,14 +328,16 @@ export function RegisterPage() {
             disabled={submitting || areasLoading || areas.length === 0}
             className="min-h-11 w-full rounded-xl bg-[#1DBF73] px-5 font-medium text-white hover:bg-[#19A463] disabled:cursor-wait disabled:opacity-60"
           >
-            {submitting ? "Creating account..." : "Sign up"}
+            {submitting
+              ? t("auth.register.submitting")
+              : t("auth.register.submit")}
           </button>
         </form>
       )}
       <p className="mt-6 text-center text-sm text-slate-600">
-        Already have an account?{" "}
+        {t("auth.register.haveAccount")}{" "}
         <Link className="font-medium text-teal-700 underline" to="/login">
-          Log in
+          {t("auth.register.logInLink")}
         </Link>
       </p>
     </AuthShell>

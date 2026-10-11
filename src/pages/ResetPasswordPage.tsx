@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -24,6 +25,7 @@ const resetPasswordSchema = z
 type ResetPasswordValues = z.infer<typeof resetPasswordSchema>;
 
 export function ResetPasswordPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [checkingSession, setCheckingSession] = useState(true);
   const [session, setSession] = useState<Session | null>(null);
@@ -66,11 +68,11 @@ export function ResetPasswordPage() {
     });
 
     if (error) {
-      toast.error(error.message || "Could not update your password.");
+      toast.error(error.message || t("auth.reset.updateError"));
       return;
     }
 
-    toast.success("Password updated successfully.");
+    toast.success(t("auth.reset.updateSuccess"));
     await supabase.auth.signOut();
     navigate("/login", { replace: true });
   }
@@ -81,7 +83,7 @@ export function ResetPasswordPage() {
         <div className="w-full max-w-md">
           <BackButton
             fallback="/login"
-            label="Back to login"
+            label={t("auth.reset.backToLogin")}
             className="mb-4"
           />
           <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-sm sm:p-8">
@@ -103,23 +105,25 @@ export function ResetPasswordPage() {
         <div className="w-full max-w-md">
           <BackButton
             fallback="/login"
-            label="Back to login"
+            label={t("auth.reset.backToLogin")}
             className="mb-4"
           />
           <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-sm sm:p-8">
             <p className="text-sm font-semibold text-teal-700">
               LocalServe · Samundri
             </p>
-            <h1 className="mt-2 text-2xl font-semibold">Reset password</h1>
+            <h1 className="mt-2 text-2xl font-semibold">
+              {t("auth.reset.resetTitle")}
+            </h1>
             <p className="mt-4 text-sm text-slate-600">
-              This reset link is invalid or has expired.
+              {t("auth.reset.invalidLink")}
             </p>
             <p className="mt-6 text-center text-sm text-slate-600">
               <Link
                 className="font-medium text-teal-700 underline"
                 to="/forgot-password"
               >
-                Request a new reset link
+                {t("auth.reset.requestNewLink")}
               </Link>
             </p>
           </div>
@@ -131,14 +135,20 @@ export function ResetPasswordPage() {
   return (
     <section className="shell-container flex min-h-[70vh] items-center justify-center py-12">
       <div className="w-full max-w-md">
-        <BackButton fallback="/login" label="Back to login" className="mb-4" />
+        <BackButton
+          fallback="/login"
+          label={t("auth.reset.backToLogin")}
+          className="mb-4"
+        />
         <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-sm sm:p-8">
           <p className="text-sm font-semibold text-teal-700">
             LocalServe · Samundri
           </p>
-          <h1 className="mt-2 text-2xl font-semibold">Create a new password</h1>
+          <h1 className="mt-2 text-2xl font-semibold">
+            {t("auth.reset.createTitle")}
+          </h1>
           <p className="mt-2 text-sm text-slate-600">
-            Choose a new password for your account.
+            {t("auth.reset.instructions")}
           </p>
 
           <form
@@ -151,7 +161,7 @@ export function ResetPasswordPage() {
                 className="mb-1 block text-sm font-medium"
                 htmlFor="reset-password"
               >
-                New password
+                {t("auth.reset.newPasswordLabel")}
               </label>
               <input
                 id="reset-password"
@@ -173,7 +183,7 @@ export function ResetPasswordPage() {
                 className="mb-1 block text-sm font-medium"
                 htmlFor="confirm-reset-password"
               >
-                Confirm password
+                {t("auth.reset.confirmPasswordLabel")}
               </label>
               <input
                 id="confirm-reset-password"
@@ -194,13 +204,13 @@ export function ResetPasswordPage() {
               type="submit"
               className="min-h-11 w-full rounded-xl bg-teal-600 px-5 font-medium text-white hover:bg-teal-700"
             >
-              Update password
+              {t("auth.reset.submit")}
             </button>
           </form>
 
           <p className="mt-6 text-center text-sm text-slate-600">
             <Link className="font-medium text-teal-700 underline" to="/login">
-              Back to login
+              {t("auth.reset.backToLogin")}
             </Link>
           </p>
         </div>

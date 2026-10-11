@@ -418,5 +418,84 @@
       "recentReviews_other": "Showing the 10 most recent of {{count}} reviews.",
       "noReviewFeedback": "Customer feedback will appear here after completed services."
     }
+  },
+  "auth": {
+    "login": {
+      "title": "Sign in to your account",
+      "subtitle": "Welcome back to LocalServe",
+      "signInError": "Could not sign in. Check your email and password.",
+      "signInSuccess": "Welcome back.",
+      "emailLabel": "Email",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Your password",
+      "hidePassword": "Hide password",
+      "showPassword": "Show password",
+      "forgotPasswordLink": "Forgot password?",
+      "submitting": "Signing in...",
+      "submit": "Log in",
+      "newToLocalServe": "New to LocalServe?",
+      "createAccountLink": "Create an account"
+    },
+    "register": {
+      "rateLimitError": "Supabase is rate-limiting signups. Wait before trying again.",
+      "accountSetupError": "Supabase could not finish account setup. Check the Auth service logs for the database trigger error.",
+      "signupFailed": "Sign-up failed ({{status}}): {{detail}}",
+      "signupErrorFallback": "Could not create your account. Please try again.",
+      "accountReady": "Your account is ready.",
+      "connectionError": "Could not reach Supabase to create your account. Check your connection before retrying.",
+      "title": "Create your account",
+      "subtitle": "Join LocalServe in a minute",
+      "checkEmail": "Check your email",
+      "confirmationMessage": "Follow the confirmation link sent to {{email}} to finish creating your account.",
+      "displayName": "Display name",
+      "displayNamePlaceholder": "e.g. Ayesha Khan",
+      "emailLabel": "Email",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Create a password",
+      "hidePassword": "Hide password",
+      "showPassword": "Show password",
+      "areaLabel": "Samundri area",
+      "areaPlaceholder": "Select an area",
+      "loadingAreas": "Loading Samundri areas...",
+      "noAreas": "No active Samundri areas are available yet.",
+      "roleLegend": "I want to",
+      "customerRole": "Find a service",
+      "customerRoleHelp": "Book trusted local help",
+      "providerRole": "Offer services",
+      "providerRoleHelp": "List your services and get requests",
+      "submitting": "Creating account...",
+      "submit": "Sign up",
+      "haveAccount": "Already have an account?",
+      "logInLink": "Log in"
+    },
+    "forgot": {
+      "sendError": "Could not send reset link. Please try again.",
+      "backToLogin": "Back to login",
+      "title": "Reset your password",
+      "sentMessage": "If an account exists for this email, a reset link has been sent. Check your inbox and spam folder.",
+      "instructions": "Enter your email address and we'll send a password reset link.",
+      "emailLabel": "Email",
+      "submitting": "Sending...",
+      "submit": "Send reset link"
+    },
+    "reset": {
+      "updateError": "Could not update your password.",
+      "updateSuccess": "Password updated successfully.",
+      "backToLogin": "Back to login",
+      "resetTitle": "Reset password",
+      "invalidLink": "This reset link is invalid or has expired.",
+      "requestNewLink": "Request a new reset link",
+      "createTitle": "Create a new password",
+      "instructions": "Choose a new password for your account.",
+      "newPasswordLabel": "New password",
+      "confirmPasswordLabel": "Confirm password",
+      "submit": "Update password"
+    },
+    "shell": {
+      "headline": "Find trusted help in Samundri",
+      "verifiedProviders": "Verified local providers",
+      "bookingRequests": "Simple booking requests",
+      "customerReviews": "Reviews from real customers"
+    }
   }
 }
