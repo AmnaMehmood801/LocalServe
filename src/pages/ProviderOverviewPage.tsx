@@ -6,12 +6,14 @@ import {
   CheckCircle2,
   Inbox,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
 import { useAuth } from "../app/AuthContext";
 import { supabase } from "../lib/supabase";
 
 export default function ProviderOverviewPage() {
+  const { t } = useTranslation();
   const { user, profile, profileError, loading: authLoading } = useAuth();
 
   const listingsQuery = useQuery({
@@ -49,14 +51,16 @@ export default function ProviderOverviewPage() {
   if (authLoading) {
     return (
       <div className="min-w-0 py-4" role="status">
-        Loading provider overview...
+        {t("provider.overview.loading")}
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="min-w-0 py-4">Provider details are unavailable.</div>
+      <div className="min-w-0 py-4">
+        {t("provider.overview.detailsUnavailable")}
+      </div>
     );
   }
 
@@ -67,14 +71,16 @@ export default function ProviderOverviewPage() {
     bookingsQuery.isError
   ) {
     return (
-      <div className="min-w-0 py-4">Provider details are unavailable.</div>
+      <div className="min-w-0 py-4">
+        {t("provider.overview.detailsUnavailable")}
+      </div>
     );
   }
 
   if (listingsQuery.isPending || bookingsQuery.isPending) {
     return (
       <div className="min-w-0 py-4" role="status">
-        Loading provider overview...
+        {t("provider.overview.loading")}
       </div>
     );
   }
@@ -84,18 +90,18 @@ export default function ProviderOverviewPage() {
   const monthStart = startOfMonth(new Date());
   const stats = [
     {
-      label: "Active listings",
+      labelKey: "provider.overview.stats.activeListings",
       value: listings.filter((listing) => listing.is_active).length,
       Icon: BriefcaseBusiness,
     },
     {
-      label: "New requests",
+      labelKey: "provider.overview.stats.newRequests",
       value: bookings.filter((booking) => booking.status === "requested")
         .length,
       Icon: Inbox,
     },
     {
-      label: "Upcoming",
+      labelKey: "provider.overview.stats.upcoming",
       value: bookings.filter(
         (booking) =>
           booking.status === "accepted" || booking.status === "in_progress",
@@ -103,7 +109,7 @@ export default function ProviderOverviewPage() {
       Icon: CalendarClock,
     },
     {
-      label: "Completed this month",
+      labelKey: "provider.overview.stats.completedThisMonth",
       value: bookings.filter(
         (booking) =>
           booking.status === "completed" &&
@@ -117,16 +123,18 @@ export default function ProviderOverviewPage() {
   return (
     <div className="min-w-0">
       <header>
-        <h2 className="text-xl font-semibold text-slate-900">Overview</h2>
+        <h2 className="text-xl font-semibold text-slate-900">
+          {t("provider.overview.title")}
+        </h2>
         <p className="mt-1 text-sm text-slate-500">
-          A quick look at your services and bookings.
+          {t("provider.overview.description")}
         </p>
       </header>
 
       <div className="mt-5 grid grid-cols-2 gap-4">
-        {stats.map(({ label, value, Icon }) => (
+        {stats.map(({ labelKey, value, Icon }) => (
           <article
-            key={label}
+            key={labelKey}
             className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5"
           >
             <span className="grid size-9 place-items-center rounded-lg bg-[#E3F7EC] text-[#168A55]">
@@ -135,25 +143,27 @@ export default function ProviderOverviewPage() {
             <p className="mt-4 text-2xl font-semibold text-slate-900">
               {value}
             </p>
-            <p className="mt-1 text-sm text-slate-500">{label}</p>
+            <p className="mt-1 text-sm text-slate-500">{t(labelKey)}</p>
           </article>
         ))}
       </div>
 
       <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
-        <h3 className="text-base font-semibold text-slate-900">About me</h3>
+        <h3 className="text-base font-semibold text-slate-900">
+          {t("provider.overview.aboutMe")}
+        </h3>
         {profile.bio?.trim() ? (
           <p className="mt-3 whitespace-pre-line text-sm leading-6 text-slate-600">
             {profile.bio}
           </p>
         ) : (
           <p className="mt-3 text-sm text-slate-500">
-            Add a bio in your account.{" "}
+            {t("provider.overview.addBio")}{" "}
             <Link
               to="/account"
               className="font-medium text-[#168A55] no-underline underline-offset-2 hover:text-[#116B42] hover:underline"
             >
-              Edit profile
+              {t("provider.overview.editProfile")}
             </Link>
           </p>
         )}

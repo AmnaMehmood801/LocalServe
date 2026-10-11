@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format, startOfMonth } from "date-fns";
 import { CalendarClock, CheckCircle2, Inbox } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { toast } from "../lib/toast";
 
@@ -34,11 +35,11 @@ type ProviderBooking = {
   customer_name: string;
 };
 
-const filterOptions: { key: InboxFilter; label: string }[] = [
-  { key: "new", label: "New" },
-  { key: "upcoming", label: "Upcoming" },
-  { key: "done", label: "Done" },
-  { key: "closed", label: "Declined / cancelled" },
+const filterOptions: { key: InboxFilter; labelKey: string }[] = [
+  { key: "new", labelKey: "provider.requests.filters.new" },
+  { key: "upcoming", labelKey: "provider.requests.filters.upcoming" },
+  { key: "done", labelKey: "provider.requests.filters.done" },
+  { key: "closed", labelKey: "provider.requests.filters.closed" },
 ];
 
 function matchesFilter(status: BookingStatus, filter: InboxFilter) {
@@ -54,6 +55,11 @@ function matchesFilter(status: BookingStatus, filter: InboxFilter) {
 }
 
 function ProviderBookingCard({ booking }: { booking: ProviderBooking }) {
+  const { t } = useTranslation();
+  const customerName =
+    booking.customer_name === "LocalServe member"
+      ? t("provider.requests.memberFallback")
+      : booking.customer_name;
   const queryClient = useQueryClient();
   const [reasonOpen, setReasonOpen] = useState(false);
   const [reason, setReason] = useState("");
@@ -89,7 +95,7 @@ function ProviderBookingCard({ booking }: { booking: ProviderBooking }) {
 
     if (error) {
       setActionError(
-        getBookingErrorMessage(error, "Could not update this booking."),
+        getBookingErrorMessage(error, t("provider.requests.updateErrorFallback")),
       );
       return;
     }
@@ -101,12 +107,12 @@ function ProviderBookingCard({ booking }: { booking: ProviderBooking }) {
     ]);
     toast.success(
       action === "accept"
-        ? "Booking confirmed."
+        ? t("provider.requests.bookingConfirmed")
         : action === "decline"
-          ? "Request declined."
+          ? t("provider.requests.requestDeclined")
           : action === "complete"
-            ? "Booking marked complete."
-            : "Booking cancelled.",
+            ? t("provider.requests.bookingCompleted")
+            : t("provider.requests.bookingCancelled"),
     );
     setReasonOpen(false);
     setReason("");
@@ -122,7 +128,9 @@ function ProviderBookingCard({ booking }: { booking: ProviderBooking }) {
         <div className="min-w-0">
           <h2 className="font-semibold">{booking.snapshot_title}</h2>
           <p className="mt-1 text-sm text-slate-600">
-            Customer: {booking.customer_name}
+            {t("provider.requests.customerName", {
+              name: customerName,
+            })}
           </p>
           <p className="mt-1 text-sm text-slate-600">
             {format(new Date(booking.scheduled_start), "PPP 'at' p")}
@@ -134,7 +142,7 @@ function ProviderBookingCard({ booking }: { booking: ProviderBooking }) {
       <dl className="mt-4 grid gap-4 border-t border-cream-100 pt-4 sm:grid-cols-2">
         <div>
           <dt className="text-xs font-medium uppercase text-slate-600">
-            Service address
+            {t("provider.requests.serviceAddress")}
           </dt>
           <dd className="mt-1 whitespace-pre-line text-sm capitalize">
             {booking.address_text}
@@ -142,7 +150,7 @@ function ProviderBookingCard({ booking }: { booking: ProviderBooking }) {
         </div>
         <div>
           <dt className="text-xs font-medium uppercase text-slate-600">
-            Price snapshot
+            {t("provider.requests.priceSnapshot")}
           </dt>
           <dd className="mt-1 text-sm font-semibold">
             {formatBookingPrice(
@@ -154,7 +162,7 @@ function ProviderBookingCard({ booking }: { booking: ProviderBooking }) {
         {booking.notes && (
           <div className="sm:col-span-2">
             <dt className="text-xs font-medium uppercase text-slate-600">
-              Customer notes
+              {t("provider.requests.customerNotes")}
             </dt>
             <dd className="mt-1 whitespace-pre-line text-sm">
               {booking.notes}
@@ -164,7 +172,7 @@ function ProviderBookingCard({ booking }: { booking: ProviderBooking }) {
         {booking.decline_reason && (
           <div className="sm:col-span-2">
             <dt className="text-xs font-medium uppercase text-slate-600">
-              Decline reason
+              {t("provider.requests.declineReason")}
             </dt>
             <dd className="mt-1 whitespace-pre-line text-sm">
               {booking.decline_reason}
@@ -174,7 +182,7 @@ function ProviderBookingCard({ booking }: { booking: ProviderBooking }) {
         {booking.cancel_reason && (
           <div className="sm:col-span-2">
             <dt className="text-xs font-medium uppercase text-slate-600">
-              Cancellation reason
+              {t("provider.requests.cancellationReason")}
             </dt>
             <dd className="mt-1 whitespace-pre-line text-sm">
               {booking.cancel_reason}
@@ -188,7 +196,7 @@ function ProviderBookingCard({ booking }: { booking: ProviderBooking }) {
           to={`/bookings/${booking.id}`}
           className="inline-flex h-9 items-center rounded-lg border border-slate-200 bg-white px-3.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
         >
-          View details
+          {t("provider.requests.viewDetails")}
         </Link>
         {isRequested && (
           <>
@@ -198,7 +206,9 @@ function ProviderBookingCard({ booking }: { booking: ProviderBooking }) {
               onClick={() => void runAction("accept")}
               className="min-h-11 rounded-lg bg-teal-600 px-4 text-sm font-medium text-white hover:bg-teal-700 disabled:opacity-50"
             >
-              {busy ? "Saving..." : "Accept"}
+              {busy
+                ? t("provider.requests.saving")
+                : t("provider.requests.accept")}
             </button>
             <button
               type="button"
@@ -206,7 +216,7 @@ function ProviderBookingCard({ booking }: { booking: ProviderBooking }) {
               onClick={() => setReasonOpen(true)}
               className="min-h-11 rounded-lg border border-rose-600/40 px-4 text-sm font-medium text-rose-700 hover:bg-rose-600/5"
             >
-              Decline
+              {t("provider.requests.decline")}
             </button>
           </>
         )}
@@ -218,7 +228,9 @@ function ProviderBookingCard({ booking }: { booking: ProviderBooking }) {
               onClick={() => void runAction("complete")}
               className="min-h-11 rounded-lg bg-teal-600 px-4 text-sm font-medium text-white hover:bg-teal-700 disabled:opacity-50"
             >
-              {busy ? "Saving..." : "Mark complete"}
+              {busy
+                ? t("provider.requests.saving")
+                : t("provider.requests.markComplete")}
             </button>
             <button
               type="button"
@@ -226,7 +238,7 @@ function ProviderBookingCard({ booking }: { booking: ProviderBooking }) {
               onClick={() => setReasonOpen(true)}
               className="min-h-11 rounded-lg border border-rose-600/40 px-4 text-sm font-medium text-rose-700 hover:bg-rose-600/5"
             >
-              Cancel job
+              {t("provider.requests.cancelJob")}
             </button>
           </>
         )}
@@ -244,7 +256,11 @@ function ProviderBookingCard({ booking }: { booking: ProviderBooking }) {
             htmlFor={`reason-${booking.id}`}
             className="block text-sm font-medium"
           >
-            {isRequested ? "Reason for declining" : "Reason for cancelling"}
+            {t(
+              isRequested
+                ? "provider.requests.reasonForDeclining"
+                : "provider.requests.reasonForCancelling",
+            )}
           </label>
           <textarea
             id={`reason-${booking.id}`}
@@ -256,7 +272,7 @@ function ProviderBookingCard({ booking }: { booking: ProviderBooking }) {
             className="w-full rounded-lg border border-slate-400/50 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-600"
           />
           <p className="mt-1 text-xs text-slate-500">
-            This reason is shown to the customer
+            {t("provider.requests.reasonVisibleToCustomer")}
           </p>
           {actionError && (
             <p className="text-sm text-rose-600" role="alert">
@@ -270,17 +286,17 @@ function ProviderBookingCard({ booking }: { booking: ProviderBooking }) {
               className="h-10 rounded-lg bg-rose-600 px-4 text-sm font-medium text-white disabled:opacity-50"
             >
               {busy
-                ? "Saving..."
+                ? t("provider.requests.saving")
                 : isRequested
-                  ? "Confirm decline"
-                  : "Confirm cancellation"}
+                  ? t("provider.requests.confirmDecline")
+                  : t("provider.requests.confirmCancellation")}
             </button>
             <button
               type="button"
               onClick={() => setReasonOpen(false)}
               className="h-10 rounded-lg border border-ink/20 px-4 text-sm font-medium"
             >
-              Keep request
+              {t("provider.requests.keepRequest")}
             </button>
           </div>
         </form>
@@ -295,6 +311,7 @@ function ProviderBookingCard({ booking }: { booking: ProviderBooking }) {
 }
 
 export function ProviderRequestsPage() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [filter, setFilter] = useState<InboxFilter>("new");
   const bookingsQuery = useQuery({
@@ -355,9 +372,11 @@ export function ProviderRequestsPage() {
     <div>
       <header className="border-b border-cream-100 pb-5">
         <p className="text-xs font-semibold uppercase text-slate-600">
-          Provider
+          {t("provider.requests.provider")}
         </p>
-        <h1 className="mt-1 text-3xl font-semibold">Booking requests</h1>
+        <h1 className="mt-1 text-3xl font-semibold">
+          {t("provider.requests.title")}
+        </h1>
       </header>
 
       <dl className="mt-5 grid grid-cols-3 gap-3">
@@ -368,7 +387,7 @@ export function ProviderRequestsPage() {
               className="shrink-0 text-[#168A55]"
               aria-hidden="true"
             />
-            <span className="min-w-0">New</span>
+            <span className="min-w-0">{t("provider.requests.stats.new")}</span>
           </dt>
           <dd className="mt-1 text-xl font-semibold">
             {bookingsQuery.isPending ? "—" : newCount}
@@ -381,7 +400,9 @@ export function ProviderRequestsPage() {
               className="shrink-0 text-amber-500"
               aria-hidden="true"
             />
-            <span className="min-w-0">Upcoming</span>
+            <span className="min-w-0">
+              {t("provider.requests.stats.upcoming")}
+            </span>
           </dt>
           <dd className="mt-1 text-xl font-semibold">
             {bookingsQuery.isPending ? "—" : upcomingCount}
@@ -394,7 +415,9 @@ export function ProviderRequestsPage() {
               className="shrink-0 text-[#168A55]"
               aria-hidden="true"
             />
-            <span className="min-w-0">Completed this month</span>
+            <span className="min-w-0">
+              {t("provider.requests.stats.completedThisMonth")}
+            </span>
           </dt>
           <dd className="mt-1 text-xl font-semibold">
             {bookingsQuery.isPending ? "—" : completedCount}
@@ -404,7 +427,7 @@ export function ProviderRequestsPage() {
 
       <div
         className="mt-5 flex flex-wrap gap-2"
-        aria-label="Filter provider requests"
+        aria-label={t("provider.requests.filterRequests")}
       >
         {filterOptions.map((option) => (
           <button
@@ -414,7 +437,7 @@ export function ProviderRequestsPage() {
             onClick={() => setFilter(option.key)}
             className={`h-9 rounded-full border px-3.5 text-sm font-medium ${filter === option.key ? "border-teal-600 bg-teal-600 text-white" : "border-ink/15 bg-white hover:bg-cream-100"}`}
           >
-            {option.label}
+            {t(option.labelKey)}
           </button>
         ))}
       </div>
@@ -423,7 +446,7 @@ export function ProviderRequestsPage() {
         <div
           className="mt-6 space-y-3"
           role="status"
-          aria-label="Loading requests"
+          aria-label={t("provider.requests.loading")}
         >
           {[0, 1, 2].map((item) => (
             <div
@@ -437,13 +460,15 @@ export function ProviderRequestsPage() {
           className="mt-6 rounded-xl border border-rose-600/20 bg-white p-5"
           role="alert"
         >
-          <p className="font-medium">Requests couldn’t be loaded.</p>
+          <p className="font-medium">
+            {t("provider.requests.loadError")}
+          </p>
           <button
             type="button"
             onClick={() => void bookingsQuery.refetch()}
             className="mt-3 min-h-11 rounded-lg border border-ink/20 px-4 text-sm font-medium"
           >
-            Try again
+            {t("provider.requests.tryAgain")}
           </button>
         </div>
       ) : visibleBookings.length === 0 ? (
@@ -455,13 +480,13 @@ export function ProviderRequestsPage() {
           />
           <p className="mt-3 text-sm font-medium text-slate-600">
             {bookings.length === 0
-              ? "No booking requests yet."
-              : "No requests in this group."}
+              ? t("provider.requests.emptyTitle")
+              : t("provider.requests.emptyFilteredTitle")}
           </p>
           <p className="mt-1 text-xs text-slate-500">
             {bookings.length === 0
-              ? "New requests from customers will appear here"
-              : "Try another tab"}
+              ? t("provider.requests.emptyDescription")
+              : t("provider.requests.emptyFilteredDescription")}
           </p>
         </div>
       ) : (

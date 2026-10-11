@@ -8,6 +8,7 @@ import {
   Pencil,
   Star,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Link, NavLink, Outlet } from "react-router-dom";
 
 import { useAuth } from "../app/AuthContext";
@@ -15,6 +16,7 @@ import { Avatar } from "../components/Avatar";
 import { supabase } from "../lib/supabase";
 
 export default function ProviderHubPage() {
+  const { t } = useTranslation();
   const { user, profile, profileError, loading: authLoading } = useAuth();
   const { data: avatarPath = null } = useQuery({
     queryKey: ["profile-avatar", user?.id],
@@ -64,43 +66,61 @@ export default function ProviderHubPage() {
   if (authLoading) {
     return (
       <div className={pageClassName} role="status">
-        Loading provider overview...
+        {t("provider.hub.loading")}
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className={pageClassName}>Provider details are unavailable.</div>
+      <div className={pageClassName}>{t("provider.hub.detailsUnavailable")}</div>
     );
   }
 
   if (profileError || !profile || reviewsQuery.isError) {
     return (
-      <div className={pageClassName}>Provider details are unavailable.</div>
+      <div className={pageClassName}>{t("provider.hub.detailsUnavailable")}</div>
     );
   }
 
   if (reviewsQuery.isPending) {
     return (
       <div className={pageClassName} role="status">
-        Loading provider overview...
+        {t("provider.hub.loading")}
       </div>
     );
   }
 
   const reviewCount = reviewsQuery.data.count;
   const averageRating = reviewsQuery.data.average;
-  const displayName = profile.display_name.trim() || "Provider";
+  const displayName =
+    profile.display_name.trim() || t("provider.hub.providerFallback");
   const routeNavigation = [
-    { label: "Overview", to: "/provider", Icon: LayoutDashboard, end: true },
-    { label: "My listings", to: "/provider/listings", Icon: BriefcaseBusiness },
-    { label: "Requests", to: "/provider/requests", Icon: Inbox },
+    {
+      labelKey: "provider.hub.navigation.overview",
+      to: "/provider",
+      Icon: LayoutDashboard,
+      end: true,
+    },
+    {
+      labelKey: "provider.hub.navigation.myListings",
+      to: "/provider/listings",
+      Icon: BriefcaseBusiness,
+    },
+    {
+      labelKey: "provider.hub.navigation.requests",
+      to: "/provider/requests",
+      Icon: Inbox,
+    },
   ];
   const profileNavigation = [
-    { label: "Edit profile", to: "/account", Icon: Pencil },
     {
-      label: "View public profile",
+      labelKey: "provider.hub.navigation.editProfile",
+      to: "/account",
+      Icon: Pencil,
+    },
+    {
+      labelKey: "provider.hub.navigation.viewPublicProfile",
       to: `/providers/${user.id}`,
       Icon: ExternalLink,
     },
@@ -116,12 +136,14 @@ export default function ProviderHubPage() {
               <h1 className="mt-4 text-lg font-semibold text-slate-900">
                 {displayName}
               </h1>
-              <p className="mt-0.5 text-sm text-slate-500">Provider</p>
+              <p className="mt-0.5 text-sm text-slate-500">
+                {t("provider.hub.providerRole")}
+              </p>
 
               {profile.is_verified && (
                 <span className="mt-3 inline-flex h-7 items-center gap-1.5 rounded-full bg-[#E3F7EC] px-2.5 text-xs font-medium text-[#168A55]">
                   <BadgeCheck size={14} aria-hidden="true" />
-                  Verified
+                  {t("provider.hub.verified")}
                 </span>
               )}
 
@@ -131,7 +153,7 @@ export default function ProviderHubPage() {
                     <span
                       className="inline-flex items-center gap-0.5"
                       role="img"
-                      aria-label="5 stars"
+                      aria-label={t("provider.hub.ratingStars", { count: 5 })}
                     >
                       {Array.from({ length: 5 }, (_, index) => (
                         <Star
@@ -150,18 +172,20 @@ export default function ProviderHubPage() {
                     </span>
                   </>
                 ) : (
-                  <span className="text-sm text-slate-500">No reviews yet</span>
+                  <span className="text-sm text-slate-500">
+                    {t("provider.hub.noReviews")}
+                  </span>
                 )}
               </div>
             </div>
 
             <nav
               className="mt-6 hidden space-y-1 border-t border-slate-200 pt-4 lg:block"
-              aria-label="Provider navigation"
+              aria-label={t("provider.hub.navigationLabel")}
             >
-              {routeNavigation.map(({ label, to, Icon, end }) => (
+              {routeNavigation.map(({ labelKey, to, Icon, end }) => (
                 <NavLink
-                  key={label}
+                  key={labelKey}
                   to={to}
                   end={end}
                   className={({ isActive }) =>
@@ -173,17 +197,17 @@ export default function ProviderHubPage() {
                   }
                 >
                   <Icon size={17} aria-hidden="true" />
-                  {label}
+                  {t(labelKey)}
                 </NavLink>
               ))}
-              {profileNavigation.map(({ label, to, Icon }) => (
+              {profileNavigation.map(({ labelKey, to, Icon }) => (
                 <Link
-                  key={label}
+                  key={labelKey}
                   to={to}
                   className="flex h-10 items-center gap-3 rounded-lg px-3 text-sm text-slate-700 transition-colors hover:bg-[#F0FAF4]"
                 >
                   <Icon size={17} aria-hidden="true" />
-                  {label}
+                  {t(labelKey)}
                 </Link>
               ))}
             </nav>
@@ -191,11 +215,11 @@ export default function ProviderHubPage() {
 
           <nav
             className="flex w-full max-w-full min-w-0 flex-nowrap gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:hidden"
-            aria-label="Provider navigation"
+            aria-label={t("provider.hub.navigationLabel")}
           >
-            {routeNavigation.map(({ label, to, Icon, end }) => (
+            {routeNavigation.map(({ labelKey, to, Icon, end }) => (
               <NavLink
-                key={label}
+                key={labelKey}
                 to={to}
                 end={end}
                 className={({ isActive }) =>
@@ -207,17 +231,17 @@ export default function ProviderHubPage() {
                 }
               >
                 <Icon size={16} aria-hidden="true" />
-                {label}
+                {t(labelKey)}
               </NavLink>
             ))}
-            {profileNavigation.map(({ label, to, Icon }) => (
+            {profileNavigation.map(({ labelKey, to, Icon }) => (
               <Link
-                key={label}
+                key={labelKey}
                 to={to}
                 className="inline-flex h-9 shrink-0 whitespace-nowrap items-center gap-2 rounded-lg bg-white px-3.5 text-sm text-slate-700 transition-colors hover:bg-[#F0FAF4]"
               >
                 <Icon size={16} aria-hidden="true" />
-                {label}
+                {t(labelKey)}
               </Link>
             ))}
           </nav>

@@ -3,6 +3,7 @@ import {
   type BookingStatus,
   type BookingViewer,
 } from "../../lib/booking";
+import { useTranslation } from "react-i18next";
 
 type Props = {
   status: BookingStatus;
@@ -29,6 +30,7 @@ const statusStyles: Record<BookingStatus, { badge: string; dot: string }> = {
 };
 
 export function BookingStatusBadge({ status, viewer }: Props) {
+  const { t } = useTranslation();
   const styles = statusStyles[status];
 
   return (
@@ -39,7 +41,7 @@ export function BookingStatusBadge({ status, viewer }: Props) {
         aria-hidden="true"
         className={`size-1.5 rounded-full ${styles.dot}`}
       />
-      {getBookingStatusLabel(status, viewer)}
+      {getBookingStatusLabel(status, viewer, t)}
     </span>
   );
 }

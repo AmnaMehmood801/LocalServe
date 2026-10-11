@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { Info } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "../lib/toast";
@@ -68,6 +69,7 @@ const contactStatuses: BookingStatus[] = [
 
 export function BookingDetailPage() {
   const { id = "" } = useParams();
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -186,7 +188,7 @@ export function BookingDetailPage() {
     setIsCancelling(false);
     if (error) {
       setActionError(
-        getBookingErrorMessage(error, "Could not cancel this booking."),
+        getBookingErrorMessage(error, t("bookings.detail.cancelError")),
       );
       return;
     }
@@ -196,7 +198,7 @@ export function BookingDetailPage() {
       queryClient.invalidateQueries({ queryKey: ["bookings"] }),
       queryClient.invalidateQueries({ queryKey: ["provider", "bookings"] }),
     ]);
-    toast.success("Booking cancelled.");
+    toast.success(t("bookings.detail.cancelledToast"));
     setShowCancel(false);
     await bookingQuery.refetch();
   }
@@ -212,7 +214,7 @@ export function BookingDetailPage() {
     });
     if (error) {
       setActionError(
-        getBookingErrorMessage(error, "Could not submit your review."),
+        getBookingErrorMessage(error, t("bookings.detail.reviewError")),
       );
       return;
     }
@@ -224,27 +226,29 @@ export function BookingDetailPage() {
         queryKey: ["listing", "detail", booking.listing_id],
       }),
     ]);
-    toast.success("Review submitted.");
+    toast.success(t("bookings.detail.reviewSubmittedToast"));
     await bookingQuery.refetch();
   }
 
   if (bookingQuery.isPending) {
     return (
       <div className="shell-container py-12" role="status">
-        Loading booking...
+        {t("bookings.detail.loading")}
       </div>
     );
   }
   if (bookingQuery.isError || !bookingQuery.data) {
     return (
       <section className="shell-container py-12" role="alert">
-        <h1 className="text-2xl font-semibold">Booking unavailable</h1>
+        <h1 className="text-2xl font-semibold">
+          {t("bookings.detail.unavailableTitle")}
+        </h1>
         <p className="mt-2 text-sm text-slate-600">
-          This booking could not be found or you don’t have access to it.
+          {t("bookings.detail.unavailableDescription")}
         </p>
         <BackButton
           fallback="/bookings"
-          label="Back to bookings"
+          label={t("bookings.detail.backToBookings")}
           className="mt-5"
         />
       </section>
@@ -264,7 +268,7 @@ export function BookingDetailPage() {
   if (!isCustomer && !isProvider) {
     return (
       <section className="shell-container py-12" role="alert">
-        You don’t have access to this booking.
+        {t("bookings.detail.accessDenied")}
       </section>
     );
   }
@@ -273,18 +277,26 @@ export function BookingDetailPage() {
     <section className="shell-container max-w-3xl py-6 md:py-8">
       <BackButton
         fallback={backPath}
-        label={`Back to ${isProvider ? "requests" : "bookings"}`}
+        label={
+          isProvider
+            ? t("bookings.detail.backToRequests")
+            : t("bookings.detail.backToBookings")
+        }
       />
       <header className="mt-3 flex flex-wrap items-start justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-5 md:p-6">
         <div>
           <p className="text-xs font-semibold uppercase text-slate-600">
-            Booking details
+            {t("bookings.detail.heading")}
           </p>
           <h1 className="mt-1 text-3xl font-semibold">
             {booking.snapshot_title}
           </h1>
           <p className="mt-2 text-sm text-slate-600">
-            {isCustomer ? "Provider" : "Customer"}:{" "}
+            {t(
+              isCustomer
+                ? "bookings.detail.provider"
+                : "bookings.detail.customer",
+            )}:{" "}
             {isCustomer && booking.provider_id ? (
               <Link
                 to={`/providers/${booking.provider_id}`}
@@ -292,13 +304,13 @@ export function BookingDetailPage() {
               >
                 <Avatar
                   avatarPath={booking.counterpart_avatar_path}
-                  name={booking.counterpart_name ?? "LocalServe member"}
+                  name={booking.counterpart_name ?? t("bookings.detail.memberFallback")}
                   size={40}
                 />
-                {booking.counterpart_name ?? "LocalServe member"}
+                {booking.counterpart_name ?? t("bookings.detail.memberFallback")}
               </Link>
             ) : (
-              (booking.counterpart_name ?? "LocalServe member")
+              (booking.counterpart_name ?? t("bookings.detail.memberFallback"))
             )}
           </p>
         </div>
@@ -308,20 +320,22 @@ export function BookingDetailPage() {
       <dl className="mt-4 grid gap-x-8 gap-y-5 rounded-2xl border border-slate-200 bg-white p-5 sm:grid-cols-2 md:p-6">
         <div>
           <dt className="text-xs font-medium uppercase text-slate-600">
-            Preferred time
+            {t("bookings.detail.preferredTime")}
           </dt>
           <dd className="mt-1 font-medium">
             {format(new Date(booking.scheduled_start), "PPP 'at' p")}
           </dd>
           {booking.scheduled_end && (
             <dd className="text-sm text-slate-600">
-              Until {format(new Date(booking.scheduled_end), "p")}
+              {t("bookings.detail.untilTime", {
+                time: format(new Date(booking.scheduled_end), "p"),
+              })}
             </dd>
           )}
         </div>
         <div>
           <dt className="text-xs font-medium uppercase text-slate-600">
-            Price snapshot
+            {t("bookings.detail.priceSnapshot")}
           </dt>
           <dd className="mt-1 font-semibold">
             {formatBookingPrice(
@@ -329,13 +343,15 @@ export function BookingDetailPage() {
               booking.snapshot_currency,
             )}
             <span className="ms-1 font-normal text-slate-600">
-              {booking.snapshot_pricing_type === "hourly" ? "/ hr" : "fixed"}
+              {booking.snapshot_pricing_type === "hourly"
+                ? t("bookings.detail.perHour")
+                : t("bookings.detail.fixedPrice")}
             </span>
           </dd>
         </div>
         <div className="sm:col-span-2">
           <dt className="text-xs font-medium uppercase text-slate-600">
-            Service address
+            {t("bookings.detail.serviceAddress")}
           </dt>
           <dd className="mt-1 whitespace-pre-line capitalize">
             {booking.address_text}
@@ -344,7 +360,7 @@ export function BookingDetailPage() {
         {booking.notes && (
           <div className="sm:col-span-2">
             <dt className="text-xs font-medium uppercase text-slate-600">
-              Notes
+              {t("bookings.detail.notes")}
             </dt>
             <dd className="mt-1 whitespace-pre-line">{booking.notes}</dd>
           </div>
@@ -352,7 +368,7 @@ export function BookingDetailPage() {
         {booking.decline_reason && (
           <div className="sm:col-span-2">
             <dt className="text-xs font-medium uppercase text-slate-600">
-              Provider’s reason
+              {t("bookings.detail.providerReason")}
             </dt>
             <dd className="mt-1 whitespace-pre-line">
               {booking.decline_reason}
@@ -362,7 +378,7 @@ export function BookingDetailPage() {
         {booking.cancel_reason && (
           <div className="sm:col-span-2">
             <dt className="text-xs font-medium uppercase text-slate-600">
-              Cancellation reason
+              {t("bookings.detail.cancellationReason")}
             </dt>
             <dd className="mt-1 whitespace-pre-line">
               {booking.cancel_reason}
@@ -372,25 +388,29 @@ export function BookingDetailPage() {
         {contactStatuses.includes(booking.status) && (
           <div>
             <dt className="text-xs font-medium uppercase text-slate-600">
-              {isProvider ? "Customer phone" : "Provider phone"}
+              {t(
+                isProvider
+                  ? "bookings.detail.customerPhone"
+                  : "bookings.detail.providerPhone",
+              )}
             </dt>
             {contactQuery.isError ? (
               <dd className="mt-1 text-sm text-rose-600" role="alert">
-                Could not load contact details.{" "}
+                {t("bookings.detail.contactLoadError")}{" "}
                 <button
                   type="button"
                   onClick={() => void contactQuery.refetch()}
                   disabled={contactQuery.isFetching}
                   className="font-medium underline disabled:opacity-50"
                 >
-                  Retry
+                  {t("bookings.detail.retry")}
                 </button>
               </dd>
             ) : (
               <dd className="mt-1">
                 {contactQuery.isPending
-                  ? "Loading contact..."
-                  : (contactQuery.data ?? "No phone number provided.")}
+                  ? t("bookings.detail.loadingContact")
+                  : (contactQuery.data ?? t("bookings.detail.noPhone"))}
               </dd>
             )}
           </div>
@@ -403,8 +423,7 @@ export function BookingDetailPage() {
           className="mt-0.5 size-4 shrink-0 text-slate-600"
         />
         <p>
-          Agree payment directly with your provider. LocalServe does not take
-          payment in this version.
+          {t("bookings.detail.paymentNotice")}
         </p>
       </div>
 
@@ -422,7 +441,7 @@ export function BookingDetailPage() {
           onClick={() => setShowCancel(true)}
           className="mt-5 min-h-11 rounded-xl border border-rose-600/40 bg-white px-5 text-sm font-medium text-rose-700 hover:bg-rose-600/5"
         >
-          Cancel booking
+          {t("bookings.detail.cancelBooking")}
         </button>
       )}
       {canCancel && showCancel && (
@@ -434,7 +453,11 @@ export function BookingDetailPage() {
           }}
         >
           <label htmlFor="cancel-reason" className="block text-sm font-medium">
-            Cancellation reason {reasonRequired ? "(required)" : "(optional)"}
+            {t(
+              reasonRequired
+                ? "bookings.detail.cancelReasonRequired"
+                : "bookings.detail.cancelReasonOptional",
+            )}
           </label>
           <textarea
             id="cancel-reason"
@@ -453,26 +476,32 @@ export function BookingDetailPage() {
               }
               className="min-h-11 rounded-xl bg-rose-600 px-5 text-sm font-medium text-white disabled:opacity-50"
             >
-              {isCancelling ? "Cancelling..." : "Confirm cancellation"}
+              {isCancelling
+                ? t("bookings.detail.cancelling")
+                : t("bookings.detail.confirmCancellation")}
             </button>
             <button
               type="button"
               onClick={() => setShowCancel(false)}
               className="min-h-11 rounded-xl border border-ink/20 px-5 text-sm font-medium"
             >
-              Keep booking
+              {t("bookings.detail.keepBooking")}
             </button>
           </div>
         </form>
       )}
       {booking.status === "completed" && isCustomer && (
         <section className="mt-6 border-t border-slate-200 pt-6">
-          <h2 className="text-xl font-semibold">Your review</h2>
+          <h2 className="text-xl font-semibold">
+            {t("bookings.detail.yourReview")}
+          </h2>
           {booking.review ? (
             <div className="mt-3 rounded-xl border border-slate-200 bg-white p-5">
               <p
                 className="text-amber-500"
-                aria-label={`${booking.review.rating} out of 5 stars`}
+                aria-label={t("bookings.detail.ratingStarsAria", {
+                  rating: booking.review.rating,
+                })}
               >
                 {"★".repeat(booking.review.rating)}
                 {"☆".repeat(5 - booking.review.rating)}
@@ -484,7 +513,7 @@ export function BookingDetailPage() {
               )}
               {booking.review.is_hidden && (
                 <p className="mt-2 text-xs text-slate-600">
-                  This review is no longer visible publicly.
+                  {t("bookings.detail.reviewHidden")}
                 </p>
               )}
             </div>
@@ -495,7 +524,9 @@ export function BookingDetailPage() {
               className="mt-3 space-y-4 rounded-xl border border-slate-200 bg-white p-5"
             >
               <fieldset>
-                <legend className="mb-2 text-sm font-medium">Rating</legend>
+                <legend className="mb-2 text-sm font-medium">
+                  {t("bookings.detail.rating")}
+                </legend>
                 <div className="flex flex-wrap gap-2">
                   {[1, 2, 3, 4, 5].map((rating) => (
                     <label
@@ -513,13 +544,15 @@ export function BookingDetailPage() {
                         {"★".repeat(rating)}
                       </span>
                       <span className="sr-only">
-                        {rating} {rating === 1 ? "star" : "stars"}
+                        {t("bookings.detail.ratingStars", { count: rating })}
                       </span>
                     </label>
                   ))}
                 </div>
                 {reviewForm.formState.errors.rating && (
-                  <p className="mt-1 text-sm text-rose-600">Choose a rating.</p>
+                  <p className="mt-1 text-sm text-rose-600">
+                    {t("bookings.detail.chooseRating")}
+                  </p>
                 )}
               </fieldset>
               <div>
@@ -527,7 +560,7 @@ export function BookingDetailPage() {
                   htmlFor="booking-review-comment"
                   className="mb-1 block text-sm font-medium"
                 >
-                  Comment (optional)
+                  {t("bookings.detail.commentOptional")}
                 </label>
                 <textarea
                   id="booking-review-comment"
@@ -553,8 +586,8 @@ export function BookingDetailPage() {
                 className="min-h-11 rounded-xl bg-[#1DBF73] px-5 text-sm font-medium text-white hover:bg-[#19A463] disabled:opacity-50"
               >
                 {reviewForm.formState.isSubmitting
-                  ? "Submitting review..."
-                  : "Submit review"}
+                  ? t("bookings.detail.submittingReview")
+                  : t("bookings.detail.submitReview")}
               </button>
             </form>
           )}

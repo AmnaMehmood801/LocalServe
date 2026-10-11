@@ -1,4 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { toast } from "../lib/toast";
 import { Eye, Plus, Power, SquarePen } from "lucide-react";
@@ -35,6 +36,7 @@ async function loadProviderListings(providerId: string) {
 }
 
 export function ProviderListingsPage() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const listingsQuery = useQuery({
@@ -50,10 +52,10 @@ export function ProviderListingsPage() {
       .eq("id", listingId)
       .eq("provider_id", user!.id);
     if (error) {
-      toast.error("Could not deactivate this listing.");
+      toast.error(t("provider.listings.deactivateError"));
       return;
     }
-    toast.success("Listing deactivated.");
+    toast.success(t("provider.listings.deactivatedToast"));
     await queryClient.invalidateQueries({
       queryKey: ["provider", "listings", user!.id],
     });
@@ -65,18 +67,21 @@ export function ProviderListingsPage() {
       <header className="flex flex-wrap items-end justify-between gap-4 border-b border-cream-100 pb-6">
         <div className="fade-up">
           <p className="text-xs font-semibold uppercase text-slate-600">
-            Provider workspace
+            {t("provider.listings.workspace")}
           </p>
-          <h1 className="mt-2 text-3xl font-semibold">My listings</h1>
+          <h1 className="mt-2 text-3xl font-semibold">
+            {t("provider.listings.title")}
+          </h1>
           <p className="mt-2 max-w-xl text-sm text-slate-600">
-            Keep your services current and easy for local customers to find.
+            {t("provider.listings.description")}
           </p>
         </div>
         <Link
           to="/provider/listings/new"
           className="press inline-flex min-h-11 items-center gap-2 rounded-xl bg-teal-600 px-4 font-medium text-white transition hover:bg-teal-700 active:scale-[0.98]"
         >
-          <Plus size={18} aria-hidden="true" /> Add a new listing
+          <Plus size={18} aria-hidden="true" />
+          {t("provider.listings.addListing")}
         </Link>
       </header>
 
@@ -84,7 +89,7 @@ export function ProviderListingsPage() {
         <div
           className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
           role="status"
-          aria-label="Loading your listings"
+          aria-label={t("provider.listings.loading")}
         >
           {Array.from({ length: 3 }, (_, index) => (
             <div
@@ -107,14 +112,14 @@ export function ProviderListingsPage() {
           role="alert"
         >
           <p className="text-sm text-slate-600">
-            Your listings could not be loaded.
+            {t("provider.listings.loadError")}
           </p>
           <button
             type="button"
             onClick={() => void listingsQuery.refetch()}
             className="press mt-3 min-h-11 rounded-lg border border-ink/20 px-4 text-sm font-medium transition hover:bg-cream-50 active:scale-[0.98]"
           >
-            Retry
+            {t("provider.listings.retry")}
           </button>
         </div>
       ) : (
@@ -127,10 +132,16 @@ export function ProviderListingsPage() {
               >
                 <Link
                   to={`/listings/${listing.id}`}
-                  aria-label={`Open ${listing.title}`}
+                  aria-label={t("provider.listings.openListing", {
+                    title: listing.title,
+                  })}
                   className="absolute inset-0 z-10 rounded-xl focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#1DBF73]"
                 >
-                  <span className="sr-only">Open {listing.title}</span>
+                  <span className="sr-only">
+                    {t("provider.listings.openListing", {
+                      title: listing.title,
+                    })}
+                  </span>
                 </Link>
                 <div className="group pointer-events-none aspect-[16/9] overflow-hidden rounded-t-xl">
                   <ListingCover
@@ -149,23 +160,27 @@ export function ProviderListingsPage() {
                     <span
                       className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${listing.is_active ? "bg-teal-50 text-teal-700" : "bg-cream-100 text-slate-600"}`}
                     >
-                      {listing.is_active ? "Active" : "Inactive"}
+                      {listing.is_active
+                        ? t("provider.listings.active")
+                        : t("provider.listings.inactive")}
                     </span>
                   </div>
 
                   <p className="mt-3 text-sm font-medium text-ink">
-                    Starting at Rs.{" "}
+                    {t("provider.listings.startingAt")} Rs.{" "}
                     {new Intl.NumberFormat("en-PK", {
                       maximumFractionDigits: 0,
                     }).format(Number(listing.price_amount))}
                     <span className="font-normal text-slate-600">
-                      {listing.pricing_type === "hourly" ? " / hr" : " fixed"}
+                      {listing.pricing_type === "hourly"
+                        ? t("provider.listings.perHour")
+                        : t("provider.listings.fixedPrice")}
                     </span>
                   </p>
                   <p className="mt-2 min-h-5 text-sm text-slate-600">
                     {listing.rating_count
                       ? `★ ${Number(listing.rating_avg).toFixed(1)} (${listing.rating_count})`
-                      : "New"}
+                      : t("provider.listings.new")}
                   </p>
 
                   <div className="relative z-20 mt-auto flex flex-wrap gap-2 pt-5">
@@ -173,20 +188,24 @@ export function ProviderListingsPage() {
                       to={`/provider/listings/${listing.id}/edit`}
                       className="press inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-lg border border-ink/20 px-3 text-sm font-medium transition hover:bg-cream-50 active:scale-[0.98]"
                     >
-                      <SquarePen size={16} aria-hidden="true" /> Edit
+                      <SquarePen size={16} aria-hidden="true" />
+                      {t("provider.listings.edit")}
                     </Link>
                     <Link
                       to={`/listings/${listing.id}`}
                       className="press inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-lg border border-ink/20 px-3 text-sm font-medium transition hover:bg-cream-50 active:scale-[0.98]"
                     >
-                      <Eye size={16} aria-hidden="true" /> View
+                      <Eye size={16} aria-hidden="true" />
+                      {t("provider.listings.view")}
                     </Link>
                     {listing.is_active && (
                       <button
                         type="button"
                         onClick={() => void deactivate(listing.id)}
-                        aria-label={`Deactivate ${listing.title}`}
-                        title="Deactivate listing"
+                        aria-label={t("provider.listings.deactivateListing", {
+                          title: listing.title,
+                        })}
+                        title={t("provider.listings.deactivateTitle")}
                         className="press grid min-h-11 min-w-11 place-items-center rounded-lg border border-rose-600/30 text-rose-600 transition hover:bg-rose-600/5 active:scale-[0.98]"
                       >
                         <Power size={18} aria-hidden="true" />
@@ -202,10 +221,11 @@ export function ProviderListingsPage() {
                 <span className="mx-auto grid size-12 place-items-center rounded-full bg-cream-100 text-teal-700">
                   <Plus size={22} aria-hidden="true" />
                 </span>
-                <h2 className="mt-4 text-lg font-semibold">No listings yet</h2>
+                <h2 className="mt-4 text-lg font-semibold">
+                  {t("provider.listings.emptyTitle")}
+                </h2>
                 <p className="mt-2 text-sm text-slate-600">
-                  Add your first service to start connecting with customers in
-                  your area.
+                  {t("provider.listings.emptyDescription")}
                 </p>
               </div>
             </div>
@@ -218,9 +238,11 @@ export function ProviderListingsPage() {
             <span className="grid size-12 place-items-center rounded-full bg-cream-100 text-teal-700">
               <Plus size={23} aria-hidden="true" />
             </span>
-            <span className="mt-4 font-semibold">Add a new listing</span>
+            <span className="mt-4 font-semibold">
+              {t("provider.listings.addListing")}
+            </span>
             <span className="mt-1 text-sm text-slate-600">
-              Create another service offering
+              {t("provider.listings.addAnotherDescription")}
             </span>
           </Link>
         </div>

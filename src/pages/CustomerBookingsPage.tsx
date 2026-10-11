@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { CalendarClock, ChevronRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
 import { useAuth } from "../app/AuthContext";
@@ -21,12 +22,12 @@ type CustomerBooking = {
   snapshot_currency: string;
 };
 
-const filters: { key: FilterKey; label: string }[] = [
-  { key: "all", label: "All" },
-  { key: "waiting", label: "Waiting" },
-  { key: "confirmed", label: "Confirmed" },
-  { key: "completed", label: "Completed" },
-  { key: "cancelled", label: "Cancelled" },
+const filters: { key: FilterKey; labelKey: string }[] = [
+  { key: "all", labelKey: "bookings.list.filters.all" },
+  { key: "waiting", labelKey: "bookings.list.filters.waiting" },
+  { key: "confirmed", labelKey: "bookings.list.filters.confirmed" },
+  { key: "completed", labelKey: "bookings.list.filters.completed" },
+  { key: "cancelled", labelKey: "bookings.list.filters.cancelled" },
 ];
 
 function includesFilter(status: BookingStatus, filter: FilterKey) {
@@ -43,6 +44,7 @@ function includesFilter(status: BookingStatus, filter: FilterKey) {
 }
 
 export function CustomerBookingsPage() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [filter, setFilter] = useState<FilterKey>("all");
   const bookingsQuery = useQuery({
@@ -68,17 +70,26 @@ export function CustomerBookingsPage() {
 
   return (
     <section className="shell-container py-8 md:py-10">
-      <BackButton fallback="/" label="Back" className="mb-4" />
+      <BackButton
+        fallback="/"
+        label={t("bookings.list.back")}
+        className="mb-4"
+      />
       <header className="flex flex-wrap items-end justify-between gap-3 border-b border-cream-100 pb-5">
         <div>
           <p className="text-xs font-semibold uppercase text-slate-600">
-            Customer
+            {t("bookings.list.customer")}
           </p>
-          <h1 className="mt-1 text-3xl font-semibold">My bookings</h1>
+          <h1 className="mt-1 text-3xl font-semibold">
+            {t("bookings.list.title")}
+          </h1>
         </div>
       </header>
 
-      <div className="mt-5 flex flex-wrap gap-2" aria-label="Filter bookings">
+      <div
+        className="mt-5 flex flex-wrap gap-2"
+        aria-label={t("bookings.list.filterBookings")}
+      >
         {filters.map((item) => (
           <button
             key={item.key}
@@ -91,7 +102,7 @@ export function CustomerBookingsPage() {
                 : "border-ink/15 bg-white text-ink hover:bg-cream-100"
             }`}
           >
-            {item.label}
+            {t(item.labelKey)}
           </button>
         ))}
       </div>
@@ -100,7 +111,7 @@ export function CustomerBookingsPage() {
         <div
           className="mt-6 space-y-3"
           role="status"
-          aria-label="Loading bookings"
+          aria-label={t("bookings.list.loading")}
         >
           {[0, 1, 2].map((item) => (
             <div
@@ -114,31 +125,31 @@ export function CustomerBookingsPage() {
           className="mt-6 rounded-xl border border-rose-600/20 bg-white p-5"
           role="alert"
         >
-          <p className="font-medium">Bookings couldn’t be loaded.</p>
+          <p className="font-medium">{t("bookings.list.loadError")}</p>
           <button
             type="button"
             onClick={() => void bookingsQuery.refetch()}
             className="mt-3 min-h-11 rounded-lg border border-ink/20 px-4 text-sm font-medium hover:bg-cream-50"
           >
-            Try again
+            {t("bookings.list.tryAgain")}
           </button>
         </div>
       ) : bookings.length === 0 ? (
         <div className="mt-6 rounded-xl border border-cream-100 bg-white p-7">
-          <h2 className="font-semibold">No bookings yet</h2>
+          <h2 className="font-semibold">{t("bookings.list.emptyTitle")}</h2>
           <p className="mt-1 text-sm text-slate-600">
-            Your service requests will appear here.
+            {t("bookings.list.emptyDescription")}
           </p>
           <Link
             to="/search"
             className="mt-4 inline-flex min-h-11 items-center rounded-xl bg-teal-600 px-5 text-sm font-medium text-white hover:bg-teal-700"
           >
-            Find a service
+            {t("bookings.list.findService")}
           </Link>
         </div>
       ) : visibleBookings.length === 0 ? (
         <p className="mt-6 rounded-xl border border-cream-100 bg-white p-6 text-sm text-slate-600">
-          No bookings match this filter.
+          {t("bookings.list.noFilterMatches")}
         </p>
       ) : (
         <div className="mt-6 divide-y divide-cream-100 rounded-xl border border-cream-100 bg-white">

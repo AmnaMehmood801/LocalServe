@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
+import type { TFunction } from "i18next";
+import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "../lib/toast";
@@ -53,25 +55,26 @@ type RequestableListing = {
   currency: string;
 };
 
-function getRpcMessage(error: { code?: string; message?: string }) {
+function getRpcMessage(error: { code?: string; message?: string }, t: TFunction) {
   const rpcCode = error.message ?? error.code;
   switch (rpcCode) {
     case "BOOKING_OWN_LISTING":
-      return "You can’t request your own listing.";
+      return t("bookings.request.ownListingError");
     case "LISTING_UNAVAILABLE":
-      return "This listing is no longer available.";
+      return t("bookings.request.listingUnavailableError");
     case "CUSTOMER_ROLE_REQUIRED":
-      return "A customer account is required to request a service.";
+      return t("bookings.request.customerRequiredError");
     case "PROFILE_INACTIVE":
-      return "This account is inactive and cannot request a booking.";
+      return t("bookings.request.inactiveAccountError");
     case "BOOKING_INVALID_SCHEDULE":
-      return "Check the selected booking times and try again.";
+      return t("bookings.request.invalidScheduleError");
     default:
-      return "Could not send the booking request. Please try again.";
+      return t("bookings.request.sendError");
   }
 }
 
 export function RequestBookingPage() {
+  const { t } = useTranslation();
   const { id = "" } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -112,7 +115,7 @@ export function RequestBookingPage() {
     const listing = listingQuery.data;
     if (!listing || !user) return;
     if (listing.provider_id === user.id) {
-      setSubmitError("You can’t request your own listing.");
+      setSubmitError(t("bookings.request.ownListingError"));
       return;
     }
 
@@ -127,42 +130,44 @@ export function RequestBookingPage() {
     });
 
     if (error) {
-      setSubmitError(getRpcMessage(error));
+      setSubmitError(getRpcMessage(error, t));
       return;
     }
 
     const booking = data as { id?: string } | null;
     if (!booking?.id) {
       setSubmitError(
-        "Your request may not have been saved. Check your bookings before retrying.",
+        t("bookings.request.notSavedError"),
       );
       return;
     }
 
     await queryClient.invalidateQueries({ queryKey: ["bookings"] });
-    toast.success("Your request was sent.");
+    toast.success(t("bookings.request.sentToast"));
     navigate(`/bookings/${booking.id}`, { replace: true });
   }
 
   if (listingQuery.isPending) {
     return (
       <div className="shell-container py-12" role="status">
-        Loading service...
+        {t("bookings.request.loadingService")}
       </div>
     );
   }
   if (listingQuery.isError || !listingQuery.data) {
     return (
       <section className="shell-container py-12" role="alert">
-        <h1 className="text-2xl font-semibold">Service unavailable</h1>
+        <h1 className="text-2xl font-semibold">
+          {t("bookings.request.serviceUnavailable")}
+        </h1>
         <p className="mt-2 text-sm text-slate-600">
-          This listing may be inactive or no longer available.
+          {t("bookings.request.listingInactive")}
         </p>
         <Link
           to="/search"
           className="mt-5 inline-flex min-h-11 items-center rounded-xl bg-teal-600 px-5 text-sm font-medium text-white"
         >
-          Browse services
+          {t("bookings.request.browseServices")}
         </Link>
       </section>
     );
@@ -175,20 +180,24 @@ export function RequestBookingPage() {
     <section className="mx-auto w-full max-w-3xl px-4 py-8 md:px-6 md:py-10">
       <BackButton
         fallback={`/listings/${id}`}
-        label="Back to listing"
+        label={t("bookings.request.backToListing")}
         className="mb-4"
       />
       <header className="mt-5 border-b border-cream-100 pb-5">
         <p className="text-xs font-semibold uppercase text-slate-600">
-          Booking request
+          {t("bookings.request.eyebrow")}
         </p>
-        <h1 className="mt-2 text-3xl font-semibold">Request {listing.title}</h1>
+        <h1 className="mt-2 text-3xl font-semibold">
+          {t("bookings.request.title", { title: listing.title })}
+        </h1>
         <p className="mt-2 text-sm text-slate-600">
           Rs.{" "}
           {new Intl.NumberFormat("en-PK", { maximumFractionDigits: 0 }).format(
             Number(listing.price_amount),
           )}
-          {listing.pricing_type === "hourly" ? " / hr" : " fixed"}
+          {listing.pricing_type === "hourly"
+            ? t("bookings.request.perHour")
+            : t("bookings.request.fixedPrice")}
         </p>
       </header>
 
@@ -197,7 +206,7 @@ export function RequestBookingPage() {
           className="mt-6 rounded-xl border border-rose-600/20 bg-white p-5 text-sm text-slate-600"
           role="alert"
         >
-          You can’t request your own listing.
+          {t("bookings.request.ownListingError")}
         </p>
       ) : (
         <form
@@ -211,7 +220,7 @@ export function RequestBookingPage() {
                 htmlFor="scheduled-start"
                 className="mb-1 block text-sm font-medium"
               >
-                Preferred start{" "}
+                {t("bookings.request.preferredStart")}{" "}
                 <span className="text-red-500" aria-hidden="true">
                   *
                 </span>
@@ -223,7 +232,7 @@ export function RequestBookingPage() {
                 className="h-10 w-full rounded-lg border border-slate-400/50 px-3 text-sm outline-none focus:ring-2 focus:ring-teal-600"
               />
               <p className="mt-1 text-xs text-slate-500">
-                Date and time you want the provider to arrive
+                {t("bookings.request.startHelp")}
               </p>
               {errors.scheduled_start && (
                 <p className="mt-1 text-sm text-rose-600">
@@ -236,7 +245,7 @@ export function RequestBookingPage() {
                 htmlFor="scheduled-end"
                 className="mb-1 block text-sm font-medium"
               >
-                Preferred end (optional)
+                {t("bookings.request.preferredEndOptional")}
               </label>
               <input
                 id="scheduled-end"
@@ -257,7 +266,7 @@ export function RequestBookingPage() {
               htmlFor="booking-address"
               className="mb-1 block text-sm font-medium"
             >
-              Service address{" "}
+              {t("bookings.request.serviceAddress")}{" "}
               <span className="text-red-500" aria-hidden="true">
                 *
               </span>
@@ -269,7 +278,7 @@ export function RequestBookingPage() {
               className="w-full rounded-lg border border-slate-400/50 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-600"
             />
             <p className="mt-1 text-xs text-slate-500">
-              House number, street and area so the provider can find you
+              {t("bookings.request.addressHelp")}
             </p>
             {errors.address_text && (
               <p className="mt-1 text-sm text-rose-600">
@@ -283,7 +292,7 @@ export function RequestBookingPage() {
               htmlFor="booking-notes"
               className="mb-1 block text-sm font-medium"
             >
-              Notes (optional)
+              {t("bookings.request.notesOptional")}
             </label>
             <textarea
               id="booking-notes"
@@ -292,7 +301,7 @@ export function RequestBookingPage() {
               className="w-full rounded-lg border border-slate-400/50 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-600"
             />
             <p className="mt-1 text-xs text-slate-500">
-              Anything the provider should know, e.g. what needs fixing
+              {t("bookings.request.notesHelp")}
             </p>
             {errors.notes && (
               <p className="mt-1 text-sm text-rose-600">
@@ -310,15 +319,16 @@ export function RequestBookingPage() {
             </p>
           )}
           <p className="text-xs leading-5 text-slate-600">
-            This sends a request, not an instant booking. Agree payment directly
-            with your provider.
+            {t("bookings.request.paymentNotice")}
           </p>
           <button
             type="submit"
             disabled={isSubmitting}
             className="min-h-11 w-full rounded-xl bg-teal-600 px-5 font-medium text-white hover:bg-teal-700 disabled:opacity-60"
           >
-            {isSubmitting ? "Sending request..." : "Send request"}
+            {isSubmitting
+              ? t("bookings.request.submitting")
+              : t("bookings.request.submit")}
           </button>
         </form>
       )}

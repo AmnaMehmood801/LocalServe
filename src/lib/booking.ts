@@ -1,3 +1,5 @@
+import type { TFunction } from "i18next";
+
 export type BookingStatus =
   | "requested"
   | "accepted"
@@ -12,25 +14,28 @@ export type BookingViewer = "customer" | "provider";
 export function getBookingStatusLabel(
   status: BookingStatus,
   viewer: BookingViewer,
+  t: TFunction,
 ) {
   switch (status) {
     case "requested":
-      return viewer === "provider" ? "New request" : "Waiting for provider";
+      return viewer === "provider"
+        ? t("bookings.list.status.newRequest")
+        : t("bookings.list.status.waitingForProvider");
     case "accepted":
     case "in_progress":
-      return "Confirmed";
+      return t("bookings.list.status.confirmed");
     case "declined":
-      return "Declined";
+      return t("bookings.list.status.declined");
     case "completed":
-      return "Completed";
+      return t("bookings.list.status.completed");
     case "cancelled_by_customer":
       return viewer === "customer"
-        ? "Cancelled by you"
-        : "Cancelled by customer";
+        ? t("bookings.list.status.cancelledByYou")
+        : t("bookings.list.status.cancelledByCustomer");
     case "cancelled_by_provider":
       return viewer === "provider"
-        ? "Cancelled by you"
-        : "Cancelled by provider";
+        ? t("bookings.list.status.cancelledByYou")
+        : t("bookings.list.status.cancelledByProvider");
   }
 }
 

@@ -2,6 +2,8 @@ import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Check } from "lucide-react";
+import type { TFunction } from "i18next";
+import { useTranslation } from "react-i18next";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "../lib/toast";
 import { z } from "zod";
@@ -28,29 +30,30 @@ const accountSchema = z.object({
 
 type AccountValues = z.infer<typeof accountSchema>;
 
-function getProfileErrorMessage(message: string) {
+function getProfileErrorMessage(message: string, t: TFunction) {
   if (message.includes("PROFILE_INACTIVE")) {
-    return "This account is inactive. Profile changes and marketplace actions are unavailable.";
+    return t("account.errors.inactive");
   }
   if (message.includes("PROFILE_AREA_INVALID")) {
-    return "Choose an active Samundri locality.";
+    return t("account.errors.invalidArea");
   }
   if (message.includes("PROFILE_DISPLAY_NAME_INVALID")) {
-    return "Enter a display name between 2 and 80 characters.";
+    return t("account.errors.invalidDisplayName");
   }
   if (message.includes("PROFILE_PHONE_TOO_LONG")) {
-    return "Phone must be 40 characters or fewer.";
+    return t("account.errors.phoneTooLong");
   }
   if (message.includes("PROFILE_BIO_TOO_LONG")) {
-    return "Bio must be 2,000 characters or fewer.";
+    return t("account.errors.bioTooLong");
   }
   if (message.includes("INVALID_MARKETPLACE_ROLE")) {
-    return "Only customer or provider roles can be added.";
+    return t("account.errors.invalidRole");
   }
-  return "We couldn’t complete that account action. Please try again.";
+  return t("account.errors.actionFailed");
 }
 
 export function AccountPage() {
+  const { t } = useTranslation();
   const {
     user,
     profile,
@@ -127,7 +130,7 @@ export function AccountPage() {
     });
     setSaving(false);
     if (error) {
-      const message = getProfileErrorMessage(error.message);
+      const message = getProfileErrorMessage(error.message, t);
       setActionError(message);
       toast.error(message);
       return;
@@ -138,10 +141,10 @@ export function AccountPage() {
       await refreshIdentity();
     } catch {
       setActionError(
-        "Your changes were saved, but account details could not refresh.",
+        t("account.refreshAfterSaveError"),
       );
     }
-    toast.success("Profile updated.");
+    toast.success(t("account.profileUpdated"));
   }
 
   async function addProviderRole() {
@@ -152,7 +155,7 @@ export function AccountPage() {
     });
     setAddingProvider(false);
     if (error) {
-      const message = getProfileErrorMessage(error.message);
+      const message = getProfileErrorMessage(error.message, t);
       setActionError(message);
       toast.error(message);
       return;
@@ -160,10 +163,9 @@ export function AccountPage() {
 
     try {
       await refreshIdentity();
-      toast.success("Provider services are now enabled for your account.");
+      toast.success(t("account.providerEnabled"));
     } catch {
-      const message =
-        "Provider role was added, but account details could not refresh.";
+      const message = t("account.providerRefreshError");
       setActionError(message);
       toast.error(message);
     }
@@ -174,7 +176,7 @@ export function AccountPage() {
     event.currentTarget.value = "";
     if (!file) return;
     if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
-      toast.error("Choose a JPEG, PNG, or WebP image.");
+      toast.error(t("account.invalidPhotoType"));
       return;
     }
     setPendingAvatarFile(file);
@@ -183,7 +185,7 @@ export function AccountPage() {
   async function uploadAvatar(file: File) {
     if (!user) return;
     if (file.size > 2 * 1024 * 1024) {
-      toast.error("This photo is too large to upload. Choose another image.");
+      toast.error(t("account.photoTooLarge"));
       setPendingAvatarFile(null);
       return;
     }
@@ -208,9 +210,9 @@ export function AccountPage() {
       await queryClient.invalidateQueries({
         queryKey: ["profile-avatar", user.id],
       });
-      toast.success("Profile photo updated.");
+      toast.success(t("account.photoUpdated"));
     } catch {
-      toast.error("Could not update your photo. Please try again.");
+      toast.error(t("account.photoUpdateError"));
     } finally {
       setAvatarBusy(false);
       setPendingAvatarFile(null);
@@ -231,9 +233,9 @@ export function AccountPage() {
       await queryClient.invalidateQueries({
         queryKey: ["profile-avatar", user.id],
       });
-      toast.success("Profile photo removed.");
+      toast.success(t("account.photoRemoved"));
     } catch {
-      toast.error("Could not remove your photo. Please try again.");
+      toast.error(t("account.photoRemoveError"));
     } finally {
       setAvatarBusy(false);
     }
@@ -242,8 +244,8 @@ export function AccountPage() {
   if (authLoading || (areasLoading && !profile)) {
     return (
       <div className="shell-container py-12" role="status">
-        <BackButton fallback="/" label="Back" className="mb-4" />
-        Loading account...
+        <BackButton fallback="/" label={t("account.back")} className="mb-4" />
+        {t("account.loading")}
       </div>
     );
   }
@@ -251,17 +253,17 @@ export function AccountPage() {
   if (profileError || !profile) {
     return (
       <section className="shell-container py-12">
-        <BackButton fallback="/" label="Back" className="mb-4" />
-        <h1 className="text-3xl font-semibold">Account</h1>
+        <BackButton fallback="/" label={t("account.back")} className="mb-4" />
+        <h1 className="text-3xl font-semibold">{t("account.title")}</h1>
         <p className="mt-3 text-sm text-rose-600" role="alert">
-          {profileError ?? "Your profile could not be found."}
+          {profileError ?? t("account.profileNotFound")}
         </p>
         <button
           type="button"
           onClick={() => void refreshIdentity()}
           className="mt-4 min-h-11 rounded-xl border border-ink/20 bg-white px-5 text-sm font-medium"
         >
-          Retry
+          {t("account.retry")}
         </button>
       </section>
     );
@@ -271,12 +273,12 @@ export function AccountPage() {
 
   return (
     <section className="mx-auto w-full max-w-3xl px-4 py-8 md:py-10">
-      <BackButton fallback="/" label="Back" className="mb-4" />
+      <BackButton fallback="/" label={t("account.back")} className="mb-4" />
       <header className="border-b border-cream-100 pb-5">
         <p className="text-xs font-semibold uppercase text-slate-600">
-          Your account
+          {t("account.yourAccount")}
         </p>
-        <h1 className="mt-1 text-3xl font-semibold">Profile</h1>
+        <h1 className="mt-1 text-3xl font-semibold">{t("account.profile")}</h1>
       </header>
 
       {inactive && (
@@ -284,8 +286,7 @@ export function AccountPage() {
           className="mt-5 rounded-xl border border-rose-600/20 bg-white p-4 text-sm text-rose-700"
           role="alert"
         >
-          This account is inactive. Profile changes and marketplace actions are
-          unavailable.
+          {t("account.errors.inactive")}
         </p>
       )}
       {areasError && (
@@ -305,18 +306,18 @@ export function AccountPage() {
         <div className="flex flex-wrap items-center gap-4 border-b border-cream-100 pb-5">
           <Avatar
             avatarPath={avatarPath}
-            name={profile.display_name || user?.email || "Account"}
+            name={profile.display_name || user?.email || t("account.title")}
             size={80}
           />
           <div className="min-w-0">
-            <p className="mb-2 text-sm font-medium">Profile photo</p>
+            <p className="mb-2 text-sm font-medium">{t("account.profilePhoto")}</p>
             <input
               ref={avatarInputRef}
               type="file"
               accept="image/jpeg,image/png,image/webp"
               onChange={handleAvatarFileChange}
               className="sr-only"
-              aria-label="Choose a profile photo"
+              aria-label={t("account.chooseProfilePhoto")}
             />
             <div className="flex flex-wrap gap-2">
               <button
@@ -325,7 +326,7 @@ export function AccountPage() {
                 disabled={avatarBusy || inactive}
                 className="h-10 rounded-lg border border-slate-400/50 px-3 text-sm font-medium hover:bg-slate-50 disabled:opacity-50"
               >
-                Upload photo
+                {t("account.uploadPhoto")}
               </button>
               {avatarPath && (
                 <button
@@ -334,7 +335,7 @@ export function AccountPage() {
                   disabled={avatarBusy || inactive}
                   className="h-10 rounded-lg border border-slate-400/50 px-3 text-sm font-medium text-rose-600 hover:bg-rose-50 disabled:opacity-50"
                 >
-                  Remove
+                  {t("account.removePhoto")}
                 </button>
               )}
             </div>
@@ -346,7 +347,7 @@ export function AccountPage() {
             htmlFor="account-display-name"
             className="mb-1 block text-sm font-medium"
           >
-            Display name{" "}
+            {t("account.displayName")}{" "}
             <span className="text-red-500" aria-hidden="true">
               *
             </span>
@@ -370,7 +371,7 @@ export function AccountPage() {
             htmlFor="account-phone"
             className="mb-1 block text-sm font-medium"
           >
-            Phone
+            {t("account.phone")}
           </label>
           <input
             id="account-phone"
@@ -381,7 +382,7 @@ export function AccountPage() {
             className="h-10 w-full rounded-lg border border-slate-400/50 px-3 text-sm outline-none focus:ring-2 focus:ring-teal-600"
           />
           <p className="mt-1 text-xs text-slate-500">
-            Shared with the other party only after a booking is accepted
+            {t("account.phonePrivacyHelp")}
           </p>
           {errors.phone && (
             <p className="mt-1 text-sm text-rose-600">{errors.phone.message}</p>
@@ -393,7 +394,7 @@ export function AccountPage() {
             htmlFor="account-city"
             className="mb-1 block text-sm font-medium"
           >
-            City
+            {t("account.city")}
           </label>
           <input
             id="account-city"
@@ -402,7 +403,7 @@ export function AccountPage() {
             className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-500"
           />
           <p className="mt-1 text-xs text-slate-500">
-            Only Samundri is available right now
+            {t("account.cityAvailabilityHelp")}
           </p>
         </div>
 
@@ -411,7 +412,7 @@ export function AccountPage() {
             htmlFor="account-area"
             className="mb-1 block text-sm font-medium"
           >
-            Samundri locality{" "}
+            {t("account.locality")}{" "}
             <span className="text-red-500" aria-hidden="true">
               *
             </span>
@@ -433,8 +434,8 @@ export function AccountPage() {
                     label: area.name,
                     group: getAreaGroup(area.slug),
                   }))}
-                  ariaLabel="Samundri locality"
-                  placeholder="Choose a locality"
+                  ariaLabel={t("account.locality")}
+                  placeholder={t("account.localityPlaceholder")}
                   size="sm"
                   buttonClassName="disabled:opacity-60"
                 />
@@ -453,7 +454,7 @@ export function AccountPage() {
             htmlFor="account-bio"
             className="mb-1 block text-sm font-medium"
           >
-            Bio
+            {t("account.bio")}
           </label>
           <textarea
             id="account-bio"
@@ -464,7 +465,7 @@ export function AccountPage() {
             className="w-full rounded-lg border border-slate-400/50 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-600"
           />
           <p className="mt-1 text-xs text-slate-500">
-            Shown on your public profile. Keep it short and clear.
+            {t("account.bioHelp")}
           </p>
           {errors.bio && (
             <p className="mt-1 text-sm text-rose-600">{errors.bio.message}</p>
@@ -474,7 +475,7 @@ export function AccountPage() {
         <dl className="grid gap-3 border-t border-cream-100 pt-4 sm:grid-cols-2">
           <div>
             <dt className="text-xs font-medium uppercase text-slate-600">
-              Account status
+              {t("account.status")}
             </dt>
             <dd className="mt-1">
               <span
@@ -484,13 +485,15 @@ export function AccountPage() {
                     : "bg-slate-100 text-slate-600"
                 }`}
               >
-                {profile.is_active ? "Active" : "Inactive"}
+                {profile.is_active
+                  ? t("account.active")
+                  : t("account.inactive")}
               </span>
             </dd>
           </div>
           <div>
             <dt className="text-xs font-medium uppercase text-slate-600">
-              Verification
+              {t("account.verification")}
             </dt>
             <dd className="mt-1">
               <span
@@ -501,7 +504,9 @@ export function AccountPage() {
                 }`}
               >
                 {profile.is_verified && <Check size={14} aria-hidden="true" />}
-                {profile.is_verified ? "Verified" : "Not verified"}
+                {profile.is_verified
+                  ? t("account.verified")
+                  : t("account.notVerified")}
               </span>
             </dd>
           </div>
@@ -520,7 +525,7 @@ export function AccountPage() {
           disabled={saving || inactive || areasLoading || areas.length === 0}
           className="min-h-11 w-full rounded-xl bg-teal-600 px-5 font-medium text-white hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {saving ? "Saving profile..." : "Save changes"}
+          {saving ? t("account.saving") : t("account.saveChanges")}
         </button>
       </form>
 
@@ -529,7 +534,7 @@ export function AccountPage() {
           file={pendingAvatarFile}
           aspect={1}
           outputSize={{ width: 512, height: 512 }}
-          title="Adjust profile photo"
+          title={t("account.adjustProfilePhoto")}
           onCancel={() => setPendingAvatarFile(null)}
           onDone={(file) => void uploadAvatar(file)}
         />
@@ -537,9 +542,9 @@ export function AccountPage() {
 
       {roles.includes("customer") && !roles.includes("provider") && (
         <section className="mt-6 border-t border-cream-100 pt-6">
-          <h2 className="text-lg font-semibold">Offer services</h2>
+          <h2 className="text-lg font-semibold">{t("account.offerServices")}</h2>
           <p className="mt-1 text-sm text-slate-600">
-            Add the provider role to create and manage service listings.
+            {t("account.offerServicesHelp")}
           </p>
           <button
             type="button"
@@ -548,8 +553,8 @@ export function AccountPage() {
             className="mt-4 min-h-11 rounded-xl border border-ink/20 bg-white px-5 text-sm font-medium hover:bg-cream-50 disabled:opacity-50"
           >
             {addingProvider
-              ? "Enabling provider role..."
-              : "Also list services"}
+              ? t("account.enablingProvider")
+              : t("account.alsoListServices")}
           </button>
         </section>
       )}
