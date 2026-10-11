@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { format } from "date-fns";
+import { useTranslation } from "react-i18next";
 import {
   BadgeCheck,
   BriefcaseBusiness,
@@ -175,6 +175,11 @@ async function loadProviderReviews(
 
 export function PublicProviderPage() {
   const { id = "" } = useParams();
+  const { t, i18n } = useTranslation();
+  const dateFormatter = new Intl.DateTimeFormat(
+    i18n.language === "ur" ? "ur" : "en-US",
+    { month: "short", day: "numeric", year: "numeric" },
+  );
   const [activeTab, setActiveTab] = useState<ProviderTab>("About Me");
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const providerQuery = useQuery({
@@ -189,22 +194,30 @@ export function PublicProviderPage() {
   });
 
   useEffect(() => {
+    const displayName =
+      providerQuery.data?.displayName === "Local provider"
+        ? t("provider.public.localProviderFallback")
+        : providerQuery.data?.displayName;
     document.title = providerQuery.data
-      ? `${providerQuery.data.displayName} · LocalServe`
+      ? `${displayName} · LocalServe`
       : "LocalServe";
     return () => {
       document.title = "LocalServe";
     };
-  }, [providerQuery.data?.displayName]);
+  }, [providerQuery.data?.displayName, t]);
 
   function handleTabKeyDown(event: KeyboardEvent<HTMLButtonElement>) {
     const currentIndex = tabRefs.current.indexOf(event.currentTarget);
     let nextIndex: number | null = null;
+    const isRtl = document.documentElement.dir === "rtl";
     if (event.key === "ArrowRight")
-      nextIndex = (currentIndex + 1) % providerTabs.length;
+      nextIndex =
+        (currentIndex + (isRtl ? -1 : 1) + providerTabs.length) %
+        providerTabs.length;
     if (event.key === "ArrowLeft") {
       nextIndex =
-        (currentIndex - 1 + providerTabs.length) % providerTabs.length;
+        (currentIndex + (isRtl ? 1 : -1) + providerTabs.length) %
+        providerTabs.length;
     }
     if (event.key === "Home") nextIndex = 0;
     if (event.key === "End") nextIndex = providerTabs.length - 1;
@@ -219,12 +232,14 @@ export function PublicProviderPage() {
   if (!isUuid(id)) {
     return (
       <section className="shell-container py-16">
-        <h1 className="text-2xl font-semibold">Provider not found</h1>
+        <h1 className="text-2xl font-semibold">
+          {t("provider.public.providerNotFound")}
+        </h1>
         <Link
           to="/search"
           className="mt-4 inline-flex min-h-11 items-center text-teal-700 underline"
         >
-          Browse services
+          {t("provider.public.browseServices")}
         </Link>
       </section>
     );
@@ -235,7 +250,7 @@ export function PublicProviderPage() {
       <div
         className="shell-container py-10"
         role="status"
-        aria-label="Loading provider"
+        aria-label={t("provider.public.loadingProvider")}
       >
         <div className="h-56 animate-pulse rounded-2xl bg-cream-100 motion-reduce:animate-none" />
         <div className="mt-6 h-9 w-1/2 animate-pulse rounded bg-cream-100 motion-reduce:animate-none" />
@@ -252,17 +267,17 @@ export function PublicProviderPage() {
           role="alert"
         >
           <h1 className="text-xl font-semibold">
-            Provider profile unavailable
+            {t("provider.public.profileUnavailable")}
           </h1>
           <p className="mt-2 text-sm text-slate-600">
-            We couldn’t load this public profile.
+            {t("provider.public.profileLoadError")}
           </p>
           <button
             type="button"
             onClick={() => void providerQuery.refetch()}
             className="mt-4 min-h-11 rounded-xl border border-ink/20 px-4 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600"
           >
-            Try again
+            {t("provider.public.tryAgain")}
           </button>
         </div>
       </section>
@@ -278,23 +293,26 @@ export function PublicProviderPage() {
             <Wrench size={23} aria-hidden="true" />
           </span>
           <h1 className="mt-4 text-2xl font-semibold">
-            Provider profile unavailable
+            {t("provider.public.profileUnavailable")}
           </h1>
           <p className="mt-2 text-sm leading-6 text-slate-600">
-            Public profiles are available for providers with active services.
-            This provider may no longer have a service listed.
+            {t("provider.public.profileUnavailableExplanation")}
           </p>
           <Link
             to="/search"
             className="mt-5 inline-flex min-h-11 items-center rounded-xl bg-teal-600 px-5 text-sm font-semibold text-white transition hover:bg-teal-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-600/20"
           >
-            Browse services
+            {t("provider.public.browseServices")}
           </Link>
         </div>
       </section>
     );
   }
 
+  const providerDisplayName =
+    provider.displayName === "Local provider"
+      ? t("provider.public.localProviderFallback")
+      : provider.displayName;
   const reviewData = reviewsQuery.data;
   const ratingLabel =
     reviewData?.average !== null && reviewData?.average !== undefined
@@ -303,23 +321,27 @@ export function PublicProviderPage() {
 
   return (
     <div className="shell-container py-7 md:py-12">
-      <BackButton fallback="/search" label="Back" className="mb-4" />
+      <BackButton
+        fallback="/search"
+        label={t("provider.public.back")}
+        className="mb-4"
+      />
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
         <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
           <Avatar
             avatarPath={provider.avatarPath}
-            name={provider.displayName}
+            name={providerDisplayName}
             size={80}
           />
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
               <h1 className="min-w-0 break-words text-2xl font-semibold text-[#1D1F23]">
-                {provider.displayName}
+                {providerDisplayName}
               </h1>
               {provider.isVerified && (
                 <span className="inline-flex min-h-7 items-center gap-1.5 rounded-full bg-[#E3F7EC] px-2.5 text-xs font-semibold text-[#168A55]">
                   <BadgeCheck size={15} aria-hidden="true" />
-                  Verified
+                  {t("provider.public.verified")}
                 </span>
               )}
             </div>
@@ -330,9 +352,11 @@ export function PublicProviderPage() {
             )}
             <div className="mt-3 flex min-w-0 flex-col items-start gap-2 text-sm text-slate-600">
               {reviewsQuery.isPending ? (
-                <span role="status">Loading review summary…</span>
+                <span role="status">
+                  {t("provider.public.loadingReviewSummary")}
+                </span>
               ) : reviewsQuery.isError ? (
-                <span>Review summary unavailable</span>
+                <span>{t("provider.public.reviewSummaryUnavailable")}</span>
               ) : reviewData && reviewData.count > 0 ? (
                 <button
                   type="button"
@@ -348,12 +372,14 @@ export function PublicProviderPage() {
                     aria-hidden="true"
                   />
                   {ratingLabel && <strong>{ratingLabel}</strong>}
-                  <span>({reviewData.count} reviews)</span>
+                  <span>
+                    ({t("provider.public.reviewCount", { count: reviewData.count })})
+                  </span>
                 </button>
               ) : (
                 <span className="inline-flex items-center gap-1.5">
                   <MessageSquareText size={15} aria-hidden="true" />
-                  No reviews yet
+                  {t("provider.public.noReviews")}
                 </span>
               )}
               {provider.areas.length > 0 && (
@@ -372,10 +398,9 @@ export function PublicProviderPage() {
                   className="shrink-0 text-[#168A55]"
                   aria-hidden="true"
                 />
-                {provider.listings.length}{" "}
-                {provider.listings.length === 1
-                  ? "active service"
-                  : "active services"}
+                {t("provider.public.activeServiceCount", {
+                  count: provider.listings.length,
+                })}
               </span>
             </div>
           </div>
@@ -384,7 +409,9 @@ export function PublicProviderPage() {
 
       <div
         role="tablist"
-        aria-label={`${provider.displayName} profile sections`}
+        aria-label={t("provider.public.profileSections", {
+          name: providerDisplayName,
+        })}
         className="mt-7 flex overflow-x-auto border-b border-cream-100"
       >
         {providerTabs.map((tab, index) => {
@@ -409,9 +436,15 @@ export function PublicProviderPage() {
                   : "text-slate-600 hover:text-ink"
               }`}
             >
-              {tab}
+              {t(
+                tab === "About Me"
+                  ? "provider.public.tabs.about"
+                  : tab === "Services"
+                    ? "provider.public.tabs.services"
+                    : "provider.public.tabs.reviews",
+              )}
               {tab === "Reviews" && reviewData && (
-                <span className="ml-2 rounded-full bg-cream-100 px-2 py-0.5 text-xs text-slate-600">
+                <span className="ms-2 rounded-full bg-cream-100 px-2 py-0.5 text-xs text-slate-600">
                   {reviewData.count}
                 </span>
               )}
@@ -431,10 +464,12 @@ export function PublicProviderPage() {
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(240px,0.55fr)]">
             <article className="rounded-2xl border border-cream-100 bg-white p-5 sm:p-7">
               <p className="text-xs font-semibold uppercase tracking-[0.15em] text-teal-700">
-                Provider introduction
+                {t("provider.public.introduction")}
               </p>
               <h2 className="mt-2 text-xl font-semibold">
-                About {provider.displayName}
+                {t("provider.public.aboutProvider", {
+                  name: providerDisplayName,
+                })}
               </h2>
               {provider.bio ? (
                 <p className="mt-4 whitespace-pre-line text-sm leading-7 text-slate-600">
@@ -442,12 +477,14 @@ export function PublicProviderPage() {
                 </p>
               ) : (
                 <p className="mt-4 text-sm leading-7 text-slate-600">
-                  This provider hasn’t added a public introduction yet.
+                  {t("provider.public.noIntroduction")}
                 </p>
               )}
             </article>
             <aside className="rounded-2xl border border-cream-100 bg-white p-5 sm:p-6">
-              <h2 className="font-semibold">Service area</h2>
+              <h2 className="font-semibold">
+                {t("provider.public.serviceArea")}
+              </h2>
               {provider.areas.length > 0 ? (
                 <ul className="mt-3 flex flex-wrap gap-2">
                   {provider.areas.map((area) => (
@@ -462,7 +499,7 @@ export function PublicProviderPage() {
                 </ul>
               ) : (
                 <p className="mt-2 text-sm text-slate-600">
-                  Service locality information is not available.
+                  {t("provider.public.localityUnavailable")}
                 </p>
               )}
               <p className="mt-3 text-xs text-slate-600">Samundri</p>
@@ -475,15 +512,18 @@ export function PublicProviderPage() {
             <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.15em] text-teal-700">
-                  Available locally
+                  {t("provider.public.availableLocally")}
                 </p>
                 <h2 className="mt-1 text-xl font-semibold">
-                  Services by {provider.displayName}
+                  {t("provider.public.servicesByProvider", {
+                    name: providerDisplayName,
+                  })}
                 </h2>
               </div>
               <span className="text-sm text-slate-600">
-                {provider.listings.length} active{" "}
-                {provider.listings.length === 1 ? "service" : "services"}
+                {t("provider.public.activeServiceCount", {
+                  count: provider.listings.length,
+                })}
               </span>
             </div>
             {provider.listings.length > 0 ? (
@@ -491,7 +531,14 @@ export function PublicProviderPage() {
                 {provider.listings.map((listing) => (
                   <ListingCard
                     key={listing.id}
-                    listing={listing}
+                    listing={
+                      listing.providerName === "Local provider"
+                        ? {
+                            ...listing,
+                            providerName: t("provider.public.localProviderFallback"),
+                          }
+                        : listing
+                    }
                     avatarPath={provider.avatarPath}
                   />
                 ))}
@@ -501,9 +548,11 @@ export function PublicProviderPage() {
                 <span className="mx-auto grid size-12 place-items-center rounded-xl bg-teal-50 text-teal-700">
                   <BriefcaseBusiness size={22} aria-hidden="true" />
                 </span>
-                <h3 className="mt-4 font-semibold">No active services yet</h3>
+                <h3 className="mt-4 font-semibold">
+                  {t("provider.public.noActiveServices")}
+                </h3>
                 <p className="mt-1 text-sm text-slate-600">
-                  Check back later to see services from this provider.
+                  {t("provider.public.checkBackForServices")}
                 </p>
               </div>
             )}
@@ -514,25 +563,30 @@ export function PublicProviderPage() {
           <div id="provider-reviews">
             <div className="mb-5">
               <p className="text-xs font-semibold uppercase tracking-[0.15em] text-teal-700">
-                Customer feedback
+                {t("provider.public.customerFeedback")}
               </p>
               <h2 className="mt-1 text-xl font-semibold">
-                Reviews for {provider.displayName}
+                {t("provider.public.reviewsForProvider", {
+                  name: providerDisplayName,
+                })}
               </h2>
               {!reviewsQuery.isPending &&
                 !reviewsQuery.isError &&
                 reviewData && (
                   <p className="mt-1 text-sm text-slate-600">
-                    {reviewData.count} publicly visible{" "}
-                    {reviewData.count === 1 ? "review" : "reviews"}
+                    {t("provider.public.publicReviewCount", {
+                      count: reviewData.count,
+                    })}
                     {ratingLabel && (
-                      <span className="ml-2 inline-flex items-center gap-1 font-semibold text-ink">
+                      <span className="ms-2 inline-flex items-center gap-1 font-semibold text-ink">
                         <Star
                           size={14}
                           className="fill-amber-500 text-amber-500"
                           aria-hidden="true"
                         />
-                        {ratingLabel} average
+                        {t("provider.public.ratingAverage", {
+                          rating: ratingLabel,
+                        })}
                       </span>
                     )}
                   </p>
@@ -542,7 +596,7 @@ export function PublicProviderPage() {
               <div
                 className="space-y-3"
                 role="status"
-                aria-label="Loading provider reviews"
+                aria-label={t("provider.public.loadingReviews")}
               >
                 {[0, 1, 2].map((item) => (
                   <div
@@ -557,14 +611,14 @@ export function PublicProviderPage() {
                 role="alert"
               >
                 <p className="text-sm text-slate-600">
-                  Reviews couldn’t be loaded.
+                  {t("provider.public.reviewsLoadError")}
                 </p>
                 <button
                   type="button"
                   onClick={() => void reviewsQuery.refetch()}
                   className="mt-3 min-h-11 rounded-xl border border-ink/20 px-4 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600"
                 >
-                  Try again
+                  {t("provider.public.tryAgain")}
                 </button>
               </div>
             ) : reviewData?.reviews.length ? (
@@ -578,25 +632,33 @@ export function PublicProviderPage() {
                       <div className="flex min-w-0 items-center gap-3">
                         <Avatar
                           avatarPath={review.authorAvatarPath}
-                          name={review.authorName}
+                          name={
+                            review.authorName === "Local customer"
+                              ? t("provider.public.localCustomerFallback")
+                              : review.authorName
+                          }
                           size={36}
                         />
                         <div className="min-w-0">
                           <p className="truncate text-sm font-semibold">
-                            {review.authorName}
+                            {review.authorName === "Local customer"
+                              ? t("provider.public.localCustomerFallback")
+                              : review.authorName}
                           </p>
                           <time
                             className="text-xs text-slate-600"
                             dateTime={review.created_at}
                           >
-                            {format(new Date(review.created_at), "MMM d, yyyy")}
+                            {dateFormatter.format(new Date(review.created_at))}
                           </time>
                         </div>
                       </div>
                       <span
                         className="inline-flex items-center gap-0.5 self-start sm:self-auto"
                         role="img"
-                        aria-label={`${review.rating} out of 5 stars`}
+                        aria-label={t("provider.public.ratingStars", {
+                          rating: review.rating,
+                        })}
                       >
                         {Array.from({ length: 5 }, (_, index) => (
                           <Star
@@ -621,7 +683,9 @@ export function PublicProviderPage() {
                 ))}
                 {reviewData.count > reviewData.reviews.length && (
                   <p className="pt-2 text-center text-sm text-slate-600">
-                    Showing the 10 most recent of {reviewData.count} reviews.
+                    {t("provider.public.recentReviews", {
+                      count: reviewData.count,
+                    })}
                   </p>
                 )}
               </div>
@@ -630,9 +694,11 @@ export function PublicProviderPage() {
                 <span className="mx-auto grid size-12 place-items-center rounded-xl bg-teal-50 text-teal-700">
                   <MessageSquareText size={22} aria-hidden="true" />
                 </span>
-                <h3 className="mt-4 font-semibold">No reviews yet</h3>
+                <h3 className="mt-4 font-semibold">
+                  {t("provider.public.noReviews")}
+                </h3>
                 <p className="mt-1 text-sm text-slate-600">
-                  Customer feedback will appear here after completed services.
+                  {t("provider.public.noReviewFeedback")}
                 </p>
               </div>
             )}

@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { format } from "date-fns";
+import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
 import { MapPin, MessageSquare, Star, Tag } from "lucide-react";
 
@@ -131,6 +131,11 @@ async function loadListingDetail(
 
 export function ListingDetailPage() {
   const { id = "" } = useParams();
+  const { t, i18n } = useTranslation();
+  const dateFormatter = new Intl.DateTimeFormat(
+    i18n.language === "ur" ? "ur" : "en-US",
+    { month: "short", day: "numeric", year: "numeric" },
+  );
   const { user, roles } = useAuth();
   const detailQuery = useQuery({
     queryKey: ["listing", "detail", id],
@@ -157,7 +162,7 @@ export function ListingDetailPage() {
       <div
         className="shell-container py-10"
         role="status"
-        aria-label="Loading listing"
+        aria-label={t("listing.detail.loadingListing")}
       >
         <div className="h-72 animate-pulse rounded-xl bg-cream-100" />
         <div className="mt-6 h-8 w-2/3 animate-pulse rounded bg-cream-100" />
@@ -173,16 +178,18 @@ export function ListingDetailPage() {
           className="rounded-xl border border-rose-600/20 bg-white p-6"
           role="alert"
         >
-          <h1 className="text-xl font-semibold">Listing unavailable</h1>
+          <h1 className="text-xl font-semibold">
+            {t("listing.detail.listingUnavailable")}
+          </h1>
           <p className="mt-2 text-sm text-slate-600">
-            We could not load this service. Please try again.
+            {t("listing.detail.listingLoadError")}
           </p>
           <button
             type="button"
             onClick={() => void detailQuery.refetch()}
             className="mt-4 min-h-11 rounded-lg border border-ink/20 px-4 text-sm font-medium"
           >
-            Try again
+            {t("listing.detail.tryAgain")}
           </button>
         </div>
       </section>
@@ -193,30 +200,44 @@ export function ListingDetailPage() {
   if (!listing) {
     return (
       <section className="shell-container py-14">
-        <h1 className="text-2xl font-semibold">Service not found</h1>
+        <h1 className="text-2xl font-semibold">
+          {t("listing.detail.serviceNotFound")}
+        </h1>
         <p className="mt-2 text-sm text-slate-600">
-          This service may be inactive or no longer available.
+          {t("listing.detail.serviceUnavailable")}
         </p>
         <Link
           to="/search"
           className="mt-5 inline-flex min-h-11 items-center rounded-xl bg-teal-600 px-5 text-sm font-medium text-white hover:bg-teal-700"
         >
-          Browse services
+          {t("listing.detail.browseServices")}
         </Link>
       </section>
     );
   }
 
+  const providerName =
+    listing.providerName === "Provider details unavailable"
+      ? t("listing.detail.providerUnavailable")
+      : listing.providerName;
+  const categoryName =
+    listing.categoryName === "Local service"
+      ? t("listing.detail.localServiceFallback")
+      : listing.categoryName;
   const isOwner = user?.id === listing.provider_id;
   const canRequest = roles.includes("customer");
   const requestPath = `/listings/${listing.id}/request`;
   return (
     <div className="shell-container py-8 md:py-12">
-      <BackButton fallback="/search" label="Back to results" className="mb-4" />
+      <BackButton
+        fallback="/search"
+        label={t("listing.detail.backToResults")}
+        className="mb-4"
+      />
 
       {!listing.isActive && isOwner && (
         <p className="mb-4 inline-flex rounded-full bg-cream-100 px-3 py-1 text-sm text-slate-700">
-          Inactive listing
+          {t("listing.detail.inactiveListing")}
         </p>
       )}
 
@@ -234,7 +255,7 @@ export function ListingDetailPage() {
             <div>
               <div className="flex flex-wrap gap-2">
                 <span className="rounded-full bg-[#E3F7EC] px-3 py-1 text-xs font-medium text-[#168A55]">
-                  {listing.categoryName}
+                  {categoryName}
                 </span>
               </div>
               <h1 className="mt-3 text-3xl font-semibold">{listing.title}</h1>
@@ -246,8 +267,11 @@ export function ListingDetailPage() {
               className="inline-flex items-center gap-1.5"
               aria-label={
                 listing.rating_count > 0
-                  ? `${listing.rating_avg.toFixed(1)} from ${listing.rating_count} reviews`
-                  : "No reviews yet"
+                  ? t("listing.detail.ratingWithCount", {
+                      rating: listing.rating_avg.toFixed(1),
+                      count: listing.rating_count,
+                    })
+                  : t("listing.detail.noReviews")
               }
             >
               {listing.rating_count > 0 ? (
@@ -261,7 +285,7 @@ export function ListingDetailPage() {
                   <span>({listing.rating_count})</span>
                 </>
               ) : (
-                "New"
+                t("listing.detail.new")
               )}
             </span>
             <span aria-hidden="true">·</span>
@@ -271,17 +295,19 @@ export function ListingDetailPage() {
             >
               <Avatar
                 avatarPath={listing.providerAvatarPath}
-                name={listing.providerName}
+                name={providerName}
                 size={24}
               />
-              {listing.providerName}
+              {providerName}
             </Link>
           </div>
 
           <div className="mt-5 flex flex-wrap gap-2">
             <span className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
               <Tag size={16} aria-hidden="true" />
-              {listing.pricing_type === "hourly" ? "Hourly" : "Fixed price"}
+              {listing.pricing_type === "hourly"
+                ? t("listing.detail.hourly")
+                : t("listing.detail.fixedPrice")}
             </span>
             <span className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
               <MapPin size={16} aria-hidden="true" />
@@ -290,13 +316,17 @@ export function ListingDetailPage() {
           </div>
 
           <section className="mt-8 border-t border-cream-100 pt-6">
-            <h2 className="text-xl font-semibold">About this service</h2>
+            <h2 className="text-xl font-semibold">
+              {t("listing.detail.aboutService")}
+            </h2>
             <p className="mt-3 whitespace-pre-line text-sm leading-6 text-slate-600">
               {listing.description}
             </p>
             {listing.availability_note && (
               <div className="mt-5">
-                <h3 className="text-sm font-semibold">Availability</h3>
+                <h3 className="text-sm font-semibold">
+                  {t("listing.detail.availability")}
+                </h3>
                 <p className="mt-1 text-sm text-slate-600">
                   {listing.availability_note}
                 </p>
@@ -305,11 +335,13 @@ export function ListingDetailPage() {
           </section>
 
           <section className="mt-8 rounded-xl border border-slate-200 bg-white p-5">
-            <h2 className="text-xl font-semibold">About the provider</h2>
+            <h2 className="text-xl font-semibold">
+              {t("listing.detail.aboutProvider")}
+            </h2>
             <div className="mt-3 flex items-start gap-3">
               <Avatar
                 avatarPath={listing.providerAvatarPath}
-                name={listing.providerName}
+                name={providerName}
                 size={48}
               />
               <div>
@@ -325,12 +357,14 @@ export function ListingDetailPage() {
                   </p>
                 ) : (
                   <p className="mt-1 text-sm text-slate-600">
-                    Local service provider in {listing.cityName}.
+                    {t("listing.detail.providerInCity", {
+                      city: listing.cityName,
+                    })}
                   </p>
                 )}
                 {listing.providerVerified && (
                   <p className="mt-2 inline-flex rounded-full bg-[#E3F7EC] px-3 py-1 text-xs font-medium text-[#168A55]">
-                    Verified by LocalServe
+                    {t("listing.detail.verifiedBy")}
                   </p>
                 )}
               </div>
@@ -342,13 +376,13 @@ export function ListingDetailPage() {
             aria-labelledby="listing-reviews-title"
           >
             <h2 id="listing-reviews-title" className="text-xl font-semibold">
-              Reviews
+              {t("listing.detail.reviews")}
             </h2>
             {reviewsQuery.isPending ? (
               <div
                 className="mt-4 space-y-3"
                 role="status"
-                aria-label="Loading reviews"
+                aria-label={t("listing.detail.loadingReviews")}
               >
                 {[0, 1].map((item) => (
                   <div
@@ -363,14 +397,14 @@ export function ListingDetailPage() {
                 role="alert"
               >
                 <p className="text-sm text-slate-600">
-                  Reviews couldn’t be loaded.
+                  {t("listing.detail.reviewsLoadError")}
                 </p>
                 <button
                   type="button"
                   onClick={() => void reviewsQuery.refetch()}
                   className="mt-3 min-h-10 rounded-lg border border-ink/20 px-4 text-sm font-medium"
                 >
-                  Try again
+                  {t("listing.detail.tryAgain")}
                 </button>
               </div>
             ) : reviewsQuery.data.length === 0 ? (
@@ -380,7 +414,7 @@ export function ListingDetailPage() {
                   className="shrink-0 text-[#168A55]"
                   aria-hidden="true"
                 />
-                <p>No reviews yet. Reviews appear after a completed booking.</p>
+                <p>{t("listing.detail.emptyReviews")}</p>
               </div>
             ) : (
               <div className="mt-4 space-y-3">
@@ -391,7 +425,9 @@ export function ListingDetailPage() {
                   >
                     <p
                       className="text-amber-500"
-                      aria-label={`${review.rating} out of 5 stars`}
+                      aria-label={t("listing.detail.ratingStars", {
+                        rating: review.rating,
+                      })}
                     >
                       {"★".repeat(review.rating)}
                       {"☆".repeat(5 - review.rating)}
@@ -404,12 +440,18 @@ export function ListingDetailPage() {
                     <div className="mt-3 flex items-center gap-2 text-xs text-slate-600">
                       <Avatar
                         avatarPath={review.authorAvatarPath}
-                        name={review.authorName}
+                        name={
+                          review.authorName === "Local customer"
+                            ? t("listing.detail.localCustomerFallback")
+                            : review.authorName
+                        }
                         size={36}
                       />
                       <p>
-                        {review.authorName} ·{" "}
-                        {format(new Date(review.created_at), "MMM d, yyyy")}
+                        {review.authorName === "Local customer"
+                          ? t("listing.detail.localCustomerFallback")
+                          : review.authorName}{" "}·{" "}
+                        {dateFormatter.format(new Date(review.created_at))}
                       </p>
                     </div>
                   </article>
@@ -420,14 +462,18 @@ export function ListingDetailPage() {
         </div>
 
         <aside className="self-start rounded-xl border border-cream-100 bg-white p-5 shadow-sm lg:sticky lg:top-24">
-          <p className="text-sm text-slate-600">Service price</p>
+          <p className="text-sm text-slate-600">
+            {t("listing.detail.servicePrice")}
+          </p>
           <p className="mt-1 text-2xl font-semibold">
-            Rs.{" "}
+            {t("listing.detail.currency")}{" "}
             {new Intl.NumberFormat("en-PK", {
               maximumFractionDigits: 0,
             }).format(listing.price_amount)}
             <span className="text-base font-normal text-slate-600">
-              {listing.pricing_type === "hourly" ? " / hr" : " fixed"}
+              {listing.pricing_type === "hourly"
+                ? t("listing.detail.perHour")
+                : t("listing.detail.fixedSuffix")}
             </span>
           </p>
           {isOwner ? (
@@ -435,30 +481,29 @@ export function ListingDetailPage() {
               to={`/provider/listings/${listing.id}/edit`}
               className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-teal-600 px-5 text-sm font-medium text-white hover:bg-teal-700"
             >
-              Edit listing
+              {t("listing.detail.editListing")}
             </Link>
           ) : !listing.isActive ? null : !user ? (
             <Link
               to={`/login?next=${encodeURIComponent(requestPath)}`}
               className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-teal-600 px-5 text-sm font-medium text-white hover:bg-teal-700"
             >
-              Log in to request
+              {t("listing.detail.logInToRequest")}
             </Link>
           ) : canRequest ? (
             <Link
               to={requestPath}
               className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-teal-600 px-5 text-sm font-medium text-white hover:bg-teal-700"
             >
-              Request booking
+              {t("listing.detail.requestBooking")}
             </Link>
           ) : (
             <p className="mt-5 rounded-lg bg-cream-50 p-3 text-sm text-slate-600">
-              A customer account is required to request this service.
+              {t("listing.detail.customerRequired")}
             </p>
           )}
           <p className="mt-4 text-xs leading-5 text-slate-600">
-            Contact details are shared only through an eligible booking. Agree
-            payment directly with your provider.
+            {t("listing.detail.contactPaymentNote")}
           </p>
         </aside>
       </div>
