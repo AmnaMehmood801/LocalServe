@@ -29,11 +29,11 @@ export function Header() {
   const primaryNavLayout =
     language === "en"
       ? "lg:gap-4 xl:gap-6 xl:-translate-x-8 min-[1400px]:-translate-x-16 2xl:-translate-x-24 max-[1100px]:!gap-0"
-      : "lg:gap-0";
+      : "md:gap-2 min-[768px]:max-[1100px]:gap-0 min-[768px]:max-[1100px]:[&>a]:!px-1";
   const areaSelectLayout =
     language === "en"
       ? "max-[399px]:max-w-[140px] min-[1024px]:max-[1100px]:max-w-[6rem] min-[1101px]:max-[1279.98px]:max-w-[7rem] xl:max-w-[10rem] min-[1600px]:max-w-[12rem] [&>button]:w-auto [&>button]:max-w-full [&>button]:shrink-0 [&>button]:whitespace-nowrap min-[1024px]:max-[1100px]:[&>button]:!min-w-[6rem] min-[1101px]:max-[1279.98px]:[&>button]:!min-w-[7rem] xl:[&>button]:!min-w-[10rem]"
-      : "max-[399px]:max-w-[140px] min-[1024px]:max-[1100px]:!max-w-[3rem] min-[1101px]:max-[1279.98px]:max-w-[7rem] xl:max-w-[8rem] [&>button]:w-auto [&>button]:max-w-full [&>button]:shrink-0 [&>button]:whitespace-nowrap min-[1024px]:max-[1100px]:[&>button]:!min-w-[3rem] min-[1101px]:max-[1279.98px]:[&>button]:!min-w-[7rem] xl:[&>button]:!min-w-[8rem]";
+      : "max-[399px]:max-w-[140px] min-[768px]:max-[1100px]:max-w-[6rem] min-[1101px]:max-[1279.98px]:max-w-[7rem] xl:max-w-[8rem] [&>button]:w-full [&>button]:h-10 [&>button]:min-h-10 [&>button]:min-w-0 [&>button]:shrink [&>button]:whitespace-nowrap min-[768px]:[&>button]:!min-w-0";
   const navigate = useNavigate();
   const location = useLocation();
   const homePath =
@@ -100,12 +100,14 @@ export function Header() {
   }
 
   return (
-    <header ref={headerRef} className="bg-[#252724] text-white">
-      <div className="shell-container flex h-16 w-full flex-nowrap items-center gap-1 px-4 min-[400px]:gap-2 lg:grid lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-x-8 xl:max-w-7xl">
+    <header ref={headerRef} className="relative bg-[#252724] text-white">
+      <div
+        className={`shell-container flex h-16 w-full flex-nowrap items-center gap-1 px-4 min-[400px]:gap-2 ${language === "en" ? "lg:grid lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-x-8" : "md:grid md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:gap-x-2"} xl:max-w-7xl`}
+      >
         <Link
           to={homePath}
           aria-label={t("header.homeAriaLabel")}
-          className="flex min-w-0 shrink-0 items-center gap-3 lg:col-start-1 lg:row-start-1"
+          className={`flex min-w-0 shrink-0 items-center gap-3 ${language === "en" ? "lg:col-start-1 lg:row-start-1" : "md:col-start-1 md:row-start-1"}`}
         >
           <Logo />
           <span className="hidden min-[400px]:inline text-lg font-semibold">
@@ -114,7 +116,7 @@ export function Header() {
         </Link>
 
         <nav
-          className={`hidden min-w-0 items-center gap-2 lg:col-start-2 lg:row-start-1 lg:flex lg:justify-self-center ${primaryNavLayout}`}
+          className={`hidden min-w-0 items-center gap-2 ${language === "en" ? "lg:col-start-2 lg:row-start-1 lg:flex lg:justify-self-center" : "md:col-start-2 md:row-start-1 md:flex md:justify-self-center"} ${primaryNavLayout}`}
           aria-label={t("header.primaryNavigation")}
         >
           <NavLink
@@ -182,10 +184,13 @@ export function Header() {
         </nav>
 
         <nav
-          className={`ml-auto flex shrink-0 items-center gap-1 text-sm min-[400px]:gap-2 lg:col-start-3 lg:row-start-1 lg:ml-0 lg:min-w-0 lg:justify-end lg:justify-self-end lg:whitespace-nowrap ${language === "en" ? "lg:gap-3" : "lg:gap-1"}`}
+          className={`flex items-center text-sm ${language === "en" ? "ml-auto shrink-0 gap-1 min-[400px]:gap-2 lg:col-start-3 lg:row-start-1 lg:ml-0 lg:min-w-0 lg:justify-end lg:justify-self-end lg:whitespace-nowrap lg:gap-3" : "ms-auto min-w-0 flex-1 gap-2 md:col-start-3 md:row-start-1 md:ms-0 md:min-w-0 md:justify-end md:justify-self-end md:whitespace-nowrap md:flex-none"}`}
           aria-label={t("header.mainNavigation")}
         >
-          <div className="relative shrink-0" data-header-menu="language">
+          <div
+            className={`relative shrink-0 ${language === "ur" ? "order-2" : ""}`}
+            data-header-menu="language"
+          >
             <button
               type="button"
               aria-label={t("header.language")}
@@ -194,7 +199,7 @@ export function Header() {
               onClick={() =>
                 setOpenMenu(openMenu === "language" ? null : "language")
               }
-              className="flex min-h-10 shrink-0 items-center gap-1 whitespace-nowrap rounded-lg px-2 text-sm font-semibold text-white hover:bg-white/10"
+              className={`flex ${language === "ur" ? "h-10" : "min-h-10"} shrink-0 items-center gap-1 whitespace-nowrap rounded-lg px-2 text-sm font-semibold text-white hover:bg-white/10`}
             >
               {t("header.languageButton")}
               <ChevronDown size={14} aria-hidden="true" />
@@ -226,7 +231,10 @@ export function Header() {
               </div>
             )}
           </div>
-          <div className="relative shrink-0" data-header-menu="area">
+          <div
+            className={`relative ${language === "ur" ? "order-1 min-w-0 shrink md:shrink-0 max-md:flex-1" : "shrink-0"}`}
+            data-header-menu="area"
+          >
             <AreaSelect
               value={selectedAreaId}
               onChange={(nextValue) => {
@@ -248,16 +256,22 @@ export function Header() {
           )}
 
           {!authLoading && user && (
-            <NotificationBell
-              open={openMenu === "notifications"}
-              onOpenChange={(open) =>
-                setOpenMenu(open ? "notifications" : null)
-              }
-              onItemClick={() => setOpenMenu(null)}
-            />
+            <div
+              className={language === "ur" ? "max-md:hidden md:order-3" : ""}
+            >
+              <NotificationBell
+                open={openMenu === "notifications"}
+                onOpenChange={(open) =>
+                  setOpenMenu(open ? "notifications" : null)
+                }
+                onItemClick={() => setOpenMenu(null)}
+              />
+            </div>
           )}
 
-          <div className="hidden items-center gap-3 lg:flex">
+          <div
+            className={`hidden items-center ${language === "en" ? "gap-3 lg:flex" : "order-4 gap-2 md:flex"}`}
+          >
             {authLoading ? (
                 <span className="text-slate-400" role="status">
                 {t("header.checkingSession")}
@@ -349,10 +363,12 @@ export function Header() {
                 )}
               </div>
             ) : (
-              <div className="flex items-center gap-3">
+              <div
+                className={`flex items-center ${language === "en" ? "gap-3" : "gap-2"}`}
+              >
                 <Link
                   to="/login"
-                  className={`flex h-10 shrink-0 items-center whitespace-nowrap rounded-xl px-3 text-sm font-medium text-white hover:bg-white/10 ${language === "en" ? "" : "max-[1100px]:!px-1"}`}
+                  className={`flex h-10 shrink-0 items-center whitespace-nowrap rounded-xl px-3 text-sm font-medium text-white hover:bg-white/10 ${language === "ur" ? "min-[768px]:max-[1100px]:!px-1" : ""}`}
                 >
                   {t("nav.logIn")}
                 </Link>
@@ -366,7 +382,7 @@ export function Header() {
             )}
           </div>
           <div
-            className="relative shrink-0 lg:hidden"
+            className={`shrink-0 ${language === "en" ? "lg:hidden" : "order-3 md:hidden"}`}
             data-header-menu="mobile"
           >
             <button
@@ -383,7 +399,7 @@ export function Header() {
             {openMenu === "mobile" && (
               <div
                 onClick={() => setOpenMenu(null)}
-                className="absolute right-0 top-full z-20 mt-2 w-56 rounded-xl border border-white/20 bg-[#252724] p-2 text-white shadow-lg"
+                className="absolute start-2 end-2 top-full z-20 mt-2 w-auto max-w-full rounded-xl border border-white/20 bg-[#252724] p-2 text-white shadow-lg"
               >
                 <NavLink
                   to={homePath}
@@ -396,7 +412,7 @@ export function Header() {
                     <>
                       {t("nav.home")}
                       {isActive && (
-                        <span className="absolute right-3 top-1/2 size-1.5 -translate-y-1/2 rounded-full bg-[#1DBF73]" />
+                        <span className="absolute end-3 top-1/2 size-1.5 -translate-y-1/2 rounded-full bg-[#1DBF73]" />
                       )}
                     </>
                   )}
@@ -412,7 +428,7 @@ export function Header() {
                     <>
                       {t("nav.ourServices")}
                       {isActive && (
-                        <span className="absolute right-3 top-1/2 size-1.5 -translate-y-1/2 rounded-full bg-[#1DBF73]" />
+                        <span className="absolute end-3 top-1/2 size-1.5 -translate-y-1/2 rounded-full bg-[#1DBF73]" />
                       )}
                     </>
                   )}
@@ -427,7 +443,7 @@ export function Header() {
                     <>
                       {t("nav.about")}
                       {isActive && (
-                        <span className="absolute right-3 top-1/2 size-1.5 -translate-y-1/2 rounded-full bg-[#1DBF73]" />
+                        <span className="absolute end-3 top-1/2 size-1.5 -translate-y-1/2 rounded-full bg-[#1DBF73]" />
                       )}
                     </>
                   )}
@@ -442,7 +458,7 @@ export function Header() {
                     <>
                       {t("nav.faq")}
                       {isActive && (
-                        <span className="absolute right-3 top-1/2 size-1.5 -translate-y-1/2 rounded-full bg-[#1DBF73]" />
+                        <span className="absolute end-3 top-1/2 size-1.5 -translate-y-1/2 rounded-full bg-[#1DBF73]" />
                       )}
                     </>
                   )}

@@ -224,15 +224,18 @@ export function ListingDetailPage() {
     listing.categoryName === "Local service"
       ? t("listing.detail.localServiceFallback")
       : listing.categoryName;
+  const categoryFallbackImage = /electric/i.test(listing.categoryName)
+    ? "/electrical-repair.jpg"
+    : undefined;
   const isOwner = user?.id === listing.provider_id;
   const canRequest = roles.includes("customer");
   const requestPath = `/listings/${listing.id}/request`;
   return (
-    <div className="shell-container py-8 md:py-12">
+    <div className="shell-container py-4 md:py-12">
       <BackButton
         fallback="/search"
         label={t("listing.detail.backToResults")}
-        className="mb-4"
+        className="mb-3 md:mb-4"
       />
 
       {!listing.isActive && isOwner && (
@@ -241,28 +244,31 @@ export function ListingDetailPage() {
         </p>
       )}
 
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1.5fr)_minmax(300px,0.8fr)]">
-        <div>
-          <div className="aspect-video w-full overflow-hidden rounded-2xl border border-slate-200 max-h-[420px]">
+      <div className="grid gap-x-8 gap-y-0 lg:grid-cols-[minmax(0,1.5fr)_minmax(300px,0.8fr)]">
+        <div className="min-w-0 lg:col-start-1 lg:row-start-1">
+          <div className="aspect-[2/1] w-full overflow-hidden rounded-2xl border border-slate-200 max-h-[420px] md:aspect-video">
             <ListingCover
               path={listing.cover_image_path}
               title={listing.title}
+              fallbackImageUrl={categoryFallbackImage}
               className="size-full"
             />
           </div>
 
-          <div className="mt-6 flex flex-wrap items-start justify-between gap-4">
+          <div className="mt-3 flex flex-wrap items-start justify-between gap-4 md:mt-6">
             <div>
               <div className="flex flex-wrap gap-2">
                 <span className="rounded-full bg-[#E3F7EC] px-3 py-1 text-xs font-medium text-[#168A55]">
                   {categoryName}
                 </span>
               </div>
-              <h1 className="mt-3 text-3xl font-semibold">{listing.title}</h1>
+              <h1 className="mt-1 text-2xl font-semibold leading-7 md:mt-3 md:text-3xl md:leading-9">
+                {listing.title}
+              </h1>
             </div>
           </div>
 
-          <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-slate-600">
+          <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-slate-600 md:mt-4">
             <span
               className="inline-flex items-center gap-1.5"
               aria-label={
@@ -302,7 +308,7 @@ export function ListingDetailPage() {
             </Link>
           </div>
 
-          <div className="mt-5 flex flex-wrap gap-2">
+          <div className="mt-3 flex flex-wrap gap-2 md:mt-5">
             <span className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
               <Tag size={16} aria-hidden="true" />
               {listing.pricing_type === "hourly"
@@ -315,7 +321,56 @@ export function ListingDetailPage() {
             </span>
           </div>
 
-          <section className="mt-8 border-t border-cream-100 pt-6">
+        </div>
+
+        <aside className="mt-6 self-start rounded-xl border border-cream-100 bg-white p-4 shadow-sm md:mt-8 md:p-5 lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:mt-0 lg:sticky lg:top-24">
+          <p className="text-sm text-slate-600">
+            {t("listing.detail.servicePrice")}
+          </p>
+          <p className="mt-1 text-2xl font-semibold">
+            {t("listing.detail.currency")} {" "}
+            {new Intl.NumberFormat("en-PK", {
+              maximumFractionDigits: 0,
+            }).format(listing.price_amount)}
+            <span className="text-base font-normal text-slate-600">
+              {listing.pricing_type === "hourly"
+                ? t("listing.detail.perHour")
+                : t("listing.detail.fixedSuffix")}
+            </span>
+          </p>
+          {isOwner ? (
+            <Link
+              to={`/provider/listings/${listing.id}/edit`}
+              className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-teal-600 px-5 text-sm font-medium text-white hover:bg-teal-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
+            >
+              {t("listing.detail.editListing")}
+            </Link>
+          ) : !listing.isActive ? null : !user ? (
+            <Link
+              to={`/login?next=${encodeURIComponent(requestPath)}`}
+              className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-teal-600 px-5 text-sm font-medium text-white hover:bg-teal-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
+            >
+              {t("listing.detail.logInToRequest")}
+            </Link>
+          ) : canRequest ? (
+            <Link
+              to={requestPath}
+              className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-teal-600 px-5 text-sm font-medium text-white hover:bg-teal-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
+            >
+              {t("listing.detail.requestBooking")}
+            </Link>
+          ) : (
+            <p className="mt-5 rounded-lg bg-cream-50 p-3 text-sm text-slate-600">
+              {t("listing.detail.customerRequired")}
+            </p>
+          )}
+          <p className="mt-4 text-xs leading-5 text-slate-600">
+            {t("listing.detail.contactPaymentNote")}
+          </p>
+        </aside>
+
+        <div className="mt-6 min-w-0 md:mt-8 lg:col-start-1 lg:row-start-2 lg:mt-0">
+          <section className="mt-6 border-t border-cream-100 pt-5 md:mt-8 md:pt-6">
             <h2 className="text-xl font-semibold">
               {t("listing.detail.aboutService")}
             </h2>
@@ -334,7 +389,7 @@ export function ListingDetailPage() {
             )}
           </section>
 
-          <section className="mt-8 rounded-xl border border-slate-200 bg-white p-5">
+          <section className="mt-6 rounded-xl border border-slate-200 bg-white p-4 md:mt-8 md:p-5">
             <h2 className="text-xl font-semibold">
               {t("listing.detail.aboutProvider")}
             </h2>
@@ -372,7 +427,7 @@ export function ListingDetailPage() {
           </section>
 
           <section
-            className="mt-8 border-t border-cream-100 pt-6"
+            className="mt-6 border-t border-cream-100 pt-5 md:mt-8 md:pt-6"
             aria-labelledby="listing-reviews-title"
           >
             <h2 id="listing-reviews-title" className="text-xl font-semibold">
@@ -380,20 +435,20 @@ export function ListingDetailPage() {
             </h2>
             {reviewsQuery.isPending ? (
               <div
-                className="mt-4 space-y-3"
+                className="mt-3 space-y-3 md:mt-4"
                 role="status"
                 aria-label={t("listing.detail.loadingReviews")}
               >
                 {[0, 1].map((item) => (
                   <div
                     key={item}
-                    className="h-28 animate-pulse rounded-xl bg-cream-100"
+                    className="h-24 animate-pulse rounded-xl bg-cream-100 md:h-28"
                   />
                 ))}
               </div>
             ) : reviewsQuery.isError ? (
               <div
-                className="mt-4 rounded-xl border border-rose-600/20 bg-white p-4"
+                className="mt-3 rounded-xl border border-rose-600/20 bg-white p-4 md:mt-4"
                 role="alert"
               >
                 <p className="text-sm text-slate-600">
@@ -408,7 +463,7 @@ export function ListingDetailPage() {
                 </button>
               </div>
             ) : reviewsQuery.data.length === 0 ? (
-              <div className="mt-3 flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-600">
+              <div className="mt-3 flex items-center gap-3 rounded-xl border border-slate-200 bg-cream-50 p-4 text-sm leading-5 text-slate-600">
                 <MessageSquare
                   size={18}
                   className="shrink-0 text-[#168A55]"
@@ -417,11 +472,11 @@ export function ListingDetailPage() {
                 <p>{t("listing.detail.emptyReviews")}</p>
               </div>
             ) : (
-              <div className="mt-4 space-y-3">
+              <div className="mt-3 space-y-3 md:mt-4">
                 {reviewsQuery.data.map((review) => (
                   <article
                     key={review.id}
-                    className="rounded-xl border border-cream-100 bg-white p-5"
+                    className="rounded-xl border border-cream-100 bg-white p-4 md:p-5"
                   >
                     <p
                       className="text-amber-500"
@@ -460,52 +515,6 @@ export function ListingDetailPage() {
             )}
           </section>
         </div>
-
-        <aside className="self-start rounded-xl border border-cream-100 bg-white p-5 shadow-sm lg:sticky lg:top-24">
-          <p className="text-sm text-slate-600">
-            {t("listing.detail.servicePrice")}
-          </p>
-          <p className="mt-1 text-2xl font-semibold">
-            {t("listing.detail.currency")}{" "}
-            {new Intl.NumberFormat("en-PK", {
-              maximumFractionDigits: 0,
-            }).format(listing.price_amount)}
-            <span className="text-base font-normal text-slate-600">
-              {listing.pricing_type === "hourly"
-                ? t("listing.detail.perHour")
-                : t("listing.detail.fixedSuffix")}
-            </span>
-          </p>
-          {isOwner ? (
-            <Link
-              to={`/provider/listings/${listing.id}/edit`}
-              className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-teal-600 px-5 text-sm font-medium text-white hover:bg-teal-700"
-            >
-              {t("listing.detail.editListing")}
-            </Link>
-          ) : !listing.isActive ? null : !user ? (
-            <Link
-              to={`/login?next=${encodeURIComponent(requestPath)}`}
-              className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-teal-600 px-5 text-sm font-medium text-white hover:bg-teal-700"
-            >
-              {t("listing.detail.logInToRequest")}
-            </Link>
-          ) : canRequest ? (
-            <Link
-              to={requestPath}
-              className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-teal-600 px-5 text-sm font-medium text-white hover:bg-teal-700"
-            >
-              {t("listing.detail.requestBooking")}
-            </Link>
-          ) : (
-            <p className="mt-5 rounded-lg bg-cream-50 p-3 text-sm text-slate-600">
-              {t("listing.detail.customerRequired")}
-            </p>
-          )}
-          <p className="mt-4 text-xs leading-5 text-slate-600">
-            {t("listing.detail.contactPaymentNote")}
-          </p>
-        </aside>
       </div>
     </div>
   );
