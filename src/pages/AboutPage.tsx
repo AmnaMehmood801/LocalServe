@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { BadgeCheck, Handshake, Star } from "lucide-react";
+import {
+  BadgeCheck,
+  Handshake,
+  Star,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
@@ -113,10 +117,10 @@ export function AboutPage() {
             className="grid min-w-0 grid-cols-2 gap-3 md:grid-cols-4"
           >
             <img
-              src="/ac-repair.jpg"
+              src="/team.jpg"
               alt={t("about.photoStripAlt")}
               loading="lazy"
-              className="col-span-2 aspect-[16/7] w-full min-w-0 rounded-2xl object-cover md:col-span-4"
+              className="col-span-2 aspect-[4/3] w-full min-w-0 rounded-2xl object-cover object-[50%_35%] md:col-span-4 md:aspect-auto md:h-[80vh] md:min-h-[420px] md:max-h-[760px]"
             />
           </section>
         </Reveal>
@@ -124,7 +128,7 @@ export function AboutPage() {
         <section className="mt-8 grid min-w-0 items-center gap-5 sm:mt-10 md:grid-cols-2 md:gap-10">
           <Reveal className="min-w-0">
             <img
-              src="/ac-repair.jpg"
+              src="/team-van.jpg"
               alt={t("about.storyPhotoAlt")}
               loading="lazy"
               className="aspect-[4/3] w-full min-w-0 rounded-3xl object-cover"
@@ -170,28 +174,38 @@ export function AboutPage() {
         </section>
 
         <Reveal className="mt-8 min-w-0 sm:mt-10">
-          <section className="flex min-w-0 flex-col items-center gap-5 rounded-3xl bg-[#1F6F4F] px-5 py-7 text-center text-white sm:px-8 sm:py-9 md:flex-row md:justify-between md:gap-8 md:text-start">
-            <div className="min-w-0">
-              <h2 className="text-2xl font-bold leading-tight sm:text-3xl">
-                {t("about.ctaTitleStart")} <em className="font-bold italic">{t("about.ctaTitleHighlight")}</em>
-              </h2>
-              <p className="mt-2 text-sm leading-6 text-white sm:text-base">
-                {t("about.ctaDescription")}
-              </p>
+          <section className="grid min-w-0 overflow-hidden rounded-3xl bg-[#1F6F4F] text-start md:grid-cols-[55%_45%]">
+            <div className="flex min-w-0 flex-col justify-center gap-5 ps-5 pe-5 py-6 sm:ps-8 sm:pe-8 md:py-8 md:ps-10 lg:ps-14">
+              <div className="min-w-0">
+                <h2 className="text-2xl font-bold leading-tight text-white sm:text-3xl">
+                  {t("about.ctaTitleStart")} <em className="font-bold italic">{t("about.ctaTitleHighlight")}</em>
+                </h2>
+                <p className="mt-2 text-sm leading-6 text-white/80 sm:text-base">
+                  {t("about.ctaDescription")}
+                </p>
+              </div>
+              <div className="flex w-full min-w-0 flex-col gap-3 md:flex-row">
+                <Link
+                  to="/search"
+                  className="inline-flex h-10 w-auto items-center justify-center gap-3 rounded-full bg-white px-5 text-sm font-semibold text-[#1F6F4F] transition-colors hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                >
+                  {t("about.findService")}
+                </Link>
+                <Link
+                  to="/register"
+                  className="inline-flex h-10 w-auto items-center justify-center gap-3 rounded-full border border-white/60 bg-transparent px-5 text-sm font-semibold text-white transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                >
+                  {t("about.becomeProvider")}
+                </Link>
+              </div>
             </div>
-            <div className="flex min-w-0 w-full flex-col items-center justify-center gap-3 md:w-auto md:flex-row">
-              <Link
-                to="/search"
-                className="inline-flex min-h-11 w-full max-w-xs items-center justify-center rounded-lg bg-[#1DBF73] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#19A463] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white md:w-auto"
-              >
-                {t("about.findService")}
-              </Link>
-              <Link
-                to="/register"
-                className="inline-flex min-h-11 w-full max-w-xs items-center justify-center rounded-lg border border-white px-5 text-sm font-semibold text-white transition-colors hover:bg-[#19A463] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white md:w-auto"
-              >
-                {t("about.becomeProvider")}
-              </Link>
+            <div className="hidden min-w-0 self-end justify-self-end md:block">
+              <img
+                src="/book-a-pro-cta-illustration.webp"
+                alt=""
+                loading="lazy"
+                className="block h-48 w-auto object-contain object-bottom md:h-60"
+              />
             </div>
           </section>
         </Reveal>

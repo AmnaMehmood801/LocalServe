@@ -89,6 +89,7 @@ type ReviewTheme = {
   backgroundColor: string;
   textColor: string;
   quoteColor: string;
+  starColor: string;
   avatarColor: string;
   avatarTextColor: string;
   dividerColor: string;
@@ -96,36 +97,22 @@ type ReviewTheme = {
 
 const reviewThemes: ReviewTheme[] = [
   {
-    backgroundColor: "#3F4246",
-    textColor: "#FFFFFF",
-    quoteColor: "#34C98A",
-    avatarColor: "#19A463",
-    avatarTextColor: "#FFFFFF",
-    dividerColor: "rgba(255, 255, 255, 0.2)",
-  },
-  {
     backgroundColor: "#1F6F4F",
     textColor: "#FFFFFF",
     quoteColor: "#A7E8C8",
-    avatarColor: "#CFE9DB",
-    avatarTextColor: "#1F3A2E",
+    starColor: "#A7E8C8",
+    avatarColor: "#19A463",
+    avatarTextColor: "#FFFFFF",
     dividerColor: "rgba(255, 255, 255, 0.24)",
   },
   {
-    backgroundColor: "#CFE9DB",
+    backgroundColor: "#E3F7EC",
     textColor: "#1F3A2E",
-    quoteColor: "#19A463",
+    quoteColor: "#168A55",
+    starColor: "#168A55",
     avatarColor: "#19A463",
     avatarTextColor: "#FFFFFF",
     dividerColor: "rgba(31, 58, 46, 0.2)",
-  },
-  {
-    backgroundColor: "#E6E9EC",
-    textColor: "#2B2E33",
-    quoteColor: "#19A463",
-    avatarColor: "#19A463",
-    avatarTextColor: "#FFFFFF",
-    dividerColor: "rgba(43, 46, 51, 0.18)",
   },
 ];
 
@@ -327,6 +314,28 @@ function ReviewCard({
   interactive?: boolean;
 }) {
   const { t, i18n } = useTranslation();
+  const hasComment = Boolean(review.comment?.trim());
+  const ratingStars = (
+    <div
+      className="flex gap-1"
+      aria-label={t("home.reviews.ratingStars", {
+        rating: review.rating,
+      })}
+    >
+      {Array.from({ length: 5 }, (_, index) => (
+        <Star
+          key={index}
+          size={14}
+          style={{
+            color: theme.starColor,
+            fill: index < review.rating ? theme.starColor : "transparent",
+          }}
+          strokeWidth={1.75}
+          aria-hidden="true"
+        />
+      ))}
+    </div>
+  );
 
   return (
     <article
@@ -336,54 +345,45 @@ function ReviewCard({
         color: theme.textColor,
         borderColor: theme.dividerColor,
       }}
-      className="relative flex h-full w-full shrink-0 flex-col rounded-2xl border p-6 text-left shadow-md transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-xl sm:p-8 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+      className="relative flex h-full w-full shrink-0 flex-col rounded-2xl border p-5 text-left shadow-sm transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-md sm:p-6 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
     >
       <span
         aria-hidden="true"
         style={{ color: theme.quoteColor }}
-        className="pointer-events-none absolute left-6 top-4 z-0 font-serif text-[36px] leading-none"
+        className="pointer-events-none absolute left-5 top-4 z-0 font-serif text-[36px] leading-none"
       >
         “
       </span>
       <span
         aria-hidden="true"
         style={{ color: theme.quoteColor }}
-        className="pointer-events-none absolute bottom-4 right-6 z-0 font-serif text-[32px] leading-none"
+        className="pointer-events-none absolute bottom-4 right-5 z-0 font-serif text-[32px] leading-none"
       >
         ”
       </span>
       <div
-        className={`relative z-10 flex min-h-0 flex-1 flex-col transition-[opacity,transform] duration-[300ms] delay-0 motion-reduce:transition-none motion-reduce:delay-0 ${
-          active ? "translate-y-0 opacity-100" : "translate-y-2 opacity-80"
+        className={`relative z-10 flex min-h-0 flex-1 flex-col transition-transform duration-[300ms] delay-0 motion-reduce:transition-none motion-reduce:delay-0 ${
+          active ? "translate-y-0" : "translate-y-1"
         }`}
       >
+        {hasComment && <div className="mt-8">{ratingStars}</div>}
         <div
-          className="mt-10 flex gap-1"
-          aria-label={t("home.reviews.ratingStars", {
-            rating: review.rating,
-          })}
+          className={`min-h-0 flex-1 ${
+            hasComment
+              ? "mt-3 flex items-center"
+              : "flex flex-col items-center justify-center gap-3 text-center"
+          }`}
         >
-          {Array.from({ length: 5 }, (_, index) => (
-            <Star
-              key={index}
-              size={14}
-              style={{
-                color: "#F5B301",
-                fill: index < review.rating ? "#F5B301" : "transparent",
-              }}
-              strokeWidth={1.75}
-              aria-hidden="true"
-            />
-          ))}
-        </div>
-        <div className="mt-3 flex min-h-0 flex-1 items-center">
-          {review.comment?.trim() ? (
-            <p className="line-clamp-4 text-lg leading-7">
-              {review.comment.slice(0, 160)}
-              {review.comment.length > 160 ? "…" : ""}
+          {!hasComment && ratingStars}
+          {hasComment ? (
+            <p className="line-clamp-4 text-base leading-6 sm:text-lg sm:leading-7">
+              {review.comment?.slice(0, 160)}
+              {(review.comment?.length ?? 0) > 160 ? "…" : ""}
             </p>
           ) : (
-            <p className="text-lg italic">{t("home.reviews.emptyComment")}</p>
+            <p className="text-sm italic sm:text-base">
+              {t("home.reviews.emptyComment")}
+            </p>
           )}
         </div>
         <div
@@ -1406,9 +1406,23 @@ export function HomePage() {
             {t("home.why.headingStart")} <em className="font-semibold italic text-[#19A463]">{t("home.why.headingHighlight")}</em>
           </h2>
           <div className="mt-6 grid min-w-0 gap-3 lg:grid-cols-3 lg:grid-rows-2">
-            <article className="flex min-w-0 flex-col justify-between gap-8 rounded-2xl bg-[#1F6F4F] p-5 text-white sm:p-6 lg:row-span-2">
-              <MapPin size={20} aria-hidden="true" />
-              <div className="min-w-0">
+            <article className="relative flex min-w-0 flex-col justify-between gap-8 overflow-hidden rounded-2xl bg-[#1F6F4F] p-5 text-white sm:p-6 lg:row-span-2">
+              <img
+                src="/samundri-bazar.jpg"
+                alt=""
+                loading="lazy"
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+              <div
+                aria-hidden="true"
+                className="absolute inset-0 bg-[#123C2C]/75"
+              />
+              <MapPin
+                size={20}
+                className="relative z-10 text-white"
+                aria-hidden="true"
+              />
+              <div className="relative z-10 min-w-0">
                 <h3 className="text-lg font-semibold">{t("home.why.localTitle")}</h3>
                 <p className="mt-2 text-sm leading-6 text-white/85">
                   {t("home.why.localDescription")}
@@ -1417,30 +1431,48 @@ export function HomePage() {
             </article>
             <article className="flex min-w-0 items-start gap-4 rounded-2xl bg-[#E3F7EC] p-5 text-[#1F3A2E] sm:p-6 lg:col-span-2">
               <ArrowRight size={20} className="mt-0.5 shrink-0 text-[#19A463]" aria-hidden="true" />
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <h3 className="font-semibold">{t("home.why.quickTitle")}</h3>
                 <p className="mt-1 text-sm leading-6">
                   {t("home.why.quickDescription")}
                 </p>
               </div>
+              <img
+                src="/quick-booking.jpg"
+                alt=""
+                loading="lazy"
+                className="ms-auto h-[120px] w-[120px] shrink-0 self-center rounded-xl object-cover"
+              />
             </article>
             <article className="flex min-w-0 items-start gap-4 rounded-2xl bg-[#CFE9DB] p-5 text-[#1F3A2E] sm:p-6">
               <BadgeCheck size={20} className="mt-0.5 shrink-0 text-[#19A463]" aria-hidden="true" />
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <h3 className="font-semibold">{t("home.why.updatesTitle")}</h3>
                 <p className="mt-1 text-sm leading-6">
                   {t("home.why.updatesDescription")}
                 </p>
               </div>
+              <img
+                src="/clear-updates.webp"
+                alt=""
+                loading="lazy"
+                className="ms-auto h-[120px] w-[120px] shrink-0 self-center rounded-xl object-cover"
+              />
             </article>
             <article className="flex min-w-0 items-start gap-4 rounded-2xl bg-[#E6E9EC] p-5 text-[#2B2E33] sm:p-6">
               <House size={20} className="mt-0.5 shrink-0 text-[#19A463]" aria-hidden="true" />
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <h3 className="font-semibold">{t("home.why.accountTitle")}</h3>
                 <p className="mt-1 text-sm leading-6">
                   {t("home.why.accountDescription")}
                 </p>
               </div>
+              <img
+                src="/one-account.jpg"
+                alt=""
+                loading="lazy"
+                className="ms-auto h-[120px] w-[120px] shrink-0 self-center rounded-xl object-cover"
+              />
             </article>
           </div>
         </div>
@@ -1588,7 +1620,7 @@ export function HomePage() {
                         const scale =
                           distance === 0 ? 1 : distance === 1 ? 0.8 : 0.65;
                         const opacity =
-                          distance === 0 ? 1 : distance === 1 ? 0.6 : 0;
+                          distance === 0 ? 1 : distance === 1 ? 0.9 : 0;
 
                         return (
                           <div
@@ -1608,7 +1640,7 @@ export function HomePage() {
                           >
                             <ReviewCard
                               review={review}
-                              theme={reviewThemes[reviewIndex % 4]}
+                              theme={reviewThemes[isActive ? 0 : 1]}
                               active={isActive}
                               interactive={copyIndex === 1 && isActive}
                             />
@@ -1660,19 +1692,37 @@ export function HomePage() {
         </section>
       ) : null}
       <section className="shell-container py-8 md:py-12">
-        <div className="home-reveal rounded-3xl bg-[#1F6F4F] px-5 py-9 text-center text-white sm:px-8 sm:py-11">
-          <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-            {t("home.cta.headingStart")} <em className="font-semibold">{t("home.cta.headingHighlight")}</em> {t("home.cta.headingEnd")}
-          </h2>
-          <p className="mt-2 text-sm text-white/85 sm:text-base">
-            {t("home.cta.description")}
-          </p>
-          <Link
-            to="/register"
-            className="mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#1DBF73] px-5 text-sm font-bold text-white transition-colors hover:bg-[#19A463] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/40"
-          >
-            {t("home.cta.getStarted")} <ArrowRight size={16} aria-hidden="true" />
-          </Link>
+        <div className="home-reveal mx-auto grid min-w-0 max-w-5xl overflow-hidden rounded-3xl bg-[#1F6F4F] text-start md:grid-cols-[3fr_2fr]">
+          <div className="flex min-w-0 flex-col justify-center gap-5 ps-5 pe-5 py-7 sm:ps-8 sm:pe-8 sm:py-9 md:ps-10 md:items-center">
+            <h2 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl md:w-full">
+              {t("home.cta.headingStart")} <em className="font-semibold">{t("home.cta.headingHighlight")}</em> {t("home.cta.headingEnd")}
+            </h2>
+            <p className="text-sm text-white/80 sm:text-base md:w-full">
+              {t("home.cta.description")}
+            </p>
+            <div className="flex w-full min-w-0 flex-col gap-3 md:flex-row">
+              <Link
+                to="/register"
+                className="inline-flex h-10 w-full items-center justify-center gap-3 rounded-full bg-white px-5 text-sm font-semibold text-[#1F6F4F] transition-colors hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white md:w-auto"
+              >
+                {t("home.cta.getStarted")}
+              </Link>
+              <Link
+                to="/search"
+                className="inline-flex h-10 w-full items-center justify-center gap-3 rounded-full border border-white/60 bg-transparent px-5 text-sm font-semibold text-white transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white md:w-auto"
+              >
+                {t("home.cta.browse")}
+              </Link>
+            </div>
+          </div>
+          <div className="relative hidden min-w-0 md:block">
+            <img
+              src="/team-van.jpg"
+              alt=""
+              loading="lazy"
+              className="absolute inset-0 h-full w-full object-cover object-[50%_40%]"
+            />
+          </div>
         </div>
       </section>
     </div>

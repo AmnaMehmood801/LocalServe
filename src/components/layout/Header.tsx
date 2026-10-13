@@ -349,20 +349,20 @@ export function Header() {
                 )}
               </div>
             ) : (
-              <>
+              <div className="flex items-center gap-3">
                 <Link
                   to="/login"
-                  className={`min-h-11 shrink-0 whitespace-nowrap rounded-xl px-3 py-2.5 text-white hover:bg-white/10 ${language === "en" ? "" : "max-[1100px]:!px-1"}`}
+                  className={`flex h-10 shrink-0 items-center whitespace-nowrap rounded-xl px-3 text-sm font-medium text-white hover:bg-white/10 ${language === "en" ? "" : "max-[1100px]:!px-1"}`}
                 >
                   {t("nav.logIn")}
                 </Link>
                 <Link
                   to="/register"
-                  className={`min-h-11 shrink-0 whitespace-nowrap rounded-lg bg-[#1DBF73] px-4 py-2.5 font-bold text-white hover:bg-[#19A463] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1DBF73] ${language === "en" ? "" : "max-[1100px]:!px-1"}`}
+                  className="flex h-10 shrink-0 items-center justify-center whitespace-nowrap rounded-full bg-[#1DBF73] px-5 text-sm font-semibold text-white hover:bg-[#19A463] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1DBF73]"
                 >
                   {t("nav.signUp")}
                 </Link>
-              </>
+              </div>
             )}
           </div>
           <div

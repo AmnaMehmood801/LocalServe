@@ -203,7 +203,8 @@
       "headingHighlight": "book",
       "headingEnd": "a pro?",
       "description": "Join your neighbours on LocalServe today.",
-      "getStarted": "Get started"
+      "getStarted": "Get started",
+      "browse": "Browse services"
     }
   },
   "faq": {
